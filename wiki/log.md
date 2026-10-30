@@ -123,3 +123,12 @@ mission-environments page.
 Added the DHS Asset Assessment Tool (text-to-SQL over DHS Cube personnel-by-duty-station data on
 Azure Government OpenAI) to the "what already exists" table on `analyses/user-problem-impact.md`
 as the home agency's in-house precedent.
+
+## [2026-10-30] query | Observability and governance minimum
+
+Exa research across the AWS Agentic AI Lens, OMB M-25-21, NIST AI 600-1, Databricks and AgentCore
+observability docs, Palantir's agent-governance posts, and practitioner dashboards. Wrote
+`analyses/observability-governance-minimum.md`. Key correction: Unity Gateway tracing surfaces do
+not apply to the workspace MCP endpoints we chose; evidence is grants, lineage, audit, query
+history, and MLflow traces, joined to CloudWatch by a `request_context` correlation id. Added that
+id as a build-week item in `DECISIONS.md`.

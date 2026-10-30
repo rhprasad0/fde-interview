@@ -303,6 +303,10 @@ Revisit:   what evidence would change this
   them. Every graded number needs a function behind it.
 - Confirm the `gpt-6-luna` API id, the Databricks OAuth token-exchange question, and the OMB
   Table 16.1 crosswalk for DHS.
+- Give every Unity Catalog function a `request_context` parameter (AgentCore session id, trace
+  id, inbound user id) written with its result to an `agent_calls` audit table, so a CloudWatch
+  trace joins to the SQL that ran without on-behalf-of auth. Use eval case id and run number as
+  the session id ([observability minimum](wiki/analyses/observability-governance-minimum.md)).
 - Write the model fallback as a small Strands `Model` wrapper that delegates to Anthropic and
   retries once on OpenAI for connection errors, 5xx, and overloaded responses, tagging the trace
   with the provider. Test it by pointing the Anthropic base URL at a dead port.
