@@ -345,6 +345,8 @@ functions, Agent Bricks.
 
 ## Build-week items, not decisions
 
+- Code freeze: last commit to this repo by Thursday 2026-11-05 at 17:00. Everything after that is
+  rehearsal. No interview date yet; the recruiter is notified on completion.
 - Write the 20 to 30 golden questions first, then derive the Unity Catalog function list from
   them. Every graded number needs a function behind it.
 - Confirm the `gpt-6-luna` API id and the OMB Table 16.1 crosswalk for DHS.

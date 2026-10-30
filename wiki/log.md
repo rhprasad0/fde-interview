@@ -150,3 +150,9 @@ and the eval harness is plain Python in a notebook writing to Delta with an AI/B
 top; MLflow becomes a day-five stretch. Logged a new evaluation entry (supersedes MLflow), an
 observability entry, a "Databricks surface by omission" note, and a shorter build-week list.
 Reconciled the observability, mission-environments, synthetic-data, and gaps pages.
+
+## [2026-10-30] update | Code freeze and USAJOBS key
+
+Ryan set the hard cutoff: last commit by Thursday 2026-11-05 at 17:00; no interview date yet.
+The USAJOBS Search API key is in hand. Recorded in `DECISIONS.md` build-week items and on the
+pre-spec gaps page.

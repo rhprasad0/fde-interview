@@ -115,8 +115,9 @@ not a proxy. Verify on day two; the custom `predict_fn` is the fallback.
 The golden question list, the ontology object list, and the OMB Table 16.1 crosswalk for DHS are
 spec and build work, not research.
 
-## Only Ryan can answer
+## Answered by Ryan (2026-10-30 evening)
 
-- The interview date. The email sets a notify-by deadline of 2026-11-05 and nothing else.
-- Whether the USAJOBS Search API key has been requested. Request it today; nothing blocks on it
-  because Historic JOA needs no key.
+- No interview date yet. The hard cutoff is the last commit by Thursday 2026-11-05 at 17:00;
+  the recruiter is notified on completion and scheduling follows.
+- The USAJOBS Search API key is in hand. It goes in a secret store, never in the repo; the hooks
+  and gitleaks CI are the backstop.
