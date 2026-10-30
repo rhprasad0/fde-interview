@@ -6,3 +6,7 @@ if git diff --cached -U0 --no-color | grep '^+' | grep -iFf "$terms"; then
   echo "pre-commit: staged changes contain a forbidden term (see $terms)" >&2
   exit 1
 fi
+
+# Secret scan of staged changes; CI (.github/workflows/gitleaks.yml) rescans full history.
+command -v gitleaks >/dev/null || { echo "pre-commit: gitleaks not installed; refusing to commit" >&2; exit 1; }
+gitleaks git --pre-commit --staged --redact --no-banner --verbose
