@@ -102,3 +102,10 @@ shared one data layer and one identity, and the demo-day bar is an AI/BI eval da
 pass^3 of at least 80% over three runs of the golden set. Graded numbers come from Unity Catalog
 functions, not Genie. Updated the orchestration concept, the evaluation concept, and the
 architecture table. Also recorded GPT-6 Luna on Ryan's funded OpenAI account.
+
+## [2026-10-30] decision | Region, demo shape, repository, eval tooling, home agency
+
+Logged the last five pending decisions in `DECISIONS.md`: us-east-1; the eval dashboard leads
+the demo with one live run; the build lives in this repo under `challenge/` (added to AGENTS.md);
+MLflow pass^3 plus AgentCore Evaluations; DHS as the home agency. Pending list replaced with
+build-week items.

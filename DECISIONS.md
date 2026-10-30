@@ -234,13 +234,65 @@ Revisit:   what evidence would change this
   different trust boundary (for example a tool that writes), add a second agent for that boundary
   only and log it.
 
-## Pending
+## 2026-10-30  Region: us-east-1 for Databricks and AgentCore
 
-Decisions the build will force in the first two days. Log each when made.
+- **Context:** previews and AgentCore features are region-gated.
+- **Chosen:** `us-east-1` for both. The cost estimate is priced there and Databricks previews
+  land there first.
+- **Rejected:** `us-west-2` (no feature we need is exclusive to it).
+- **Revisit:** if Managed MCP Servers or AgentCore Gateway is missing in `us-east-1` on day one,
+  move before creating anything else.
 
-- AWS region: `us-east-1` versus `us-west-2`, driven by Databricks preview and AgentCore
-  availability.
-- Demo state: fully live versus cached responses for the rehearsed path, disclosed to the panel.
-- Code walkthrough medium: public GitHub repo (company name kept out) versus screen share only.
-- Evaluation tooling: MLflow golden set (decided) alone, or also AgentCore Evaluations on the
-  agent traces.
+## 2026-10-30  Demo shape: the eval dashboard leads, one live run supports it
+
+- **Context:** the 15-minute demo and 30-minute deep dive need a center of gravity. Ryan wants
+  demo day to be a deep dive on evals.
+- **Chosen:** open on the AI/BI eval dashboard (pass^1, pass^3, question-by-run heatmap, failure
+  categories), walk one failing question through its traces, then run one briefing question live
+  against real tables. A full run is recorded the night before as a disclosed fallback.
+- **Rejected:** a fully live tour of the agent (reliability is the story, so the measured number
+  comes first); a fully cached demo (undisclosed caching found out costs everything).
+- **Revisit:** if the live step is slow or depends on an external API, cache that step only and
+  say which.
+
+## 2026-10-30  Repository: everything stays in this repo
+
+- **Context:** the code walkthrough needs a medium, and the repo is public with the company name
+  kept out.
+- **Chosen:** the build (agent, Databricks assets, eval) lives in this repo under `challenge/`,
+  protected by the same forbidden-terms hooks and gitleaks CI. The panel sees one repo with the
+  wiki, the decision log, and the code. Screen share it in the deep dive.
+- **Rejected:** a second repo for code (splits the decision trail from the code it explains);
+  screen share only (the panel cannot read anything after the call).
+- **Revisit:** if the Firm asks that the build stay private, make this repo private for the
+  interview window.
+
+## 2026-10-30  Evaluation tooling: MLflow pass^3 dashboard plus AgentCore Evaluations on the traces
+
+- **Context:** the pass^3 dashboard is the defended number. AgentCore Evaluations can score the
+  same agent traces inside AWS for under a dollar.
+- **Chosen:** both. MLflow and the Delta results table carry pass^3; AgentCore Evaluations scores
+  the Runtime traces on correctness and goal success as a second, independent read. Build it on
+  day five, after the core demo is green.
+- **Rejected:** MLflow alone (fine, but loses the "how would you evaluate without Databricks"
+  answer); AgentCore alone (loses the Databricks tracing story).
+- **Revisit:** if the two disagree materially, say so on the dashboard and explain which scorer
+  is wrong and why.
+
+## 2026-10-30  Home agency: Department of Homeland Security
+
+- **Context:** the demo needs one agency with a large 2025 decline, many components, and real
+  USAJOBS volume.
+- **Chosen:** DHS. TSA (`HSBC`), CBP (`HSBD`), and ICE (`HSBB`) appear in both OPM and USAJOBS
+  data with matching codes, the panel knows the components, and the Firm's Palantir workforce
+  posting is DHS-flavored ([data sources](wiki/analyses/candidate-data-sources.md)).
+- **Rejected:** Veterans Affairs (largest volume, but one component dominates); Treasury (IRS is
+  interesting, few other components).
+- **Revisit:** if DHS data has a coverage gap in the demo month, switch to Treasury and say so.
+
+## Build-week items, not decisions
+
+- Write the 20 to 30 golden questions first, then derive the Unity Catalog function list from
+  them. Every graded number needs a function behind it.
+- Confirm the `gpt-6-luna` API id, the Databricks OAuth token-exchange question, and the OMB
+  Table 16.1 crosswalk for DHS.

@@ -308,8 +308,7 @@ is "capability risk," not "proven gap."
 
 - Does the panel include anyone who has worked in an agency human capital office? If so, lead
   with the HRStat and MCO chart vocabulary.
-- Which agency to use as the demo's "home" agency. Pick one with a large 2025 decline and many
-  sub-agencies so the questions are interesting.
+- Home agency: decided 2026-10-30, Department of Homeland Security (`DECISIONS.md`).
 - Whether the final rule's text changed the proposed ASP content requirements in the July 2026
   guidance. The rule's summary and impact figures were verified from the Federal Register full
   text; the section-by-section content was not read.
