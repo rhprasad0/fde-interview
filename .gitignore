@@ -1,0 +1,12 @@
+# Local only: third-party/confidential sources and the forbidden-terms list
+/raw/
+/.forbidden-terms
+
+.env
+.env.*
+.mcp.json
+.claude/settings.local.json
+CLAUDE.local.md
+/.worktrees/
+/.claude/worktrees/
+.DS_Store
