@@ -121,10 +121,10 @@ case studies rhyme with it.
 |---|---|---|
 | Data via APIs (R3) | Ingestion job pulls OPM Parquet + USAJOBS JSON into a Unity Catalog volume, then bronze/silver Delta tables (Lakeflow pipeline or notebook job) | The posting asks for schema-tolerant ingestion; OPM versions its files, so re-ingest logic is real. |
 | MCP server (R2) | Databricks managed MCP: Genie Agent over the silver tables, plus Unity Catalog functions (e.g. attrition rate, vacancy match) exposed as tools ([Databricks-provided MCPs](https://docs.databricks.com/aws/en/agents/mcp-tools/built-in-mcp-services)) | The agent's data access is governed by Unity Catalog permissions, which is the Firm's standard deep-dive answer. |
-| MCP client (R2) | A Strands agent on Bedrock AgentCore Runtime consumes those MCP servers; Claude Code can also attach to them for the code walkthrough ([Connect Claude Code](https://docs.databricks.com/aws/en/ai-gateway/coding-agent-claude)) | Shows both sides of MCP, and keeps the agent a separable layer above Databricks (`DECISIONS.md`, 2026-10-30). |
-| LLM of choice | Claude through the Anthropic API from the agent layer; Databricks reached only over MCP. Decided 2026-10-30 after research suggested the Firm's clients run agents (Palantir AIP) above Databricks (`DECISIONS.md`). The Foundation Model API path ([supported models](https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models)) stays as the fallback and as one batch AI function. | Mirrors the likely client architecture: Databricks is the governed data and tool layer, the agent is a separable layer above it. |
+| MCP client (R2) | A Strands agent on Bedrock AgentCore Runtime consumes those MCP servers through AgentCore Gateway; a coding agent can also attach to them for the code walkthrough | Shows both sides of MCP, and keeps the agent a separable layer above Databricks (`DECISIONS.md`, 2026-10-30). |
+| LLM of choice | OpenAI GPT through the OpenAI API from the agent layer; Databricks reached only over MCP. Decided 2026-10-30 after research suggested the Firm's clients run agents (Palantir AIP) above Databricks, and the vendor chosen for DoD portability (`DECISIONS.md`). The in-platform `ai_query` step was dropped because AI Functions are not in the GovCloud boundary ([mission environments](databricks-in-mission-environments.md)). | Mirrors the likely client architecture: Databricks is the governed data and tool layer, the agent is a separable layer above it. |
 | Multi-agent orchestration (R1) | Supervisor agent with three workers: data-quality/ingest checker, workforce analyst (Genie + UC functions over MCP), hiring-market analyst (USAJOBS), plus a briefing writer. Built with Strands Agents, deployed to AgentCore Runtime (decided 2026-10-30; Agent Bricks on a Databricks App was the earlier plan) | Each worker has a different tool set and data source, so the split is justified rather than theatrical. See [multi-agent orchestration](../concepts/multi-agent-orchestration.md). |
-| Skills (R4) | Claude skills for the briefing format and for OPM code-list lookups; Unity Catalog Skills are in Beta per the platform release notes | Cheap to add, and the email names them. |
+| Skills (R4) | Agent skill files for the briefing format and for OPM code-list lookups, loaded by the briefing writer; Unity Catalog Skills are in Beta per the platform release notes | Cheap to add, and the email names them. |
 | Deep dive (R6) | MLflow tracing on every tool call | Lets Ryan show exactly which agent called which tool with which SQL. |
 
 Palantir translation for the deep dive: Unity Catalog + Genie's semantic layer is the Databricks
@@ -144,7 +144,7 @@ R6 and R8:
   to an unpublished allowlist
   ([limitations](https://docs.databricks.com/aws/en/getting-started/free-edition-limitations)).
 - **Previews and models.** A full account has the account console, so the Unity Gateway beta and
-  the `system.ai` MCPs can be enabled, and all Claude pay-per-token endpoints are available.
+  the workspace MCP endpoints can be enabled.
 - **Trial first.** Sign up with the business email: the trial doc says personal-email trials get
   "limited external network access" and capped compute, while business-email trials avoid those
   limits ([free trial](https://docs.databricks.com/aws/en/getting-started/free-trial)). Trial
@@ -157,9 +157,9 @@ budget alert on the account. Delete the workspace and the S3 bucket after the in
 
 ## Risks to retire on day one
 
-1. **Account and preview enablement.** Confirm serverless, Databricks Apps, Managed MCP Servers,
-   and the Claude endpoints are all available in the chosen AWS region before writing code. If a
-   preview is region-gated, pick `us-east-1` or `us-west-2`.
+1. **Account and preview enablement.** Confirm serverless, Databricks Apps, and Managed MCP
+   Servers are all available in the chosen AWS region before writing code. If a preview is
+   region-gated, pick `us-east-1` or `us-west-2`.
 2. **Spend.** Confirm the trial credits are active and set both budget alerts in the first hour.
    The main cost risk is a serving endpoint or App left running overnight.
 3. **Fallback.** Free Edition remains the zero-cost fallback. Its constraints are: 3 Apps, 1

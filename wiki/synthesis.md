@@ -11,9 +11,11 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
    governed access, and an honest account of trade-offs.
 2. **Databricks is the right platform bet for Ryan specifically.** The program has a Databricks
    FDE track whose posting reads like a build checklist (Apps, Unity Catalog, Spark, LLM APIs), and
-   the federal arm's public Databricks wins are "executive insight in days" stories. Claude runs
-   natively on Databricks, so one architecture answers both "uses Claude" and "picked up
-   Databricks" ([analysis](analyses/build-challenge-problem-selection.md)).
+   the federal arm's public Databricks wins are "executive insight in days" stories. The agent
+   layer sits above Databricks and calls OpenAI GPT directly, which mirrors how the Firm's clients
+   appear to layer Palantir above Databricks and keeps the model portable to DoD environments
+   ([analysis](analyses/build-challenge-problem-selection.md),
+   [mission environments](analyses/databricks-in-mission-environments.md)).
 3. **Federal workforce planning is the right problem.** OPM's 2026 open workforce API gives
    record-level monthly data with no auth, GAO has already analyzed the same files, and the 2025
    workforce shock makes the impact story current. The Firm has a (Palantir) posting in exactly this
@@ -45,6 +47,5 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
   candidates or from the student event?
 - What does "forward-deployed engineering" mean at the Firm versus Palantir's original model? A
   concept page (`concepts/forward-deployed-engineering.md`) is still missing.
-- What is the Firm's position on Anthropic specifically (partnership status, FedRAMP path for
-  Claude)? It names Anthropic as a partner but the public announcements found so far are for
-  OpenAI, Google, and Palantir.
+- Which frontier-lab partnership does the Firm's federal arm lean on most? The public
+  announcements found so far are for OpenAI, Google, and Palantir.

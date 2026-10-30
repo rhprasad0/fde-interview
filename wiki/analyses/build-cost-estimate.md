@@ -35,7 +35,7 @@ All prices are AWS us-east-1, Premium tier, list, read 2026-10-30. Multiply DBUs
 | Lakebase (stretch, write-backs) | $0.092/CU-hr list, 50% promo to 2027-01-31 so ~$0.046; storage $0.345/GB-month; synced-table pipelines billed as serverless pipelines ([cost guide](https://www.databricks.com/blog/practical-guide-cost-optimization-lakebase-postgres), [LakeSentry](https://lakesentry.io/blog/databricks-lakebase/)) | ~$1 to $3 if sized at 1 CU with scale-to-zero | The default project autoscales 8 to 16 CU with a 24-hour idle timeout. Set min 1 CU (or the smallest allowed) and a 5-minute timeout, or it is ~$9 to $18 per day. Scale-to-zero needs 32 CU or smaller. |
 | Genie One and Genie Agents | Free for human users through 2027-01-31; service principals are billed ([Genie cost](https://docs.databricks.com/aws/en/genie/monitor-cost)) | $0 if the agent calls Genie with the user's identity over MCP | If the agent runs as a service principal, Genie usage is billed at the Serverless Real-Time Inference SKU. One more reason for on-behalf-of auth. |
 | Genie Code | 150 free DBUs per user per month, then pay-as-you-go | $0 | Stay under the allowance. |
-| `ai_query` batch step with Claude | Sonnet 5.5: 28.571 DBU/M input, 142.857 DBU/M output, so $2.00/M in and $10.00/M out at $0.07/DBU. Haiku 5.5: 1.429 and 7.143 DBU/M, so $0.10/M in and $0.50/M out ([proprietary FM pricing](https://www.databricks.com/product/pricing/proprietary-foundation-model-serving)) | Classifying 50k rows at ~200 tokens each is 10M input tokens: ~$20 on Sonnet, ~$1 on Haiku | Use Haiku 5.5 for the batch step, or sample 5k rows. Avoid task-specific functions like `ai_classify`, which run on separate managed GPU inference ([AI Functions](https://docs.databricks.com/aws/en/large-language-models/ai-functions)). |
+| `ai_query` batch step | Dropped 2026-10-30: AI Functions are not in the GovCloud boundary and the separations file already carries the category ([mission environments](databricks-in-mission-environments.md)) | $0 | None. |
 | MLflow LLM judges (eval) | Billed as model-serving tokens for the judge model | ~$1 for 30 cases x 5 scorers x a few runs | Run evals in batches, not on every save. |
 | Unity Gateway usage tracking | Billed per GB of logged payload (Azure lists 1.429 DBU/GB) ([usage tracking](https://docs.databricks.com/aws/en/ai-gateway/usage-tracking)) | Cents | None needed. |
 | Databricks Apps | $0.75/DBU, medium 0.5 DBU/hr | $0, not in the plan | If one is created for a UI, stop it between rehearsals. |
@@ -53,7 +53,7 @@ Databricks total at list: roughly $60 to $90 for the week. Against $400 of trial
 | AgentCore Evaluations (built-in) | $0.0024 per 1,000 input tokens, $0.012 per 1,000 output tokens | Under $1 | Optional alongside MLflow. |
 | AgentCore Observability | CloudWatch rates | $1 to $3 | Keep log retention short; delete log groups at teardown. |
 | ECR image storage | Standard ECR | Cents | Direct code deploy bills at S3 Standard instead. |
-| Anthropic API | Ryan's credits | Not on the budget | Pin the model id; prompt caching on through Strands. |
+| OpenAI API | Pay-as-you-go on Ryan's account; price the pinned model on day one | Not on the $50 Databricks budget | Pin the model id; use a smaller model for the eval loop; set a hard spend cap in the OpenAI console. |
 
 New AWS customers get up to $200 in Free Tier credits; an existing account likely does not.
 

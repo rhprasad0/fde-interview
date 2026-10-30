@@ -58,23 +58,17 @@ Revisit:   what evidence would change this
   `HSBC` in both). FEVS was formally discontinued 2026-10-29. OMB Table 16.1 budgeted FTE is the
   one enrichment to add if the core is green ([data sources](wiki/analyses/candidate-data-sources.md)).
 
-## 2026-10-30  LLM access: Claude through the Anthropic API, with Databricks as the governed tool layer
+## 2026-10-30  LLM access: the model is called from the agent layer, Databricks is the governed tool layer
 
-- **Context:** the challenge requires Claude, Gemini, or GPT. Research suggests the Firm's
-  federal clients run the agent layer (Palantir AIP) above Databricks, which supplies governed
-  data through Unity Catalog ([Palantir-Databricks partnership](https://www.databricks.com/company/newsroom/press-releases/palantir-and-databricks-announce-strategic-product-partnership)).
-  Ryan has Anthropic API credits for iteration.
-- **Chosen:** the agent calls Claude directly through the Anthropic API (Claude Agent SDK), and
-  reaches Databricks only through managed MCP servers (Genie, Unity Catalog functions) with
-  on-behalf-of user identity. One Databricks AI function (for example classifying separation
-  reasons in a batch step) shows the in-platform model surface too.
-- **Rejected:** Claude through Databricks Foundation Model API endpoints as the primary path
-  (first choice earlier today; it makes Databricks the agent host, which is not how the Firm's
-  stack appears to be layered, and it caps iteration on pay-per-token rate limits); Gemini or
-  GPT (no advantage, and Claude is the model Ryan builds with daily).
-- **Revisit:** if the panel pushes on model governance, the answer is Unity Gateway in front of
-  the Anthropic key; if credits run out, switch the SDK base URL to a Databricks endpoint.
-- **Superseded:** the earlier entry chose Foundation Model APIs; see git history for the text.
+- **Context:** research suggests the Firm's federal clients run the agent layer (Palantir AIP)
+  above Databricks, which supplies governed data through Unity Catalog
+  ([Palantir-Databricks partnership](https://www.databricks.com/company/newsroom/press-releases/palantir-and-databricks-announce-strategic-product-partnership)).
+- **Chosen:** the agent calls the model directly from the agent layer and reaches Databricks only
+  through managed MCP servers. Model vendor decided separately below.
+- **Rejected:** the model served from Databricks Foundation Model API endpoints as the primary
+  path (first choice earlier today; it makes Databricks the agent host, which is not how the
+  Firm's stack appears to be layered, and it caps iteration on pay-per-token rate limits).
+- **Superseded:** two earlier versions of this entry named a vendor; see git history for the text.
 
 ## 2026-10-30  Evaluation: MLflow golden set in Unity Catalog, run with `mlflow.genai.evaluate()`
 
@@ -92,16 +86,16 @@ Revisit:   what evidence would change this
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real
   infrastructure, cheap, and familiar enough to learn in days alongside Databricks.
-- **Chosen:** Strands Agents (Python) with the `AnthropicModel` provider
-  (`pip install 'strands-agents[anthropic]'`, prompt caching supported), deployed to AgentCore
+- **Chosen:** Strands Agents (Python) with the `OpenAIModel` provider
+  (`pip install 'strands-agents[openai]'`; vendor decision below), deployed to AgentCore
   Runtime. AgentCore supplies session isolation, built-in tracing, consumption pricing, and
-  MCP client support ([Strands Anthropic provider](https://strandsagents.com/docs/user-guide/sdk/model-providers/anthropic/),
+  MCP client support ([Strands OpenAI provider](https://strandsagents.com/docs/user-guide/sdk/model-providers/openai/),
   [deploy to AgentCore](https://strandsagents.com/docs/user-guide/sdk/deploy/deploy_to_bedrock_agentcore/),
   [AgentCore Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html)).
 - **Rejected:** Palantir AIP Developer Tier as the agent layer (mirrors the Firm's stack most
   closely, but two unfamiliar platforms in one week is too much, and user-only auth complicates
   a server-side agent); Databricks App or Agent Bricks Supervisor (makes Databricks the agent host,
-  which blurs the layer story); Claude Agent SDK on a bare container (works, but AgentCore gives
+  which blurs the layer story); a vendor agent SDK on a bare container (works, but AgentCore gives
   tracing and identity for free and is the AWS-native answer a federal panel will recognize).
 - **Revisit:** if AgentCore Runtime costs or region gating threaten the $50 budget or the
   timeline, run the same Strands agent on Lambda or ECS; the agent code does not change.
@@ -168,13 +162,54 @@ Revisit:   what evidence would change this
   the agency's own trailing headcount instead and say so; if the panel includes an agency human
   capital person, offer to swap in their real plan shape.
 
+## 2026-10-30  MCP path: AgentCore Gateway in front of the Databricks workspace MCP endpoints
+
+- **Context:** the agent needs governed access to Databricks tools, and the panel will judge
+  whether the shape matches how agencies run Databricks. Research into the FedRAMP High and IL5
+  boundary on AWS GovCloud showed the workspace managed MCP endpoints are inside it while the
+  Unity Gateway `system.ai` MCPs are not, and AWS and Databricks publish a public-sector pattern
+  with AgentCore Gateway aggregating Databricks MCP servers
+  ([mission environments](wiki/analyses/databricks-in-mission-environments.md)).
+- **Chosen:** the Strands agent on AgentCore Runtime calls one AgentCore Gateway. Gateway targets
+  are the Databricks workspace MCP endpoints for the Genie Agent
+  (`/api/2.0/mcp/genie/{space_id}`) and Unity Catalog functions
+  (`/api/2.0/mcp/functions/{catalog}/{schema}/{fn}`). Outbound auth is OAuth client credentials
+  with a Databricks service principal whose Unity Catalog grants bound what the agent can reach.
+  One Gateway Policy rule in natural language, compiled to Cedar, shows policy outside agent
+  code. Consequences accepted: Genie usage is billed under the service principal (trial credits
+  cover it), and on-behalf-of identity is described as the production path via token exchange
+  rather than demonstrated.
+- **Rejected:** direct MCP calls from the agent (fewer parts, free Genie under user identity,
+  but no policy layer and not the published federal pattern); Unity Gateway `system.ai` MCPs
+  (Databricks's commercial recommendation, not in the GovCloud boundary); a custom MCP server on
+  Databricks Apps (works in GovCloud, but adds code for tools Databricks already serves).
+- **Revisit:** if Databricks OAuth accepts token exchange as a Gateway outbound target, switch
+  to on-behalf-of on day four; if Gateway setup eats more than half a day, fall back to direct
+  calls and log it.
+
+## 2026-10-30  Model vendor: OpenAI GPT through the OpenAI API
+
+- **Context:** the challenge allows Claude, Gemini, or GPT. Ryan may be deployed to DoD
+  customers. Anthropic models were removed from Databricks IL5 workspaces on 2026-09-19, and the
+  team is not approved to use the vendor's models on Bedrock, so the panel conversation should not
+  turn on a model a DoD client cannot run
+  ([mission environments](wiki/analyses/databricks-in-mission-environments.md)).
+- **Chosen:** OpenAI GPT called through the OpenAI API from the Strands `OpenAIModel` provider.
+  Pin the model id on day one; keep the provider behind one constructor so it is swappable.
+  OpenAI's models are also what Genie Code in GovCloud routes to (Azure OpenAI in Azure Government)
+  and are served on Bedrock in GovCloud, which is the deploy-day answer if the panel asks.
+- **Rejected:** Claude via the Anthropic API (Ryan's daily model and he holds credits, but it is
+  the model removed from IL5 and not approved on Bedrock for this team; keep it out of the
+  panel-facing story); Gemini (no advantage over GPT here); GPT via Bedrock (not approved for
+  this team today, so the API is the path; Bedrock is the production swap).
+- **Revisit:** if Bedrock access for OpenAI models is granted, switch the Strands provider to
+  Bedrock and nothing else changes; if the OpenAI API rate-limits iteration, use a smaller model
+  for the eval loop and the pinned model for the demo.
+
 ## Pending
 
 Decisions the build will force in the first two days. Log each when made.
 
-- MCP path: Databricks managed MCP (`system.ai` through Unity Gateway, or the workspace
-  `/api/2.0/mcp/...` endpoints) consumed directly by the Strands agent, versus fronting them
-  with AgentCore Gateway. This carries the governance narrative.
 - Worker split: which of the four proposed workers (ingest checker, workforce analyst,
   hiring-market analyst, briefing writer) survive once the eval set exists.
 - AWS region: `us-east-1` versus `us-west-2`, driven by Databricks preview and AgentCore

@@ -20,8 +20,9 @@ one prompt is cut into pieces for show. In the chosen build, the workers differ 
 
 ## Chosen harness
 
-Strands Agents (Python) with the Anthropic model provider, deployed to Amazon Bedrock AgentCore
-Runtime, consuming Databricks managed MCP servers as tools (`DECISIONS.md`, 2026-10-30). Strands
+Strands Agents (Python) with the OpenAI model provider, deployed to Amazon Bedrock AgentCore
+Runtime, consuming Databricks managed MCP servers as tools through AgentCore Gateway
+(`DECISIONS.md`, 2026-10-30). Strands
 has native MCP client support and a documented AgentCore deployment path
 ([Strands docs](https://strandsagents.com/docs/user-guide/sdk/deploy/deploy_to_bedrock_agentcore/)).
 The Databricks-hosted options below were considered and set aside so the agent stays a separable
