@@ -76,7 +76,8 @@ Revisit:   what evidence would change this
   ([playbook](wiki/analyses/fde-build-challenge-playbook.md)).
 - **Chosen:** 20 to 30 user questions with answers computed by SQL against the silver tables,
   stored as a Unity Catalog evaluation dataset, scored with built-in judges plus one exact-match
-  scorer ([agent evaluation](wiki/concepts/agent-evaluation.md)).
+  scorer ([agent evaluation](wiki/concepts/agent-evaluation.md)). Acceptance bar and
+  dashboard added in the agent-topology entry below: three runs per question, pass^3 of 80%.
 - **Rejected:** ad-hoc spot checks (no number to defend); a third-party eval framework (adds a
   dependency and leaves the Databricks tracing story).
 - **Revisit:** if `mlflow.genai.evaluate()` is unavailable in the trial workspace, fall back to a
@@ -194,24 +195,49 @@ Revisit:   what evidence would change this
   team is not approved to use the vendor's models on Bedrock, so the panel conversation should not
   turn on a model a DoD client cannot run
   ([mission environments](wiki/analyses/databricks-in-mission-environments.md)).
-- **Chosen:** OpenAI GPT called through the OpenAI API from the Strands `OpenAIModel` provider.
-  Pin the model id on day one; keep the provider behind one constructor so it is swappable.
+- **Chosen:** OpenAI GPT-6 Luna (`gpt-6-luna`, confirm the exact API id on day one) called
+  through the OpenAI API from the Strands `OpenAIModel` provider, on Ryan's funded OpenAI account.
+  Keep the provider behind one constructor so it is swappable.
   OpenAI's models are also what Genie Code in GovCloud routes to (Azure OpenAI in Azure Government)
   and are served on Bedrock in GovCloud, which is the deploy-day answer if the panel asks.
-- **Rejected:** Claude via the Anthropic API (Ryan's daily model and he holds credits, but it is
-  the model removed from IL5 and not approved on Bedrock for this team; keep it out of the
-  panel-facing story); Gemini (no advantage over GPT here); GPT via Bedrock (not approved for
-  this team today, so the API is the path; Bedrock is the production swap).
+- **Rejected:** Claude via the Anthropic API (Ryan's daily model, but it is the model removed
+  from IL5 and not approved on Bedrock for this team; keep it out of the panel-facing story);
+  Gemini (no advantage over GPT here); GPT via Bedrock (not approved for this team today, so the
+  API is the path; Bedrock is the production swap).
 - **Revisit:** if Bedrock access for OpenAI models is granted, switch the Strands provider to
   Bedrock and nothing else changes; if the OpenAI API rate-limits iteration, use a smaller model
   for the eval loop and the pinned model for the demo.
+
+## 2026-10-30  Agent topology: one agent with governed tools, accepted at pass^3 of 80% or better
+
+- **Context:** the earlier plan was a supervisor with four workers. Ryan judged the split
+  unjustified by the problem and set the demo-day bar as an eval dashboard showing pass^3 of at
+  least 80%, meaning each golden question passes all three independent runs.
+- **Chosen:** a single Strands agent whose tools are the Databricks workspace MCP endpoints
+  behind AgentCore Gateway: Unity Catalog functions for every number the eval grades (attrition
+  rate, posting coverage, length-of-service distribution per cell), the Genie Agent for open
+  exploration the eval does not grade, and skill files for the briefing format and code lists.
+  Orchestration lives in one Lakeflow job: ingest the monthly files, refresh the semantic layer,
+  run the scheduled briefing, run the eval three times, write the dashboard tables. The eval
+  dashboard is an AI/BI dashboard over a Delta table of per-question, per-run results showing
+  pass^1, pass^3, a question-by-run heatmap, and failure categories. A run passes a question only
+  if every scorer passes: numbers within tolerance of SQL truth, required caveat present, no
+  citation to a nonexistent row, and one LLM judge for narrative faithfulness. pass^k is the
+  tau-bench definition: the agent succeeds on all k independent trials.
+- **Rejected:** supervisor plus workers (all workers read the same Unity Catalog layer under the
+  same service principal, so they differ in neither tools nor permissions; every handoff adds a
+  failure point, and pass^3 of 80% needs about 93% per run, which handoffs erode); Genie as the
+  source of graded numbers (its generated SQL varies run to run); an ingest agent (a data-quality
+  step in the job does the same work deterministically).
+- **Revisit:** if pass^3 lands under 80% on day five, report the measured number with the
+  heatmap and the failing questions rather than tune the bar; if a question genuinely needs a
+  different trust boundary (for example a tool that writes), add a second agent for that boundary
+  only and log it.
 
 ## Pending
 
 Decisions the build will force in the first two days. Log each when made.
 
-- Worker split: which of the four proposed workers (ingest checker, workforce analyst,
-  hiring-market analyst, briefing writer) survive once the eval set exists.
 - AWS region: `us-east-1` versus `us-west-2`, driven by Databricks preview and AgentCore
   availability.
 - Demo state: fully live versus cached responses for the rehearsed path, disclosed to the panel.

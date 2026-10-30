@@ -30,8 +30,13 @@ most often decides the deep dive (see [playbook](../analyses/fde-build-challenge
    `RetrievalGroundedness`, and `Safety`, plus one code-based scorer for exact numeric match
    ([evaluation harness](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/concepts/eval-harness),
    [scorers](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/concepts/scorers)).
-4. Report the score as "n of N" with a plain definition, and spend the demo time on the misses.
-   The misses are the most interesting part ([fdetimes guide](https://fdetimes.net/en/guides/fde-take-home-defend-every-decision/)).
+4. Run the set three times and report pass^3: the share of questions that pass all three
+   independent runs, the tau-bench definition. A question passes a run only if every scorer
+   passes. The acceptance bar is 80%, which needs about 93% per run, so graded numbers come from
+   Unity Catalog functions with fixed SQL rather than generated SQL (`DECISIONS.md`, 2026-10-30).
+   Store per-question, per-run results in a Delta table and show pass^1, pass^3, a question-by-run
+   heatmap, and failure categories on an AI/BI dashboard. Spend the demo time on the misses; they
+   are the most interesting part ([fdetimes guide](https://fdetimes.net/en/guides/fde-take-home-defend-every-decision/)).
 5. Keep the same scorers for production monitoring; MLflow uses identical traces for both.
 
 ## What to be able to say in the deep dive

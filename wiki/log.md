@@ -94,3 +94,11 @@ Logged in `DECISIONS.md`: AgentCore Gateway fronts the Databricks workspace MCP 
 service-principal outbound auth; model vendor is OpenAI GPT through the OpenAI API, chosen for
 DoD portability after the IL5 removal of Anthropic models. Updated the architecture table, cost
 estimate, harness page, synthesis, and the mission-environments page to match; dropped `ai_query`.
+
+## [2026-10-30] decision | Agent topology: one agent, pass^3 of 80%
+
+Logged in `DECISIONS.md`: the supervisor-plus-workers design is rejected because the workers
+shared one data layer and one identity, and the demo-day bar is an AI/BI eval dashboard showing
+pass^3 of at least 80% over three runs of the golden set. Graded numbers come from Unity Catalog
+functions, not Genie. Updated the orchestration concept, the evaluation concept, and the
+architecture table. Also recorded GPT-6 Luna on Ryan's funded OpenAI account.

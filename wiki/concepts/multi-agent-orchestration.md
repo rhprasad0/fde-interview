@@ -8,15 +8,20 @@ complexity."
 ## When the split is justified
 
 A multi-agent design earns its place when workers differ in tools, data, or permissions, not when
-one prompt is cut into pieces for show. In the chosen build, the workers differ on all three
-([analysis](../analyses/build-challenge-problem-selection.md)):
+one prompt is cut into pieces for show. The build first proposed four workers, then applied the
+test and rejected the split (`DECISIONS.md`, 2026-10-30):
 
-| Worker | Tools and data | Why separate |
+| Proposed worker | Tools and data | Why it failed the test |
 |---|---|---|
-| Ingest / data-quality checker | OPM and USAJOBS APIs, Unity Catalog volume, Delta tables | Runs before analysis; owns schema-evolution handling |
-| Workforce analyst | Genie over silver tables, UC functions via MCP | Read-only, governed by Unity Catalog permissions |
-| Hiring-market analyst | USAJOBS search | Different API, different rate limits |
-| Briefing writer | Skills for format and OPM code lists | No data access; only consumes the analysts' findings |
+| Ingest / data-quality checker | OPM and USAJOBS APIs, Unity Catalog volume, Delta tables | Has no decision to make; a data-quality step in the Lakeflow job does it deterministically |
+| Workforce analyst | UC functions and Genie via MCP | Same Unity Catalog layer and same service principal as the next row |
+| Hiring-market analyst | USAJOBS views via the same MCP endpoints | One more tool on the same trust boundary, not a different one |
+| Briefing writer | Skills for format and OPM code lists | A prompt section, not a permission boundary |
+
+The reliability target decided it. pass^3 of 80% needs roughly 93% per run, and every handoff
+between agents is another place a run can fail. The chosen build is one agent with governed
+tools; orchestration is a Lakeflow job, which is the kind a federal panel recognizes. A second
+agent is added only if a tool needs a different trust boundary, for example one that writes.
 
 ## Chosen harness
 
