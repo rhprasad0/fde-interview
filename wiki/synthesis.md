@@ -12,8 +12,9 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
 2. **Databricks is the right platform bet for Ryan specifically.** The program has a Databricks
    FDE track whose posting reads like a build checklist (Apps, Unity Catalog, Spark, LLM APIs), and
    the federal arm's public Databricks wins are "executive insight in days" stories. The agent
-   layer sits above Databricks and calls OpenAI GPT directly, which mirrors how the Firm's clients
-   appear to layer Palantir above Databricks and keeps the model portable to DoD environments
+   layer sits above Databricks and calls the model directly (Claude Haiku 5.5, with GPT-6 Luna
+   as outage fallback), which mirrors how the Firm's clients appear to layer Palantir above
+   Databricks and demonstrates vendor portability with one config value
    ([analysis](analyses/build-challenge-problem-selection.md),
    [mission environments](analyses/databricks-in-mission-environments.md)).
 3. **Federal workforce planning is the right problem.** OPM's 2026 open workforce API gives

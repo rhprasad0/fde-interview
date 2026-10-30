@@ -163,6 +163,7 @@ The panel may know these, so name them first.
 | VA Enterprise Workforce Dashboard ([VA](https://department.va.gov/employees/va-workforce-dashboard/)) | Monthly onboard, hires, losses, T2H, occupational targets since 2023 | One agency's production reporting; a precedent for the output shape, not a cross-source gap analysis |
 | DHS workforce analytics (Tableau, Oracle BI) ([DHS PIA](https://www.dhs.gov/sites/default/files/publications/privacy-pia-workforceanalytics-dhsall075-september2019.pdf)) | Recurring dashboards, Congress and GAO responses | Analyst-driven; no narrative briefing with traceable reasoning |
 | Army Vantage on Palantir ([Palantir](https://www.palantir.com/army-vantage/)) | Personnel readiness analytics since 2018 | Military personnel, not the civilian workforce; proves the pattern the Firm's clients recognize |
+| DHS Asset Assessment Tool, use case DHS-2406 ([DHS inventory](https://www.dhs.gov/si/use-case-inventory/mgmt)) | Natural-language queries over the DHS Cube (Workforce Location, Real Property Asset, Personnel by Duty Station) on Azure Government OpenAI, returning traceable SQL | A facilities-cost tool, not workforce planning, and it sees only DHS's own data; but it is the home agency's in-house precedent for text-to-SQL with traceable output over personnel-by-duty-station data, so the pattern is already accepted there |
 
 The defensible differentiation is: cross-source (separations joined to advertised hiring),
 scheduled and reproducible (a briefing that regenerates when the monthly file lands), governed

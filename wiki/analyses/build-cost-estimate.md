@@ -53,7 +53,8 @@ Databricks total at list: roughly $60 to $90 for the week. Against $400 of trial
 | AgentCore Evaluations (built-in) | $0.0024 per 1,000 input tokens, $0.012 per 1,000 output tokens | Under $1 | Optional alongside MLflow. |
 | AgentCore Observability | CloudWatch rates | $1 to $3 | Keep log retention short; delete log groups at teardown. |
 | ECR image storage | Standard ECR | Cents | Direct code deploy bills at S3 Standard instead. |
-| OpenAI API | Ryan's funded OpenAI account; model `gpt-6-luna`, price it on day one | Not on the $50 Databricks budget | Use a smaller model for the eval loop if Luna is slow or costly; set a monthly cap in the OpenAI console. |
+| Anthropic API, primary | Claude Haiku 5.5 on Ryan's credits; prompt caching on | Not on the $50 Databricks budget | 75 agent runs per eval pass is the main consumer; cache the system prompt and tool schemas. |
+| OpenAI API, fallback | GPT-6 Luna on Ryan's funded account, used only on Anthropic outages | Not on the budget | Set a monthly cap in the OpenAI console; the eval rows record which provider served each run. |
 
 New AWS customers get up to $200 in Free Tier credits; an existing account likely does not.
 

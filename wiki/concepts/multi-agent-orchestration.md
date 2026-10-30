@@ -25,7 +25,8 @@ agent is added only if a tool needs a different trust boundary, for example one 
 
 ## Chosen harness
 
-Strands Agents (Python) with the OpenAI model provider, deployed to Amazon Bedrock AgentCore
+Strands Agents (Python) with the Anthropic model provider and an OpenAI fallback, deployed to
+Amazon Bedrock AgentCore
 Runtime, consuming Databricks managed MCP servers as tools through AgentCore Gateway
 (`DECISIONS.md`, 2026-10-30). Strands
 has native MCP client support and a documented AgentCore deployment path

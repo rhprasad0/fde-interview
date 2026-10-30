@@ -87,10 +87,10 @@ Revisit:   what evidence would change this
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real
   infrastructure, cheap, and familiar enough to learn in days alongside Databricks.
-- **Chosen:** Strands Agents (Python) with the `OpenAIModel` provider
-  (`pip install 'strands-agents[openai]'`; vendor decision below), deployed to AgentCore
-  Runtime. AgentCore supplies session isolation, built-in tracing, consumption pricing, and
-  MCP client support ([Strands OpenAI provider](https://strandsagents.com/docs/user-guide/sdk/model-providers/openai/),
+- **Chosen:** Strands Agents (Python) with the `AnthropicModel` provider and `OpenAIModel` as
+  fallback (`pip install 'strands-agents[anthropic,openai]'`; model decision below), deployed to
+  AgentCore Runtime. AgentCore supplies session isolation, built-in tracing, consumption pricing,
+  and MCP client support ([Strands Anthropic provider](https://strandsagents.com/docs/user-guide/sdk/model-providers/anthropic/),
   [deploy to AgentCore](https://strandsagents.com/docs/user-guide/sdk/deploy/deploy_to_bedrock_agentcore/),
   [AgentCore Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html)).
 - **Rejected:** Palantir AIP Developer Tier as the agent layer (mirrors the Firm's stack most
@@ -188,25 +188,32 @@ Revisit:   what evidence would change this
   to on-behalf-of on day four; if Gateway setup eats more than half a day, fall back to direct
   calls and log it.
 
-## 2026-10-30  Model vendor: OpenAI GPT through the OpenAI API
+## 2026-10-30  Model: Claude Haiku 5.5 primary, GPT-6 Luna as the outage fallback
 
-- **Context:** the challenge allows Claude, Gemini, or GPT. Ryan may be deployed to DoD
-  customers. Anthropic models were removed from Databricks IL5 workspaces on 2026-09-19, and the
-  team is not approved to use the vendor's models on Bedrock, so the panel conversation should not
-  turn on a model a DoD client cannot run
+- **Context:** the challenge allows Claude, Gemini, or GPT. Ryan holds Anthropic API credits and
+  a funded OpenAI account. The pass^3 bar means roughly 75 agent runs per eval pass, so the model
+  must be cheap and fast. Claude is approved at DHS, the home agency, and is FedRAMP High on
+  Bedrock GovCloud, Vertex, and Claude for Government; the only restriction found is Databricks
+  Model Serving dropping Anthropic models in IL5 workspaces on 2026-09-19, which our architecture
+  never touches because the model is called from the agent layer
   ([mission environments](wiki/analyses/databricks-in-mission-environments.md)).
-- **Chosen:** OpenAI GPT-6 Luna (`gpt-6-luna`, confirm the exact API id on day one) called
-  through the OpenAI API from the Strands `OpenAIModel` provider, on Ryan's funded OpenAI account.
-  Keep the provider behind one constructor so it is swappable.
-  OpenAI's models are also what Genie Code in GovCloud routes to (Azure OpenAI in Azure Government)
-  and are served on Bedrock in GovCloud, which is the deploy-day answer if the panel asks.
-- **Rejected:** Claude via the Anthropic API (Ryan's daily model, but it is the model removed
-  from IL5 and not approved on Bedrock for this team; keep it out of the panel-facing story);
-  Gemini (no advantage over GPT here); GPT via Bedrock (not approved for this team today, so the
-  API is the path; Bedrock is the production swap).
-- **Revisit:** if Bedrock access for OpenAI models is granted, switch the Strands provider to
-  Bedrock and nothing else changes; if the OpenAI API rate-limits iteration, use a smaller model
-  for the eval loop and the pinned model for the demo.
+- **Chosen:** Claude Haiku 5.5 (`claude-haiku-5-5`) through the Anthropic API via the Strands
+  `AnthropicModel` provider, with prompt caching on. GPT-6 Luna (`gpt-6-luna`, confirm the API id
+  on day one) through the OpenAI API via `OpenAIModel` as the fallback, selected automatically
+  when the Anthropic API returns a connection error, a 5xx, or an overloaded response. One
+  constructor builds the model; every trace and every eval result row records which provider
+  served the run, so a pass^3 computed across a fallover is labeled, not silent. The fallback is
+  also the portability demonstration: a client whose boundary excludes one vendor changes one
+  config value.
+- **Rejected:** Luna as primary (decided earlier today and reversed; it was chosen for DoD
+  portability, but Claude's federal authorizations are current and the DoD concern is answered by
+  the fallback and by Bedrock GovCloud on deployment); Gemini (no advantage here); a larger
+  Claude model as primary (75 runs per eval pass; use it only if Haiku fails the eval on
+  reasoning rather than on tools).
+- **Revisit:** if Haiku's pass^3 is under 80% with failures traced to the model rather than the
+  tools, rerun the eval on the fallback and on a larger Claude model and pick on the numbers; if
+  a client boundary excludes Anthropic, flip the config and say so.
+- **Superseded:** the earlier version of this entry chose Luna as primary; see git history.
 
 ## 2026-10-30  Agent topology: one agent with governed tools, accepted at pass^3 of 80% or better
 
@@ -296,3 +303,6 @@ Revisit:   what evidence would change this
   them. Every graded number needs a function behind it.
 - Confirm the `gpt-6-luna` API id, the Databricks OAuth token-exchange question, and the OMB
   Table 16.1 crosswalk for DHS.
+- Write the model fallback as a small Strands `Model` wrapper that delegates to Anthropic and
+  retries once on OpenAI for connection errors, 5xx, and overloaded responses, tagging the trace
+  with the provider. Test it by pointing the Anthropic base URL at a dead port.

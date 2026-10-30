@@ -105,10 +105,12 @@ AgentCore side, in GovCloud:
   client-credentials outbound auth the Databricks caller is a service principal, so Genie usage is
   billed rather than free, and the on-behalf-of story becomes "configured in production via token
   exchange" rather than demonstrated. Say that plainly.
-- **Model vendor decision.** The IL5 removal of Anthropic models, plus Ryan's likely DoD
-  exposure, moved the build to OpenAI GPT through the OpenAI API (`DECISIONS.md`, 2026-10-30).
-  OpenAI models are what Genie Code in GovCloud routes to and are served on Bedrock in GovCloud,
-  so the deploy-day swap is the Strands provider from the OpenAI API to Bedrock.
+- **Model decision.** The IL5 removal applies to Databricks Model Serving only. Claude stays
+  FedRAMP High on Bedrock GovCloud (select models IL4 and IL5), on Vertex, and in Claude for
+  Government, and DHS has approved it since 2023. The build keeps Claude Haiku 5.5 as primary
+  with GPT-6 Luna as the outage fallback (`DECISIONS.md`, 2026-10-30); the fallback doubles as
+  the portability answer for a client whose boundary excludes one vendor. Deploy-day swap is the
+  Strands provider from the vendor API to Bedrock.
 - **Domain model decision.** Palantir Federation is in the GovCloud boundary, which supports the
   thesis that the Firm's clients run Palantir above Databricks ([synthesis](../synthesis.md)).
 - **Drop `ai_query`, keep write-backs on Delta.** See consequences 2 and 3 above.

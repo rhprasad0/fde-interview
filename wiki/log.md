@@ -109,3 +109,17 @@ Logged the last five pending decisions in `DECISIONS.md`: us-east-1; the eval da
 the demo with one live run; the build lives in this repo under `challenge/` (added to AGENTS.md);
 MLflow pass^3 plus AgentCore Evaluations; DHS as the home agency. Pending list replaced with
 build-week items.
+
+## [2026-10-30] decision | Model: Claude Haiku 5.5 primary, GPT-6 Luna fallback
+
+Reversed the same-day vendor swap. Research showed Claude is approved at DHS and FedRAMP High on
+Bedrock GovCloud, Vertex, and Claude for Government; the IL5 removal is Databricks Model Serving
+only. Logged Haiku 5.5 as primary with Luna as automatic outage fallback, provider recorded on
+every eval row. Updated cost estimate, synthesis, harness page, architecture table, and the
+mission-environments page.
+
+## [2026-10-30] update | DHS-2406 added to the incumbents table
+
+Added the DHS Asset Assessment Tool (text-to-SQL over DHS Cube personnel-by-duty-station data on
+Azure Government OpenAI) to the "what already exists" table on `analyses/user-problem-impact.md`
+as the home agency's in-house precedent.
