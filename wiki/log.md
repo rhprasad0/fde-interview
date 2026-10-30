@@ -49,3 +49,17 @@ ontology-like semantic layer in Unity Catalog instead of Palantir DevTier. Two e
 Priced every component of the plan on AWS us-east-1 list rates, plus AgentCore. Finding: the
 Databricks trial's $400 credit covers the week; the risks are a running SQL warehouse and Lakebase
 defaults. Wrote `analyses/build-cost-estimate.md`; added a cost line to the platform decision.
+
+## [2026-10-30] query | User, problem, and impact research
+
+Exa deep research on the federal workforce-planning analyst persona. Wrote
+`analyses/user-problem-impact.md` with the mandate trail (5 CFR 250, HRStat, MCO staffing charts,
+Merit Hiring Plan, 2025 annual personnel plans), HR capacity loss numbers, and three-sentence
+answers to the challenge prompt.
+
+## [2026-10-30] decision | User and problem statement
+
+Folded the Exa deep-research run into `analyses/user-problem-impact.md`: the 2026-10-29 OPM final
+rule and Annual Staffing Plan cycle (verified from the Federal Register API and three OPM memo
+PDFs), FWD Chat as the incumbent to differentiate from, HUD OIG peer benchmarking precedent, and
+data caveats. Logged the user and problem statement in `DECISIONS.md`; synthesis point 6 added.

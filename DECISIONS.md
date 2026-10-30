@@ -118,6 +118,25 @@ Revisit:   what evidence would change this
 - **Revisit:** the object-type list once the eval questions exist; drop any type no question
   touches.
 
+## 2026-10-30  User and problem statement: the workforce-planning analyst's quarterly variance brief
+
+- **Context:** the pitch must say why this problem, who the user is, and what impact to expect.
+- **Chosen:** operator is a GS-13 to GS-14 workforce-planning analyst in an agency human capital
+  office; beneficiary and buyer is the CHCO; the Strategic Hiring Committee consumes the output.
+  The problem is the quarterly Annual Staffing Plan variance explanation and staffing review now
+  required of over 80 agencies by OPM's rule effective 2026-11-30, produced by HR offices that
+  shrank 18.5% in 17 months. The decision the agent changes: which occupations and locations get
+  hiring priority and retention attention this quarter. Positioning: "show where separation-driven
+  staffing risk is concentrating, whether advertised hiring is aimed at it, and what needs a
+  leader's decision, with traceable numbers and explicit uncertainty"
+  ([research](wiki/analyses/user-problem-impact.md)).
+- **Rejected:** congressional oversight or GAO analyst (public data is their only data, but they
+  are not the Firm's clients); program office director (too narrow for a general demo); framing
+  the output as a chatbot (OPM's FWD Chat already does plain-English answers over the public
+  data; our differentiation is cross-source, scheduled, governed, plan-aware briefings).
+- **Revisit:** if the panel includes someone from an agency human capital office, lead with the
+  Annual Staffing Plan and quarterly review vocabulary and let them steer.
+
 ## Pending
 
 Decisions the build will force in the first two days. Log each when made.

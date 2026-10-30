@@ -29,6 +29,14 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
    The Firm's prompt is near-verbatim Palantir's Build to Apply, so "why this problem" and "how
    you leveraged the platform" weigh as much as the code.
 
+6. **The mandate is brand new and shaped like the demo.** OPM's final rule (published 2026-10-29,
+   effective 2026-11-30) replaces HCOP, HRStat, and Human Capital Reviews with Annual Staffing
+   Plans, quarterly staffing reviews, and quarterly variance explanations to OPM and OMB, for over
+   80 agencies, produced by HR offices down 18.5% since December 2024. OPM's own FWD Chat answers
+   plain-English questions over the public data, so the differentiation is cross-source, scheduled,
+   governed, plan-aware briefings, not a chatbot
+   ([user, problem, impact](analyses/user-problem-impact.md)).
+
 ## Open research questions
 
 - Which Databricks previews (Managed MCP, Unity Gateway, Agent Bricks Supervisor) are available in

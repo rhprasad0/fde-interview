@@ -25,4 +25,5 @@ and reads it first on every query.
 
 - [Build challenge: is federal workforce planning the right problem?](analyses/build-challenge-problem-selection.md): scores workforce planning against spending, cyber, and supply-chain alternatives on the challenge rubric; recommends a federal workforce-risk briefing agent on Databricks on AWS fed by OPM's open API.
 - [How to perform well on an FDE build challenge](analyses/fde-build-challenge-playbook.md): what evaluators reward across FDE take-home loops, failure modes, a 15-minute demo structure, a deep-dive question bank, federal impact framing, and a build-week checklist.
+- [Who the user is, why this problem, what impact](analyses/user-problem-impact.md): the workforce-planning analyst persona, the 2025-2026 OPM mandates and HR capacity loss that make the problem acute, impact in three levels, and three-sentence answers to the challenge prompt.
 - [Build cost estimate](analyses/build-cost-estimate.md): Databricks and AWS line items for the one-week build, trial credits, the two ways to overspend, budget alerts, and a teardown checklist.
