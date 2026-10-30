@@ -16,7 +16,7 @@ file, commit message, branch name, or PR/issue text. Call it **the Firm**.
 - `.githooks/pre-commit` and `.githooks/commit-msg` block commits that add one.
   After a fresh clone: `git config core.hooksPath .githooks` and recreate
   `.forbidden-terms`. The pre-commit hook also runs `gitleaks` (install it
-  locally); CI reruns gitleaks over full history.
+  locally); CI reruns it on every pushed commit and PR.
 - If a source's title or URL contains the name, cite it by its `raw/` path only.
 
 # Layout
