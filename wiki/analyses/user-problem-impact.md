@@ -142,7 +142,9 @@ Table Builder gives pivot-style aggregates within one dataset, with salary often
 some values null ([Table Builder](https://data.opm.gov/explore-data/data/table-builder)). Files
 are re-versioned (January 2010 to present were republished in one release), and a June 2026
 release was missing about 83,000 Defense records ([release notes](https://data.opm.gov/info-and-help/release-notes)).
-Nothing joins separations to open postings.
+Nothing public joins separations to open postings at sub-agency and series grain, as far as
+found; data.opm.gov does say FWD includes "other OPM data sources, including USAJOBS," so check
+what it exposes before saying this to the panel ([data sources](candidate-data-sources.md)).
 
 **The Firm sells into exactly this.** Its federal arm has a Palantir FDE posting for a
 "workforce planning and decision-support solution," its Google partnership is building pre-built
@@ -244,15 +246,26 @@ route around it.
 - **Say "capability risk," not "proven capability gap."** GAO distinguishes staffing gaps from
   competency gaps; headcount loss is evidence of risk, not proof of a gap
   ([GAO-25-107288](https://www.gao.gov/products/gao-25-107288), [GAO-04-39](https://www.gao.gov/products/gao-04-39)).
-- **"Tenure" in OPM data is a RIF retention group, not years of service.** Use length of service,
-  which includes creditable military and other service, and say so.
+- **"Tenure" in OPM data is a RIF retention group, not years of service.** The FWD field `tenure`
+  is the reduction-in-force retention group; `length_of_service_years` is the years figure, and
+  it includes creditable military and other service. Both are in the Separations file (verified
+  2026-10-30, [data sources](candidate-data-sources.md)). Say "length of service."
 - **Separate separation types.** Quits, retirements, transfers, deferred resignation, and RIF
   behave differently; decide whether a transfer to another agency counts as a loss.
 - **Announcements are not vacancies.** One USAJOBS posting can cover many locations or "Few" or
   "Many" vacancies; treat postings as advertised intent, not approved requisitions or hires.
 - **Coverage and redaction.** FWD excludes USPS, most intelligence agencies, and the military;
-  salary and some fields are redacted; a June 2026 release was missing about 83,000 Defense
-  records; files are re-versioned. Keep versioned snapshots and label incomplete cells.
+  salary and some fields are redacted; files are re-versioned. A Department of War processing
+  change left June and July 2026 incomplete: June Status recovered 77,743 records with about
+  6,211 still missing, and the DD07 Dynamics feed was absent both months, so any June or July
+  separations count for those components is a floor, not a value
+  ([OPM release notes](https://data.opm.gov/info-and-help/release-notes), summarized by
+  [Federal Hiring Data](https://www.federalhiringdata.com/articles/opm-federal-workforce-data-api-guide-2026)).
+  Keep versioned snapshots and label incomplete cells.
+- **Engagement data has stopped.** OPM cancelled the 2025 FEVS and formally discontinued it on
+  2026-10-29; agencies now run their own Annual Employee Surveys and post results within 90 days
+  ([Federal News Network](https://federalnewsnetwork.com/workforce/2026/10/opm-formally-discontinues-federal-employee-viewpoint-survey/)).
+  Do not promise an engagement signal; the last comparable public data is 2024.
 - **Headcount is not capacity.** Status files include employees in non-pay status.
 - **Reporting can crowd out the work it serves.** CHCOs told GAO that compiling annual MCO
   reports is "an activity they do not perceive as contributing to tangible results"
