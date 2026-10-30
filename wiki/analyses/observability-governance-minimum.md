@@ -68,24 +68,22 @@ So the Databricks-side evidence for our agent is:
 
 | Surface | What it proves | GovCloud |
 |---|---|---|
-| Unity Catalog grants on the semantic layer | the service principal can reach functions and silver views, not bronze | yes |
+| Eval results table (Delta) | per-question, per-run rows with scores, provider, latency, cost, and the AgentCore session id; the source of the AI/BI dashboard | yes |
+| Unity Catalog grants on the semantic layer | the service principal can reach functions and silver views only; nothing on bronze, no write grant anywhere | yes |
 | Unity Catalog lineage | bronze to silver to function to briefing table | yes |
 | `system.access.audit` | who touched which securable, when | yes |
-| `system.query.history` | the exact SQL each Unity Catalog function ran, under which principal | yes |
-| MLflow traces stored as Unity Catalog Delta tables | the eval runs, scorers, and per-step spans, queryable with SQL and shown on an AI/BI dashboard | MLflow and its production monitoring are in the GovCloud table |
+| `system.query.history` | the SQL each function and procedure ran, under which principal; corroborating evidence beside the traces | yes |
+| Agent traces in a Unity Catalog trace table (day-five stretch) | every span from the deployed agent via `mlflow.strands.autolog()`, if built ([trace agents outside Databricks](https://learn.microsoft.com/en-us/azure/databricks/mlflow3/genai/tracing/prod-tracing-external)) | MLflow is in the GovCloud table |
 
-Verify on day one that a Unity Catalog function invoked through the MCP functions endpoint leaves
-rows in both `query.history` and `access.audit` under the service principal.
-
-**The identity gap and the fix.** With client-credentials outbound auth, Databricks sees the
-service principal, not the analyst. The audit doc's `run_by` and `run_as` distinction needs
-on-behalf-of, which is deferred. The minimum fix is a correlation id: every Unity Catalog
-function accepts a `request_context` parameter carrying the AgentCore session id, trace id, and
-inbound user id, and writes it with its result to a small `agent_calls` audit table. That joins a
-CloudWatch trace to the SQL that ran, and it satisfies the lens's "every logged action carries
-its initiating source" without on-behalf-of. For the eval, the case id and run number become the
-AgentCore session id, so each pass^3 heatmap cell links to one MLflow trace and one CloudWatch
-trace. One trace fabric by id discipline, not by dual export.
+**The identity gap and the fix (as decided 2026-10-30 evening).** With client-credentials
+outbound auth, Databricks sees the service principal, not the analyst. The audit record lives in
+CloudWatch, where AgentCore writes every session, model call, and tool call with arguments and
+results, and in CloudTrail for Gateway policy decisions. The eval harness writes the AgentCore
+session id into every results row, so a pass^3 heatmap cell links to its CloudWatch trace. The
+service principal is read-only, so there is no write to attribute. The Unity Catalog trace table
+in the row above is the day-five stretch, one line of code if the core is green; it is not the
+audit record. An earlier version of this section had functions writing an audit table; Unity
+Catalog functions cannot write ([pre-spec gaps](pre-spec-gaps.md)).
 
 ## Tier 1: must show on demo day
 
@@ -100,7 +98,7 @@ trace. One trace fabric by id discipline, not by dual export.
 | **Lineage** | Unity Catalog lineage graph from bronze through silver to functions and the briefing table | the Palantir "trace tied to data version" expectation |
 | **One denied tool call** | a Gateway Cedar rule and a trace showing a tool call blocked by it, with the decision in CloudTrail | the only place policy outside agent code is visible; this is the planned "show a failure on purpose" |
 | **Audit rows** | `system.access.audit` and `system.query.history` rows for one demo question, joined by `request_context` to the CloudWatch trace | lens AGENTSEC05 non-repudiation; answers "show me what it actually ran" |
-| **Human-oversight statement** | one slide line: the agent reads and stages; write-backs land in a table the Strategic Hiring Committee reviews; no autonomous action; autonomy level "assistant" in the lens vocabulary | M-25-21 human oversight; Palantir's "staged by the AI, handed to a human" |
+| **Human-oversight statement** | one slide line: the agent is read-only, holds no write grant anywhere, and its recommended actions are text in a briefing the Strategic Hiring Committee reads; autonomy level "assistant" in the lens vocabulary | M-25-21 human oversight; the strongest form of Palantir's "staged by the AI, handed to a human" |
 | **M-25-21 determination** | one paragraph, below | the governance artifact a DHS-adjacent panelist expects to exist |
 
 **The determination, as written for the deck.** This use case is not high-impact under
@@ -117,11 +115,11 @@ behind them.
 
 | Panel will say | We show |
 |---|---|
-| Action Log | the `agent_calls` and write-back audit tables |
+| Action Log | not applicable: the agent performs no actions; CloudWatch holds every tool call it made |
 | Evals suite tracked per function | pass^3 by question, function name on every graded number |
 | Trace tied to data version and function version | FWD file identity, function name, prompt version on every row |
 | Markings and granular policies | Unity Catalog grants on the service principal; Cedar rule at the Gateway |
-| Staged by the AI, released by a human | write-backs land in a review table; nothing closes the loop automatically |
+| Staged by the AI, released by a human | the briefing proposes, the committee decides; the agent cannot write, so nothing can close the loop automatically |
 
 ## Tier 2: log it, do not show it
 

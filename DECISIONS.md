@@ -70,18 +70,29 @@ Revisit:   what evidence would change this
   Firm's stack appears to be layered, and it caps iteration on pay-per-token rate limits).
 - **Superseded:** two earlier versions of this entry named a vendor; see git history for the text.
 
-## 2026-10-30  Evaluation: MLflow golden set in Unity Catalog, run with `mlflow.genai.evaluate()`
+## 2026-10-30  Evaluation: plain harness to a Delta table, AI/BI dashboard on top, MLflow as a stretch
 
 - **Context:** "how do you know it works" is the question that decides FDE deep dives
-  ([playbook](wiki/analyses/fde-build-challenge-playbook.md)).
+  ([playbook](wiki/analyses/fde-build-challenge-playbook.md)). Ryan is new to Databricks and
+  judged MLflow a week-one learning cost that the panel will not credit; the number wins, not
+  the library.
 - **Chosen:** 20 to 30 user questions with answers computed by SQL against the silver tables,
-  stored as a Unity Catalog evaluation dataset, scored with built-in judges plus one exact-match
-  scorer ([agent evaluation](wiki/concepts/agent-evaluation.md)). Acceptance bar and
-  dashboard added in the agent-topology entry below: three runs per question, pass^3 of 80%.
-- **Rejected:** ad-hoc spot checks (no number to defend); a third-party eval framework (adds a
-  dependency and leaves the Databricks tracing story).
-- **Revisit:** if `mlflow.genai.evaluate()` is unavailable in the trial workspace, fall back to a
-  notebook that runs the same cases and writes results to a Delta table.
+  stored as a Delta table. A plain Python harness in a Databricks notebook invokes the AgentCore
+  endpoint three times per question, applies deterministic scorers (numbers within tolerance,
+  required caveat present, no citation to a nonexistent row) plus one LLM judge for narrative
+  faithfulness, and writes per-question, per-run rows to a Delta table. The AI/BI dashboard over
+  that table shows pass^1, pass^3, the question-by-run heatmap, failure categories, provider
+  served, tool error rate, latency, and cost. Acceptance bar pass^3 of 80%
+  ([agent evaluation](wiki/concepts/agent-evaluation.md)).
+- **Rejected:** `mlflow.genai.evaluate()` as the harness (first choice; Databricks-native and
+  thirty lines once learned, but a dependency on an unfamiliar API during the only week there is;
+  it becomes a day-five stretch that wraps the same harness); running the harness on a laptop
+  (works, but truth SQL and result writes both live in Databricks, so the notebook is less
+  plumbing); ad-hoc spot checks (no number to defend).
+- **Revisit:** if the core is green by day five, wrap the harness in MLflow and log traces to a
+  Unity Catalog trace table; if the notebook's boto3 call to AgentCore fights IAM, run the harness
+  locally and push results through the Statement Execution API.
+- **Superseded:** the earlier version chose MLflow as the harness; see git history.
 
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
@@ -117,6 +128,12 @@ Revisit:   what evidence would change this
   agent-layer decision).
 - **Revisit:** the object-type list once the eval questions exist; drop any type no question
   touches.
+- **Correction (2026-10-30 evening):** Unity Catalog functions cannot write; Python UDFs are
+  sandboxed and scalar-only, SQL UDFs are read-only. Rather than replace them with procedures,
+  Ryan dropped write-backs altogether: the layer is read-only, the agent holds no write grant
+  anywhere in Databricks, the Lakeflow job owns every write, and recommended actions live in the
+  briefing text for the committee to act on. Autonomy level "assistant." Functions stay for every
+  graded read ([pre-spec gaps](wiki/analyses/pre-spec-gaps.md)).
 
 ## 2026-10-30  User and problem statement: the workforce-planning analyst's quarterly variance brief
 
@@ -157,8 +174,9 @@ Revisit:   what evidence would change this
   per hiring action (second fabricated layer for a metric the decision does not need); anything
   individual-level (PII, out of scope); synthesizing anything the OPM or USAJOBS APIs already
   cover (the rubric scores API data, and the data decision already rejected synthetic HR data).
-  Committee decisions and briefing items are not synthetic: they are empty write-back tables that
-  fill during the demo. The eval set is computed by SQL against real tables, not synthesized.
+  Briefings are not synthetic: they are agent output written to Delta by the Lakeflow job, not
+  by the agent (write-backs dropped later the same day). The eval set is computed by SQL against
+  real tables, not synthesized.
 - **Revisit:** if OMB Table 16.1 cannot be crosswalked to the home agency in an hour, scale to
   the agency's own trailing headcount instead and say so; if the panel includes an agency human
   capital person, offer to swap in their real plan shape.
@@ -187,6 +205,9 @@ Revisit:   what evidence would change this
 - **Revisit:** if Databricks OAuth accepts token exchange as a Gateway outbound target, switch
   to on-behalf-of on day four; if Gateway setup eats more than half a day, fall back to direct
   calls and log it.
+- **Added (2026-10-30 evening):** inbound auth to the Gateway is IAM SigV4 from the Runtime role
+  via `mcp-proxy-for-aws`, no Cognito. There is no write target; the agent is read-only
+  ([pre-spec gaps](wiki/analyses/pre-spec-gaps.md)).
 
 ## 2026-10-30  Model: Claude Haiku 5.5 primary, GPT-6 Luna as the outage fallback
 
@@ -297,16 +318,39 @@ Revisit:   what evidence would change this
   interesting, few other components).
 - **Revisit:** if DHS data has a coverage gap in the demo month, switch to Treasury and say so.
 
+## 2026-10-30  Observability: CloudWatch and CloudTrail are the audit record; Databricks shows governance
+
+- **Context:** an agent needs an audit log. AgentCore writes one by default, and Ryan does not
+  want to learn MLflow tracing in week one.
+- **Chosen:** AgentCore Observability with ADOT instrumentation sends every session, model call,
+  and tool call with arguments and results to CloudWatch; CloudTrail data events record every
+  Gateway policy decision. That is the audit record. On the Databricks side the evidence is Unity
+  Catalog grants (read-only service principal), lineage, `system.query.history` for the SQL each
+  function ran, and the eval results table. The eval harness writes the AgentCore session id into
+  each results row so a dashboard cell links to its CloudWatch trace
+  ([observability minimum](wiki/analyses/observability-governance-minimum.md)).
+- **Rejected:** MLflow traces in a Unity Catalog trace table as the audit record (documented and
+  one line of code, but a second trace system to learn and reconcile; day-five stretch alongside
+  the MLflow harness); a function-written audit table (functions cannot write).
+- **Revisit:** if a panelist asks for agent traces inside Databricks, the day-five stretch is the
+  answer; if CloudWatch trace retention or cost surprises, shorten retention.
+
+## Databricks surface, decided by omission
+
+Four things done properly: a Lakeflow job into bronze and silver Delta tables; Unity Catalog
+governance (read-only service principal, grants, lineage, a Genie space over silver); the
+workspace MCP endpoints; an AI/BI dashboard over the eval table. Skipped and named as skipped:
+MLflow (day-five stretch), stored procedures, Lakebase, Databricks Apps, in-platform AI
+functions, Agent Bricks.
+
 ## Build-week items, not decisions
 
 - Write the 20 to 30 golden questions first, then derive the Unity Catalog function list from
   them. Every graded number needs a function behind it.
-- Confirm the `gpt-6-luna` API id, the Databricks OAuth token-exchange question, and the OMB
-  Table 16.1 crosswalk for DHS.
-- Give every Unity Catalog function a `request_context` parameter (AgentCore session id, trace
-  id, inbound user id) written with its result to an `agent_calls` audit table, so a CloudWatch
-  trace joins to the SQL that ran without on-behalf-of auth. Use eval case id and run number as
-  the session id ([observability minimum](wiki/analyses/observability-governance-minimum.md)).
+- Confirm the `gpt-6-luna` API id and the OMB Table 16.1 crosswalk for DHS.
+- Day one: enable the Managed MCP Servers workspace preview; confirm which SKU the MCP functions
+  server bills to (function tools run on serverless generic compute); measure Genie Agent MCP
+  latency under the service principal.
 - Write the model fallback as a small Strands `Model` wrapper that delegates to Anthropic and
   retries once on OpenAI for connection errors, 5xx, and overloaded responses, tagging the trace
   with the provider. Test it by pointing the Anthropic base URL at a dead port.

@@ -65,7 +65,7 @@ Three consequences for our build:
    separation reasons) would not run in a mission workspace. Keep it as a commercial-only
    flourish or drop it; the FWD file already carries `separation_category`, so the use case is weak anyway.
 3. **No Lakebase.** The write-back stretch goal was already deprioritized on cost; this settles it.
-   Write-backs stay as Unity Catalog functions writing to Delta tables.
+   Later the same day write-backs were dropped entirely: the agent is read-only (`DECISIONS.md`).
 
 ## The published pattern: AgentCore Gateway in front of Databricks MCP
 
@@ -113,7 +113,7 @@ AgentCore side, in GovCloud:
   Strands provider from the vendor API to Bedrock.
 - **Domain model decision.** Palantir Federation is in the GovCloud boundary, which supports the
   thesis that the Firm's clients run Palantir above Databricks ([synthesis](../synthesis.md)).
-- **Drop `ai_query`, keep write-backs on Delta.** See consequences 2 and 3 above.
+- **Drop `ai_query`; the agent is read-only.** See consequences 2 and 3 above.
 
 ## Not verified
 

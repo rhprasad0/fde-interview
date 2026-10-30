@@ -132,3 +132,21 @@ observability docs, Palantir's agent-governance posts, and practitioner dashboar
 not apply to the workspace MCP endpoints we chose; evidence is grants, lineage, audit, query
 history, and MLflow traces, joined to CloudWatch by a `request_context` correlation id. Added that
 id as a build-week item in `DECISIONS.md`.
+
+## [2026-10-30] query | Pre-spec gaps
+
+Exa research on UC function limits, procedures, Databricks MCP auth, Genie under a service
+principal, MLflow external tracing, and Strands-to-Gateway auth. Wrote `analyses/pre-spec-gaps.md`.
+Two logged designs failed: write-backs as UC functions and the function-written audit table.
+Replaced with SQL stored procedures (SECURITY DEFINER) and trace-based audit via
+`mlflow.strands.autolog()` to a Unity Catalog trace table. Corrected the domain-model and MCP-path
+entries and the build-week items in `DECISIONS.md`, the observability page, and the cost estimate.
+
+## [2026-10-30] decision | Read-only agent, CloudWatch audit, plain eval harness
+
+Ryan resolved the pre-spec gaps by removing the need: write-backs dropped (agent holds no write
+grant; recommended actions are briefing text), CloudWatch and CloudTrail are the audit record,
+and the eval harness is plain Python in a notebook writing to Delta with an AI/BI dashboard on
+top; MLflow becomes a day-five stretch. Logged a new evaluation entry (supersedes MLflow), an
+observability entry, a "Databricks surface by omission" note, and a shorter build-week list.
+Reconciled the observability, mission-environments, synthetic-data, and gaps pages.
