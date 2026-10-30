@@ -20,3 +20,32 @@ Wrote `sources/build-challenge-email.md`, `entities/firm-federal-fde-program.md`
 `concepts/build-challenge.md`, `concepts/multi-agent-orchestration.md`, and created
 `synthesis.md`. Updated the analysis for Ryan's platform decision: Databricks on AWS, paid, under
 $50, torn down after the interview.
+
+## [2026-10-30] query | FDE build challenge playbook
+
+Exa research on how FDE take-home build challenges are evaluated and how to do well. Wrote
+`analyses/fde-build-challenge-playbook.md` and `concepts/agent-evaluation.md`; added thesis point 5
+to `synthesis.md`. Firm-specific candidate reports were thin; saved them to `raw/`.
+
+## [2026-10-30] setup | Decision log started
+
+Created `DECISIONS.md` at the repo root with five seeded decisions (problem, platform, data, LLM
+access, evaluation) and six pending ones. Added it to the layout in `AGENTS.md`.
+
+## [2026-10-30] decision | Claude via Anthropic API, Databricks as MCP tool layer
+
+Ryan's read that the Firm's clients run agents in Palantir AIP above Databricks is supported by the
+2025 Palantir-Databricks partnership. `DECISIONS.md` entry four rewritten; the problem-selection
+analysis table updated to match. Researched Palantir AIP Developer Tier as a possible agent layer.
+
+## [2026-10-30] decision | Strands on AgentCore, ontology-like layer in Unity Catalog
+
+Ryan chose AWS Databricks + Claude API + Strands Agents on Bedrock AgentCore, with an
+ontology-like semantic layer in Unity Catalog instead of Palantir DevTier. Two entries added to
+`DECISIONS.md`; analysis table and orchestration concept page updated.
+
+## [2026-10-30] query | Build cost estimate
+
+Priced every component of the plan on AWS us-east-1 list rates, plus AgentCore. Finding: the
+Databricks trial's $400 credit covers the week; the risks are a running SQL warehouse and Lakebase
+defaults. Wrote `analyses/build-cost-estimate.md`; added a cost line to the platform decision.

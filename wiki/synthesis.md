@@ -22,6 +22,13 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
    lean Foundry. Translate on the fly: Unity Catalog + Genie semantic layer for Ontology, UC
    functions for AIP Logic, Databricks Apps for Workshop.
 
+5. **The eval set decides the deep dive.** Across FDE loops the differentiating question is "how
+   do you know it works," and the artifacts that pass are a decision log, a small governed eval
+   set with misses explained, a scripted failure path, and limits stated unprompted
+   ([playbook](analyses/fde-build-challenge-playbook.md), [agent evaluation](concepts/agent-evaluation.md)).
+   The Firm's prompt is near-verbatim Palantir's Build to Apply, so "why this problem" and "how
+   you leveraged the platform" weigh as much as the code.
+
 ## Open research questions
 
 - Which Databricks previews (Managed MCP, Unity Gateway, Agent Bricks Supervisor) are available in

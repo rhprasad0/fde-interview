@@ -29,8 +29,8 @@ questions. Ryan replied the same day acknowledging receipt.
 
 ## Open questions
 
-- Is the interviewer the same Palantir-oriented screener from round one, or someone else? Affects
-  how much to lean on the Foundry-to-Databricks translation.
+- Is the interviewer the same person as round one, or someone else? Affects how much to lean on
+  the Foundry-to-Databricks translation.
 - Does "deployed" matter to the panel? Ryan treats it as a soft requirement regardless (see
   [analysis](../analyses/build-challenge-problem-selection.md)).
 - Is a public GitHub repo acceptable as the code walkthrough medium, given the company name must

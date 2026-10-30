@@ -19,7 +19,10 @@ and reads it first on every query.
 
 - [Build challenge](concepts/build-challenge.md): format, requirements, Ryan's added constraints, and the decision.
 - [Multi-agent orchestration](concepts/multi-agent-orchestration.md): when splitting into supervisor and workers is justified, and how Databricks supports it.
+- [Agent evaluation](concepts/agent-evaluation.md): why "how do you know it works" decides FDE deep dives, and the minimal MLflow eval set for a one-week build.
 
 ## Analyses
 
 - [Build challenge: is federal workforce planning the right problem?](analyses/build-challenge-problem-selection.md): scores workforce planning against spending, cyber, and supply-chain alternatives on the challenge rubric; recommends a federal workforce-risk briefing agent on Databricks on AWS fed by OPM's open API.
+- [How to perform well on an FDE build challenge](analyses/fde-build-challenge-playbook.md): what evaluators reward across FDE take-home loops, failure modes, a 15-minute demo structure, a deep-dive question bank, federal impact framing, and a build-week checklist.
+- [Build cost estimate](analyses/build-cost-estimate.md): Databricks and AWS line items for the one-week build, trial credits, the two ways to overspend, budget alerts, and a teardown checklist.

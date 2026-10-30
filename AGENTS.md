@@ -33,6 +33,9 @@ file, commit message, branch name, or PR/issue text. Call it **the Firm**.
   - `entities/`: people, orgs, products, systems.
   - `concepts/`: ideas, patterns, techniques.
   - `analyses/`: query answers worth keeping (comparisons, trade-offs, decisions).
+- `DECISIONS.md`: Ryan's build decision log, one entry per decision with the alternative
+  rejected and the condition that would reopen it. Append when a decision is made; link to
+  the wiki page that holds the reasoning.
 - `AGENTS.md`: this schema. Update it with Ryan when a convention changes.
 
 # Page conventions
