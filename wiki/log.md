@@ -156,3 +156,11 @@ Reconciled the observability, mission-environments, synthetic-data, and gaps pag
 Ryan set the hard cutoff: last commit by Thursday 2026-11-05 at 17:00; no interview date yet.
 The USAJOBS Search API key is in hand. Recorded in `DECISIONS.md` build-week items and on the
 pre-spec gaps page.
+
+## [2026-10-30] spec | 01 Databricks setup
+
+Wrote `challenge/specs/01-databricks-setup.md`: Marketplace signup in us-east-1, budgets, one
+2X-Small warehouse, the `workforce` catalog with bronze/silver/semantic/eval, a smoke function, a
+read-only service principal with scoped OAuth secret and five grants, the Managed MCP Servers
+preview, a secret scope for the USAJOBS key, and an acceptance test that calls the function over
+MCP as the service principal. Placeholders in `challenge/example.env`.
