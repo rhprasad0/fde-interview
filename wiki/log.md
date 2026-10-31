@@ -209,3 +209,9 @@ points for a dashboard map. Census Gazetteer 2025 places pulled (new `gazetteer`
 `pull_sources.py`) and landed in the volume; exact-name match covers 87 to 89% of cities, state
 centroid fallback for the rest, `geo_precision` flag. Spec, DECISIONS (Data, Imputation), and the
 redaction analysis updated.
+
+## [2026-10-31] build | Spec 03 executed: synthetic schema, semantic layer, Genie
+Built by `challenge/notebooks/03_semantic.sql` as job `workforce-03-semantic`; every exact acceptance
+number matched and three runs hash identically ([results](../challenge/specs/03-results.md)). Genie
+refuses DATE arguments on trusted functions, so date parameters are STRING. Imputed TSA screeners
+lead in Alaska because remote airports re-post; disclosed, not fixed.

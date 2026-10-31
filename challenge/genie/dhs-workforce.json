@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "00000000000000000000000000000001",
+        "question": [
+          "How many TSA screeners by state in August 2026?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "workforce.semantic.accession"
+      },
+      {
+        "identifier": "workforce.semantic.component"
+      },
+      {
+        "identifier": "workforce.semantic.imputation_quality"
+      },
+      {
+        "identifier": "workforce.semantic.job_posting"
+      },
+      {
+        "identifier": "workforce.semantic.occupation"
+      },
+      {
+        "identifier": "workforce.semantic.separation"
+      },
+      {
+        "identifier": "workforce.semantic.staffing_plan"
+      },
+      {
+        "identifier": "workforce.semantic.workforce_snapshot"
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "00000000000000000000000000000002",
+        "content": [
+          "The data is the Department of Homeland Security (DHS) only.\n",
+          "Count separations and accessions by effective_month, never by reported_month or source_file.\n",
+          "drp_indicator = 'Y' marks the 2025 deferred resignation program (DRP) wave, a one-time event; report rates with and without it.\n",
+          "Where location_imputed or pay_imputed is true the value is synthetic, drawn from USAJOBS postings; label it as synthetic in the answer.\n",
+          "pay_redacted NULL means pay is missing, not redacted; only pay_redacted = true is redaction.\n",
+          "staffing_plan is synthetic demo data (is_synthetic); say so whenever it is used."
+        ]
+      }
+    ],
+    "sql_functions": [
+      {
+        "id": "00000000000000000000000000000010",
+        "identifier": "workforce.semantic.attrition_ranking"
+      },
+      {
+        "id": "00000000000000000000000000000011",
+        "identifier": "workforce.semantic.headcount"
+      },
+      {
+        "id": "00000000000000000000000000000012",
+        "identifier": "workforce.semantic.imputation_quality"
+      },
+      {
+        "id": "00000000000000000000000000000013",
+        "identifier": "workforce.semantic.length_of_service_profile"
+      },
+      {
+        "id": "00000000000000000000000000000014",
+        "identifier": "workforce.semantic.open_postings"
+      },
+      {
+        "id": "00000000000000000000000000000015",
+        "identifier": "workforce.semantic.plan_variance"
+      },
+      {
+        "id": "00000000000000000000000000000016",
+        "identifier": "workforce.semantic.posting_coverage"
+      },
+      {
+        "id": "00000000000000000000000000000017",
+        "identifier": "workforce.semantic.separation_rate"
+      }
+    ]
+  }
+}
