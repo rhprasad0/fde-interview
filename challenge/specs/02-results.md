@@ -99,7 +99,7 @@ has 0 rows for the service principal, so it holds no grant on any bronze or silv
   under half in November 2025 and January 2026 (cell 3).
 - **The September 2025 separations file dominates.** Government-wide it has 120,540 rows, of
   which 96,177 carry `drp_indicator = 'Y'` (the deferred resignation program). For DHS it has 5,000 rows,
-  2,363 of them DRP, against 827 to 3,591 in every other month. August 2026 has no DRP rows. Any
+  2,363 of them DRP, against 827 to 3,591 in every other month. The DHS rows in the August 2026 file have no DRP flag. Any
   trailing-twelve-month separation rate is dominated by that file; expose `drp_indicator` or
   show the rate with and without it.
 - **Open postings** on a date: `opening_status = 'Accepting applications' AND close_date >= date`.
