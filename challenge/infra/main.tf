@@ -37,12 +37,24 @@ resource "databricks_sql_endpoint" "workforce" {
   warehouse_type            = "PRO"
 }
 
+# The API cannot create a default-storage catalog without a location, so spec 01 step 4 creates it
+# in SQL (`CREATE CATALOG workforce COMMENT ...`) and Terraform adopts it here.
+import {
+  to = databricks_catalog.workforce
+  id = "workforce"
+}
+
 # force_destroy lets teardown drop it with data inside. A name change also replaces it and wipes
 # the data; acceptable because everything reloads from the public APIs.
 resource "databricks_catalog" "workforce" {
   name          = "workforce"
   comment       = "Federal workforce-risk briefing agent: OPM FWD and USAJOBS"
   force_destroy = true
+
+  lifecycle {
+    # Server-assigned on default storage: the S3 root, and a collation property.
+    ignore_changes = [storage_root, properties]
+  }
 }
 
 locals {
@@ -64,11 +76,7 @@ resource "databricks_schema" "this" {
 
 # The agent's only identity. It reads; it holds no write grant anywhere.
 resource "databricks_service_principal" "agent" {
-  display_name = "workforce-agent"
-}
-
-resource "databricks_entitlements" "agent" {
-  service_principal_id  = databricks_service_principal.agent.id
+  display_name          = "workforce-agent"
   databricks_sql_access = true # Genie consumers need it
 }
 

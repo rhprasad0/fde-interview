@@ -45,8 +45,11 @@ Before pasting any console or script output into `01-results.md`, replace the ho
 
 ## Step 2: budgets
 
-- **Do.** Account console, Usage, Budgets. Two budgets, alert at $25 and $45, email to Ryan.
-- **Done when.** Both show active.
+- **Do.** Account console (workspace dropdown, Manage account), Usage, Budgets, Add budget. One
+  budget, whole account, all resource types, two monthly thresholds at $25 and $45, email to Ryan.
+  Budgets alert only, at list price, with up to 24 hours of lag
+  ([budgets](https://docs.databricks.com/aws/en/admin/account-settings/budgets)).
+- **Done when.** The budget shows both thresholds.
 
 ## Step 3: sign the CLI in and find the warehouse
 
@@ -73,6 +76,14 @@ principal with the Databricks SQL access entitlement (Genie consumers need it la
 [Genie setup](https://docs.databricks.com/aws/en/genie/set-up)), its grants, and the `workforce`
 secret scope. State stays local and gitignored; it holds the workspace URL and the application id.
 
+The provider cannot create a catalog on default storage ("Metastore storage root URL does not
+exist", 2026-10-31), so create it first in the SQL editor; `main.tf` imports it and ignores the
+storage root and collation the server assigns.
+
+```sql
+CREATE CATALOG IF NOT EXISTS workforce COMMENT 'Federal workforce-risk briefing agent: OPM FWD and USAJOBS';
+```
+
 ```bash
 cd challenge/infra
 terraform init
@@ -86,9 +97,6 @@ terraform output agent_application_id     # into .env as DATABRICKS_CLIENT_ID
   run before the smoke function exists. Nothing on `bronze` or `eval`.
 - **If the warehouse refuses to start,** add the payment method via Manage trial; credits survive
   ([conflict noted here](../../wiki/analyses/build-cost-estimate.md)).
-- **If the catalog create fails** for want of a storage location, run `CREATE CATALOG workforce`
-  in the SQL editor, add an `import` block for `databricks_catalog.workforce` with id
-  `workforce`, and apply again.
 - **Done when.** A second `terraform plan` reports no changes; `SELECT 1` runs on the warehouse
   and it stops after idle; and this query returns the four grants above and nothing else:
 
@@ -224,8 +232,6 @@ remove it after the compute is gone so the account cannot bill.
   says they do, capped at 50 DBU/hr.
 - Whether a Unity Catalog SQL function reads tables with owner or invoker rights (step 9 checks).
 - Whether the schema-level MCP functions URL exists (step 9 checks).
-- Whether `databricks_catalog` with no `storage_root` works on a default-storage workspace; the
-  default-storage doc covers only SQL and the UI (step 4 has the fallback).
 - Whether an express trial has a Starter Warehouse at all (step 3 has the fallback), and whether
   a serverless warehouse accepts `auto_stop_mins = 5` (apply rejects it if not).
 - Whether the service principal needs workspace access as well as SQL access to call the MCP
