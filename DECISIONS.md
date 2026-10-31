@@ -354,6 +354,9 @@ functions, Agent Bricks.
 - **Rejected:** AWS Marketplace (rolls to pay-as-you-go on the AWS account after the trial).
 - **Revisit:** if the interview falls after the trial end date; add a payment method and lean on
   the budgets.
+- **Amended 2026-10-31:** a payment method was added to try to lift the egress block (see Ingest,
+  below). It did not lift it. The spend cap is gone, the $25 and $45 budget alerts are the guard,
+  and the 2026-11-14 trial end no longer stops the workspace.
 
 ## 2026-10-31  Region: us-west-2 for Databricks and AgentCore
 
@@ -383,6 +386,25 @@ functions, Agent Bricks.
   function-level `EXECUTE` grants (each new function would need a grant change and a second apply).
 - **Revisit:** if the provider fights the trial workspace for more than an hour, fall back to the
   SQL in the first version of spec 01.
+
+## 2026-10-31  Ingest: land the source files in a Unity Catalog volume from a laptop
+
+- **Context:** serverless compute on this account refuses DNS for `data.opm.gov` and
+  `data.usajobs.gov`; `system.access.outbound_network` logs each lookup as a DNS `DROP`. Network
+  policies need the Enterprise tier, and adding a payment method did not lift the block. A
+  Databricks employee ties it to account verification, not billing
+  ([forum thread](https://community.databricks.com/t5/administration-architecture/serverless-egress-blocked-despite-full-access-network-policy/td-p/173281);
+  [spec 01 results](challenge/specs/01-results.md)).
+- **Chosen:** a laptop script pulls the OPM FWD Parquet files and the USAJOBS Search results and
+  uploads them with `databricks fs cp` to a volume in `workforce.bronze`; the Lakeflow job loads
+  bronze and silver from the volume. The USAJOBS key stays in `challenge/.env`. Closed egress
+  becomes part of the governance story: workspace compute reaches only allowlisted hosts, and
+  every refused lookup is audited.
+- **Rejected:** waiting for account verification (support's timeline, with four days to the
+  freeze); a classic-compute workspace on a linked AWS account (a second workspace plus VPC and
+  cross-account IAM, for one download step).
+- **Revisit:** if the account is verified before the freeze, move the pull into the Lakeflow job
+  and the key into the `workforce` secret scope.
 
 ## Build-week items, not decisions
 

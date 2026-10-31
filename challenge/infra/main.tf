@@ -1,5 +1,5 @@
-# Spec 01 step 4: the warehouse, catalog, schemas, read-only service principal, grants, and
-# secret scope. Signs in with the CLI profile from `databricks auth login`; nothing secret here.
+# Spec 01 step 4: the warehouse, catalog, schemas, landing volume, read-only service principal,
+# grants, and secret scope. Signs in with the CLI profile from `databricks auth login`; nothing secret here.
 
 terraform {
   required_version = ">= 1.6"
@@ -98,6 +98,16 @@ resource "databricks_grant" "agent_semantic" {
   schema     = databricks_schema.this["semantic"].id
   principal  = databricks_service_principal.agent.application_id
   privileges = ["USE_SCHEMA", "EXECUTE"]
+}
+
+# Serverless cannot reach the source APIs (DNS allowlist), so a laptop script uploads the raw files
+# here and the ingest job reads them (DECISIONS.md, Ingest). The agent has no grant on bronze.
+resource "databricks_volume" "landing" {
+  catalog_name = databricks_catalog.workforce.name
+  schema_name  = databricks_schema.this["bronze"].name
+  name         = "landing"
+  volume_type  = "MANAGED"
+  comment      = "OPM FWD and USAJOBS files as downloaded, one folder per source and pull date"
 }
 
 resource "databricks_secret_scope" "workforce" {
