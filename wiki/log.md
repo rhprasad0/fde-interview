@@ -174,3 +174,8 @@ replaces the Search API (DECISIONS.md, Data and Ingest amended).
 Ten bronze and silver tables loaded in one 137-second job run; every step 4 check matched and
 the service principal's grants are unchanged. 75% of DHS separations take effect in the month
 reported, not "few" as the spec guessed. `challenge/specs/02-results.md`; cost due 2026-11-01.
+
+## [2026-10-31] query | OPM redaction and imputation
+Measured redaction in the DHS silver tables: location, pay, and bargaining unit masked together on
+76% of employee records, by occupation. Ryan chose synthetic location and pay in a `synthetic`
+schema, specified in spec 03. Filed `analyses/opm-redaction-and-imputation.md`; DECISIONS.md entry.

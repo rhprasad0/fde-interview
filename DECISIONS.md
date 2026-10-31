@@ -419,6 +419,24 @@ functions, Agent Bricks.
   and that is enough; the deployed version of this step is the Lakeflow pull described above
   ([spec 02](challenge/specs/02-one-time-load.md)).
 
+## 2026-10-31  Imputation: synthetic location and pay for OPM-redacted rows, in a `synthetic` schema
+
+- **Context:** OPM masks location, pay, and bargaining unit together on 76% of DHS employee
+  records (August 2026), by occupation: every TSA screener, CBP officer, and Border Patrol agent.
+  Location is one of the four slices in the problem statement
+  ([redaction profile](wiki/analyses/opm-redaction-and-imputation.md)).
+- **Chosen (Ryan):** imputed copies of `employment`, `separations`, and `accessions` in a new
+  `synthetic` schema. Location and pay are drawn from USAJOBS postings for the same component,
+  series, and grade, and every row is flagged `location_imputed` and `pay_imputed`. The agent reads
+  the copies through `semantic` and says so when an answer rests on an imputed value. `silver`
+  is untouched. Bargaining unit stays as published. Specified in spec 03.
+- **Rejected:** the agent answers "not published" for redacted fields (honest, but it loses the
+  location slice for most of DHS); borrowing values from unredacted records (the redacted series
+  have no unredacted records, so screeners would get analysts' offices and pay); tables in `silver`
+  with an `_imputed` suffix (puts published and synthetic data in one schema).
+- **Revisit:** if the masking test on FEMA and CISA lands far from the truth, or if the agent
+  cannot reliably disclose imputed values, fall back to "not published" for redacted rows.
+
 ## Build-week items, not decisions
 
 - Code freeze: last commit to this repo by Thursday 2026-11-05 at 17:00. Everything after that is
