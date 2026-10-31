@@ -270,6 +270,7 @@ Revisit:   what evidence would change this
 - **Rejected:** `us-west-2` (no feature we need is exclusive to it).
 - **Revisit:** if Managed MCP Servers or AgentCore Gateway is missing in `us-east-1` on day one,
   move before creating anything else.
+- **Superseded 2026-10-31** by "Region: us-west-2" below.
 
 ## 2026-10-30  Demo shape: the eval dashboard leads, one live run supports it
 
@@ -342,6 +343,46 @@ governance (read-only service principal, grants, lineage, a Genie space over sil
 workspace MCP endpoints; an AI/BI dashboard over the eval table. Skipped and named as skipped:
 MLflow (day-five stretch), stored procedures, Lakebase, Databricks Apps, in-platform AI
 functions, Agent Bricks.
+
+## 2026-10-31  Signup: direct express trial, not AWS Marketplace
+
+- **Context:** a serverless workspace puts nothing in the AWS account, so Marketplace only linked
+  billing, and the CLI identity at hand was the Organization's management account.
+- **Chosen:** sign up at databricks.com with no payment method. Spending is capped at the trial
+  credits, the management account stays out of it, and there is no subscription to cancel at
+  teardown ([spec 01](challenge/specs/01-databricks-setup.md)).
+- **Rejected:** AWS Marketplace (rolls to pay-as-you-go on the AWS account after the trial).
+- **Revisit:** if the interview falls after the trial end date; add a payment method and lean on
+  the budgets.
+
+## 2026-10-31  Region: us-west-2 for Databricks and AgentCore
+
+- **Context:** express setup offered no region choice and placed the workspace in `us-west-2`.
+- **Chosen:** keep it, and put AgentCore in `us-west-2` too so the agent and its data share a
+  region. Databricks lists MCP servers, serverless, Lakebase, and hosted models as supported in
+  both regions ([region support](https://docs.databricks.com/aws/en/resources/feature-region-support));
+  AgentCore Runtime, Gateway, Identity, Observability, and Evaluations are all in `us-west-2`
+  ([AgentCore regions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-regions.html)).
+- **Rejected:** upgrading the trial to create a `us-east-1` workspace (removes the spend cap for
+  no feature gain).
+- **Revisit:** if a preview needed later turns out to be missing in `us-west-2`.
+
+## 2026-10-31  Terraform for the workspace objects the agent's governance rests on
+
+- **Context:** the read-only service principal and its grants are the governance story, and
+  clicking them in leaves nothing to review.
+- **Chosen:** `challenge/infra/main.tf` (Databricks provider, CLI-profile sign-in, local
+  gitignored state) manages the warehouse settings, catalog, schemas, service principal,
+  entitlement, grants, and secret scope. The agent gets `EXECUTE` on the `semantic` schema rather
+  than per function, so the schema is the boundary of what it can call. The OAuth secret, secret
+  values, budgets, preview toggle, and SQL objects stay out: the secret resource cannot set scopes
+  and would put the secret in state, and budgets need an account-level provider. Later workloads
+  (Lakeflow job, dashboard) go in Databricks Asset Bundles
+  ([spec 01](challenge/specs/01-databricks-setup.md)).
+- **Rejected:** SQL `GRANT` statements plus console clicks (spec 01 as first written);
+  function-level `EXECUTE` grants (each new function would need a grant change and a second apply).
+- **Revisit:** if the provider fights the trial workspace for more than an hour, fall back to the
+  SQL in the first version of spec 01.
 
 ## Build-week items, not decisions
 

@@ -1,6 +1,6 @@
 # Spec 01: Databricks on AWS, set up and ready for AgentCore
 
-**Goal.** A Databricks workspace in `us-east-1`, billed through Ryan's AWS account, with Unity
+**Goal.** A Databricks workspace in `us-west-2`, on direct-signup trial credits, with Unity
 Catalog laid out, a read-only service principal, the Managed MCP Servers preview on, and one
 proof: an external MCP client authenticates as the service principal and calls one Unity Catalog
 function, and records the three OAuth facts the AgentCore Gateway spec needs.
@@ -8,8 +8,8 @@ function, and records the three OAuth facts the AgentCore Gateway spec needs.
 **Out of scope.** Lakeflow ingest; the Genie space (needs data); any AgentCore resource; AWS
 Budgets for AgentCore; MLflow; the eval harness; the dashboard. Each gets its own spec.
 
-**Implements.** Platform, Region, MCP path, Domain model (read-only), Observability
-(`DECISIONS.md`, 2026-10-30). Costs in [the cost estimate](../../wiki/analyses/build-cost-estimate.md).
+**Implements.** Platform, MCP path, Domain model (read-only), Observability (`DECISIONS.md`,
+2026-10-30); Signup, Region, Terraform (2026-10-31). Costs in [the cost estimate](../../wiki/analyses/build-cost-estimate.md).
 
 **Identities.** Ryan's admin user does every step and owns the catalog. The Lakeflow job and the
 eval notebook in later specs run as that same user, so no job identity, no secret-scope ACL, and
@@ -23,49 +23,82 @@ Before pasting any console or script output into `01-results.md`, replace the ho
 
 **Budget.** Under $5 of trial credit. Nothing runs unattended.
 
-## Step 1: sign up through AWS Marketplace, confirm region and serverless
+## Step 1: sign up directly, confirm region and serverless
 
-- **Why Marketplace.** It links the AWS account and bills through it after credits; express setup
-  bills a card ([Marketplace signup](https://docs.databricks.com/aws/en/getting-started/cloud-setup)).
-  The AWS identity needs `AWSMarketplaceFullAccess` or `AWSMarketplaceManageSubscriptions`. A
-  serverless workspace deploys nothing into the AWS account. Do not create a classic workspace;
-  it provisions a VPC and NAT gateway that AWS bills directly.
-- **Do.** AWS Marketplace, Databricks listing, start the free trial, create the Databricks account
-  with the business email, Continue to Databricks.
-- **Region.** If the auto-created workspace is not in `us-east-1`: account console, Workspaces,
-  Create workspace, "Use serverless compute and default storage," region `us-east-1`, use that one.
-- **Done when.** Manage trial shows the credit balance; the region is `us-east-1`; a new
-  serverless notebook runs `print(1)`. The notebook check settles whether serverless notebooks
-  and jobs work on this trial type, which the ingest and eval specs depend on. Record the
-  workspace URL in `.env`.
+- **Why direct.** Express setup starts with only an email. With no payment method on file, access
+  stops when the credits are used or expire, so the trial caps spend
+  ([express setup](https://docs.databricks.com/aws/en/getting-started/express-setup)). An AWS
+  Marketplace trial instead rolls to pay-as-you-go on the AWS account
+  ([free trial](https://docs.databricks.com/aws/en/getting-started/free-trial)). The serverless
+  workspace runs in Databricks' AWS account, so nothing touches Ryan's. Do not create a classic
+  workspace; it provisions a VPC and NAT gateway that AWS bills directly.
+- **Do.** [databricks.com/try-databricks](https://www.databricks.com/try-databricks), sign up with
+  the business email, no payment method.
+- **Region.** Express setup offered no choice and placed the workspace in `us-west-2`
+  (2026-10-31). That is the build region for Databricks and AgentCore (`DECISIONS.md`).
+- **Done when.** Manage trial shows the credit balance and the trial end date; the region is
+  `us-west-2`; a new serverless notebook runs `print(1)`. The notebook check settles whether
+  serverless notebooks and jobs work on this trial type, which the ingest and eval specs depend
+  on. Record the workspace URL in `.env`.
+- **Trial end.** Access stops at the end date unless a payment method is added. If the interview
+  falls after it, add one (a card, or link the AWS account for billing) the day before.
 
 ## Step 2: budgets
 
 - **Do.** Account console, Usage, Budgets. Two budgets, alert at $25 and $45, email to Ryan.
 - **Done when.** Both show active.
 
-## Step 3: the SQL warehouse
+## Step 3: sign the CLI in and find the warehouse
 
-- **Do.** SQL Warehouses. The workspace auto-creates a Starter Warehouse and the trial allows one
-  ([SQL warehouse](https://docs.databricks.com/aws/en/compute/sql-warehouse)). Edit it: serverless,
-  2X-Small, auto-stop at the minimum the UI allows, scaling 1 to 1. Create one only if none exists.
-  If it refuses to start, add the payment method via Manage trial; credits survive
-  ([conflict noted here](../../wiki/analyses/build-cost-estimate.md)).
-- **Done when.** `SELECT 1` runs and the warehouse stops after idle. Record the warehouse id in
-  `.env` for later specs.
+Run steps 3, 4, and 8 in a shell that has not sourced `.env`: its `DATABRICKS_CLIENT_*` variables
+would sign the CLI in as the read-only service principal.
 
-## Step 4: catalog and schemas
-
-```sql
-CREATE CATALOG IF NOT EXISTS workforce;
-USE CATALOG workforce;
-CREATE SCHEMA IF NOT EXISTS bronze   COMMENT 'Raw OPM FWD and USAJOBS files, versioned as received';
-CREATE SCHEMA IF NOT EXISTS silver   COMMENT 'Typed, deduplicated tables with stable keys';
-CREATE SCHEMA IF NOT EXISTS semantic COMMENT 'Ontology-like layer: governed views and functions the agent may call';
-CREATE SCHEMA IF NOT EXISTS eval     COMMENT 'Golden questions, per-run results, dashboard source';
+```bash
+databricks auth login --host <workspace-url> --profile workforce
+databricks warehouses list -p workforce
 ```
 
-- **Done when.** Catalog Explorer shows the four schemas with comments.
+- The workspace auto-creates a Starter Warehouse and the trial allows one
+  ([SQL warehouse](https://docs.databricks.com/aws/en/compute/sql-warehouse)). Put its id in `.env`
+  as `DATABRICKS_WAREHOUSE_ID`. If the list is empty, delete the `import` block in
+  `challenge/infra/main.tf` and Terraform creates the one warehouse.
+- **Done when.** The list prints and the id is in `.env`.
+
+## Step 4: Terraform the workspace objects
+
+`challenge/infra/main.tf` holds what the agent's governance depends on: the warehouse settings
+(serverless, 2X-Small, auto-stop 5 minutes, one cluster), the `workforce` catalog and its four
+commented schemas (`bronze`, `silver`, `semantic`, `eval`), the `workforce-agent` service
+principal with the Databricks SQL access entitlement (Genie consumers need it later,
+[Genie setup](https://docs.databricks.com/aws/en/genie/set-up)), its grants, and the `workforce`
+secret scope. State stays local and gitignored; it holds the workspace URL and the application id.
+
+```bash
+cd challenge/infra
+terraform init
+terraform apply -var "warehouse_id=<warehouse-id>"
+terraform output agent_application_id     # into .env as DATABRICKS_CLIENT_ID
+```
+
+- **Grants.** Four privileges, no `SELECT`: `USE CATALOG` on `workforce`, `USE SCHEMA` on `silver`,
+  `USE SCHEMA` and `EXECUTE` on `semantic`. `EXECUTE` on the schema covers every function in it,
+  now and later, so `semantic` is the boundary of what the agent can call. It also lets Terraform
+  run before the smoke function exists. Nothing on `bronze` or `eval`.
+- **If the warehouse refuses to start,** add the payment method via Manage trial; credits survive
+  ([conflict noted here](../../wiki/analyses/build-cost-estimate.md)).
+- **If the catalog create fails** for want of a storage location, run `CREATE CATALOG workforce`
+  in the SQL editor, add an `import` block for `databricks_catalog.workforce` with id
+  `workforce`, and apply again.
+- **Done when.** A second `terraform plan` reports no changes; `SELECT 1` runs on the warehouse
+  and it stops after idle; and this query returns the four grants above and nothing else:
+
+```sql
+SELECT 'catalog' AS level, catalog_name AS object, privilege_type
+FROM workforce.information_schema.catalog_privileges WHERE grantee = '<application-id>'
+UNION ALL
+SELECT 'schema', schema_name, privilege_type
+FROM workforce.information_schema.schema_privileges WHERE grantee = '<application-id>';
+```
 
 ## Step 5: smoke table and smoke function
 
@@ -84,32 +117,15 @@ SELECT semantic.headcount_for('HS');  -- expect 3
 
 - **Done when.** Returns 3. The function is replaced in the semantic-layer spec.
 
-## Step 6: the read-only service principal
+## Step 6: the service principal's OAuth secret
 
-- **Create.** Settings, Identity and access, Service principals, Add. Name `workforce-agent`.
-  Add it to the workspace with the Databricks SQL access entitlement (Genie consumers need it
-  later, [Genie setup](https://docs.databricks.com/aws/en/genie/set-up)). The application id is
-  the OAuth client id.
-- **Secret.** Secrets, Generate secret. Lifetime 60 days, so it outlives an unscheduled interview.
-  Scopes `unity-catalog` and `genie` only ([scopes](https://docs.databricks.com/api/workspace/scopes));
-  scopes are fixed at generation ([OAuth M2M](https://docs.databricks.com/aws/en/dev-tools/auth/oauth-m2m)).
-  Copy the secret once into `.env`.
-- **Grants, first pass.** Four grants, no `SELECT` yet:
-
-```sql
-USE CATALOG workforce;
-GRANT USE CATALOG ON CATALOG workforce TO `<application-id>`;
-GRANT USE SCHEMA ON SCHEMA silver   TO `<application-id>`;
-GRANT USE SCHEMA ON SCHEMA semantic TO `<application-id>`;
-GRANT EXECUTE ON FUNCTION semantic.headcount_for TO `<application-id>`;
-SHOW GRANTS TO `<application-id>`;
-```
-
-  Run step 9 with these four. If the call returns 3, the function runs with the owner's rights on
-  the tables it reads and the agent never needs `SELECT` on silver; that four-grant `SHOW GRANTS`
-  is the stronger governance artifact and `SELECT` waits for the Genie spec. If the call fails on
-  table access, add `GRANT SELECT ON SCHEMA silver TO ...` and write down why.
-- **Done when.** `SHOW GRANTS` lists exactly the grants above and nothing on `bronze` or `eval`.
+- **Do.** Settings, Identity and access, Service principals, `workforce-agent`, Secrets, Generate
+  secret. Lifetime 60 days, so it outlives an unscheduled interview. Scopes `unity-catalog` and
+  `genie` only ([scopes](https://docs.databricks.com/api/workspace/scopes)); scopes are fixed at
+  generation ([OAuth M2M](https://docs.databricks.com/aws/en/dev-tools/auth/oauth-m2m)). Copy the
+  secret once into `.env`. This stays in the UI: the Terraform secret resource cannot set scopes
+  and would write the secret into state.
+- **Done when.** `.env` holds the client id and the secret.
 
 ## Step 7: enable Managed MCP Servers
 
@@ -117,15 +133,16 @@ SHOW GRANTS TO `<application-id>`;
   Leave the Unity Gateway beta off; the chosen path does not use it.
 - **Done when.** The preview shows On.
 
-## Step 8: secret scope for the USAJOBS key
+## Step 8: secret values for the USAJOBS key
+
+Terraform created the scope; the values go in by CLI so they never reach state.
 
 ```bash
-databricks secrets create-scope workforce
-databricks secrets put-secret workforce usajobs_api_key   # paste when prompted
-databricks secrets put-secret workforce usajobs_email
+databricks secrets put-secret workforce usajobs_api_key -p workforce   # paste when prompted
+databricks secrets put-secret workforce usajobs_email -p workforce
 ```
 
-- **Done when.** `databricks secrets list-secrets workforce` shows both keys.
+- **Done when.** `databricks secrets list-secrets workforce -p workforce` shows both keys.
 
 ## Step 9: acceptance test, the AgentCore handshake from a laptop
 
@@ -146,6 +163,11 @@ The script is `challenge/scripts/mcp_smoke.py`. It uses the Python `mcp` streama
 the same transport Strands builds, because MCP servers expect the initialize handshake and a bare
 `tools/list` POST may be rejected.
 
+- **Grants experiment.** The call runs with the four grants from step 4. If it returns 3, the
+  function reads tables with its owner's rights and the agent never needs `SELECT` on silver;
+  the four-grant query is the stronger governance artifact and `SELECT` waits for the Genie spec.
+  If it fails on table access, add `"SELECT"` to `agent_silver` in `main.tf`, apply, rerun, and
+  write down why.
 - **Done when.** The discovery request returns 200 with an issuer and token endpoint; the
   per-function URL lists one tool and the call returns 3; the schema-level result, pass or fail,
   is recorded. On a serverless compute permission error, check that Default Interactive Compute
@@ -183,20 +205,28 @@ print(requests.get("https://data.usajobs.gov/api/historicjoa?HiringDepartmentCod
 
 ## Results file
 
-`challenge/specs/01-results.md`, committed, redacted per the Rule: region, serverless notebook
-check, warehouse settings, the final `SHOW GRANTS` (four or five grants, with the reason),
+`challenge/specs/01-results.md`, committed, redacted per the Rule: region, trial end date, serverless notebook
+check, warehouse settings, the step 4 grants query (four or five rows, with the reason),
 preview on, OAuth discovery facts, per-function vs schema-level MCP URL, billing SKU, egress
 result, and anything that did not match this spec.
 
 ## Teardown
 
-The week after the interview, per the [cost estimate checklist](../../wiki/analyses/build-cost-estimate.md),
-plus cancel the Marketplace subscription so the account does not roll to pay-as-you-go.
+The week after the interview, per the [cost estimate checklist](../../wiki/analyses/build-cost-estimate.md).
+First `terraform destroy` in `challenge/infra` (warehouse, catalog with its data, service
+principal, secret scope), then delete the local state files. If a payment method was added,
+remove it after the compute is gone so the account cannot bill.
 
 ## Not verified before writing
 
-- Whether the Marketplace flow lets you choose the region of the auto-created workspace.
 - Whether the trial warehouse starts without a payment method.
-- Whether serverless notebooks and jobs are available on a Marketplace trial (step 1 checks).
-- Whether a Unity Catalog SQL function reads tables with owner or invoker rights (step 6 checks).
+- Whether serverless notebooks and jobs work on an express trial (step 1 checks); the trial doc
+  says they do, capped at 50 DBU/hr.
+- Whether a Unity Catalog SQL function reads tables with owner or invoker rights (step 9 checks).
 - Whether the schema-level MCP functions URL exists (step 9 checks).
+- Whether `databricks_catalog` with no `storage_root` works on a default-storage workspace; the
+  default-storage doc covers only SQL and the UI (step 4 has the fallback).
+- Whether an express trial has a Starter Warehouse at all (step 3 has the fallback), and whether
+  a serverless warehouse accepts `auto_stop_mins = 5` (apply rejects it if not).
+- Whether the service principal needs workspace access as well as SQL access to call the MCP
+  endpoints. A 403 in step 9 points here.

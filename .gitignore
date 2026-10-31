@@ -10,3 +10,9 @@ CLAUDE.local.md
 /.worktrees/
 /.claude/worktrees/
 .DS_Store
+
+# Terraform: state holds the workspace URL and service principal id
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
