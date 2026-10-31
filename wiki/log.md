@@ -215,3 +215,8 @@ Built by `challenge/notebooks/03_semantic.sql` as job `workforce-03-semantic`; e
 number matched and three runs hash identically ([results](../challenge/specs/03-results.md)). Genie
 refuses DATE arguments on trusted functions, so date parameters are STRING. Imputed TSA screeners
 lead in Alaska because remote airports re-post; disclosed, not fixed.
+
+## [2026-10-31] query | Is the agent's use of Genie defensible; how often is it wrong
+No transferable number: vendor and independent figures run from 40% to 90% depending on data and
+grading. Defensible by design; spec 05 measures Genie's own pass^3 with a 70% bar that decides
+whether the agent keeps it ([Genie accuracy](analyses/genie-accuracy.md); DECISIONS.md entry).

@@ -484,6 +484,24 @@ functions, Agent Bricks.
 - **Revisit:** if OPM adds an action id, deduplicate on it; if a later file's restatement is ever
   shown to exceed a few percent for separations, switch to reporting month and say so.
 
+## 2026-10-31  Genie measured: its own pass^3 on the eval dashboard decides whether the agent keeps it
+
+- **Context:** the agent's Genie tool answers questions outside the eight graded functions, and no
+  published Genie accuracy figure transfers to this space: vendor numbers run from 40% to 90%
+  depending on data, configuration, and grading ([Genie accuracy](wiki/analyses/genie-accuracy.md)).
+- **Chosen:** spec 05 adds about 10 questions outside the function families, each with truth
+  SQL and aimed at this data's traps (effective vs reported month, NULL vs redacted pay, imputed
+  location, synthetic plan, series matching). Each runs three times through the agent's Genie tool;
+  Genie's pass^3 is its own row on the eval dashboard. A run fails if the number is off or an
+  imputed or synthetic value is unlabeled. The agent labels Genie answers as exploratory and shows
+  the SQL. Bar: 70%, lower than the graded functions' 80% because Genie is the exploratory path
+  (Ryan may change it).
+- **Rejected:** trusting vendor benchmarks (self-graded, not this data); dropping Genie now (loses
+  exploration before any evidence says it is bad); grading Genie inside the main pass^3 (mixes a
+  nondeterministic path into the number the demo leads with).
+- **Revisit:** if Genie pass^3 lands under 70%, remove the Genie tool from the agent and keep the
+  space for human analysts; if it passes, keep it and show the row.
+
 ## Build-week items, not decisions
 
 - Code freeze: last commit to this repo by Thursday 2026-11-05 at 17:00. Everything after that is

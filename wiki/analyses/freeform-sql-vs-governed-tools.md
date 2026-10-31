@@ -95,5 +95,5 @@ would be a separate agent with a separate identity if it were ever added.
 ## Not checked
 
 Full text of the Spider 2.0 and dbt pages (search excerpts only); the current Spider 2.0
-leaderboard for 2026 models; whether Databricks has published accuracy numbers for Genie trusted
-assets versus freeform Genie.
+leaderboard for 2026 models. Genie accuracy is answered, as far as public sources allow, in
+[Genie accuracy](genie-accuracy.md).
