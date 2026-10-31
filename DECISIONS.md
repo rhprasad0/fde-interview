@@ -57,6 +57,12 @@ Revisit:   what evidence would change this
   `separation_category`; OPM `agency_subelement_code` equals USAJOBS `hiringAgencyCode` (TSA is
   `HSBC` in both). FEVS was formally discontinued 2026-10-29. OMB Table 16.1 budgeted FTE is the
   one enrichment to add if the core is green ([data sources](wiki/analyses/candidate-data-sources.md)).
+- **Amended 2026-10-31:** demand comes from the USAJOBS Historic JOA API, not Search. It needs no
+  key, covers every DHS announcement since September 2025 with its status and close date (on
+  2026-10-31, 427 of 13,136 had status "accepting applications" and a close date not yet passed;
+  status alone lags, 297 more carried it after closing), so the Search API would add a second
+  copy of the open ones. The Search key stays in `challenge/.env`, unused
+  ([spec 02](challenge/specs/02-one-time-load.md)).
 
 ## 2026-10-30  LLM access: the model is called from the agent layer, Databricks is the governed tool layer
 
@@ -338,7 +344,8 @@ Revisit:   what evidence would change this
 
 ## Databricks surface, decided by omission
 
-Four things done properly: a Lakeflow job into bronze and silver Delta tables; Unity Catalog
+Four things done properly: bronze and silver Delta tables loaded once by a notebook job from a
+Unity Catalog volume (one-time since 2026-10-31; the recurring Lakeflow job starts at silver); Unity Catalog
 governance (read-only service principal, grants, lineage, a Genie space over silver); the
 workspace MCP endpoints; an AI/BI dashboard over the eval table. Skipped and named as skipped:
 MLflow (day-five stretch), stored procedures, Lakebase, Databricks Apps, in-platform AI
@@ -405,6 +412,12 @@ functions, Agent Bricks.
   cross-account IAM, for one download step).
 - **Revisit:** if the account is verified before the freeze, move the pull into the Lakeflow job
   and the key into the `workforce` secret scope.
+- **Amended 2026-10-31 (Ryan):** the load is one-time, no refresh. Twelve months of OPM files
+  ending August 2026 (September is due 2026-11-04, after the freeze) and the DHS Historic JOA to
+  the day of the pull land once in the volume; a SQL notebook run once as a job writes bronze and
+  silver. The recurring Lakeflow job (spec 05) starts at silver. The egress blocker is documented
+  and that is enough; the deployed version of this step is the Lakeflow pull described above
+  ([spec 02](challenge/specs/02-one-time-load.md)).
 
 ## Build-week items, not decisions
 

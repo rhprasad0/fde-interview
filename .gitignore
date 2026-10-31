@@ -16,3 +16,6 @@ CLAUDE.local.md
 *.tfstate
 *.tfstate.*
 *.tfvars
+
+# Spec 02: source files pulled to the laptop before upload to the landing volume
+/challenge/data/

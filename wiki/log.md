@@ -164,3 +164,8 @@ Wrote `challenge/specs/01-databricks-setup.md`: Marketplace signup in us-east-1,
 read-only service principal with scoped OAuth secret and five grants, the Managed MCP Servers
 preview, a secret scope for the USAJOBS key, and an acceptance test that calls the function over
 MCP as the service principal. Placeholders in `challenge/example.env`.
+
+## [2026-10-31] spec | 02 one-time load
+Ryan chose a one-time load with no refresh. `challenge/specs/02-one-time-load.md`, the laptop
+pull script, and the SQL load notebook written; small datasets pulled and the Historic JOA
+replaces the Search API (DECISIONS.md, Data and Ingest amended).
