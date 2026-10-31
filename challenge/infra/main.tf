@@ -62,7 +62,9 @@ locals {
     bronze   = "Raw OPM FWD and USAJOBS files, versioned as received"
     silver   = "Typed, deduplicated tables with stable keys"
     semantic = "Ontology-like layer: governed views and functions the agent may call"
-    eval     = "Golden questions, per-run results, dashboard source"
+    # Spec 03: imputed copies of silver OPM tables and the labeled staffing plan; the agent reads them only through semantic.
+    synthetic = "Synthetic: OPM tables with imputed location and pay (from USAJOBS postings, flagged per row) and the demo staffing plan"
+    eval      = "Golden questions, per-run results, dashboard source"
   }
 }
 
@@ -87,17 +89,13 @@ resource "databricks_grant" "agent_catalog" {
   privileges = ["USE_CATALOG"]
 }
 
-resource "databricks_grant" "agent_silver" {
-  schema     = databricks_schema.this["silver"].id
-  principal  = databricks_service_principal.agent.application_id
-  privileges = ["USE_SCHEMA"] # add "SELECT" only if spec 01 step 9 shows functions need it
-}
-
+# No grant on silver, synthetic, or bronze: functions and views read them as their owner (spec 01 step 9).
 # EXECUTE on the schema covers every function in it, now and later: semantic is the agent's surface.
+# SELECT (spec 03) lets Genie query the semantic views as the agent; views read silver and synthetic as their owner.
 resource "databricks_grant" "agent_semantic" {
   schema     = databricks_schema.this["semantic"].id
   principal  = databricks_service_principal.agent.application_id
-  privileges = ["USE_SCHEMA", "EXECUTE"]
+  privileges = ["USE_SCHEMA", "EXECUTE", "SELECT"]
 }
 
 # Serverless cannot reach the source APIs (DNS allowlist), so a laptop script uploads the raw files

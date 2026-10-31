@@ -103,7 +103,9 @@ has 0 rows for the service principal, so it holds no grant on any bronze or silv
   trailing-twelve-month separation rate is dominated by that file; expose `drp_indicator` or
   show the rate with and without it.
 - **Open postings** on a date: `opening_status = 'Accepting applications' AND close_date >= date`.
-  Status alone overstates: 724 against 427 on 2026-10-31.
+  Status alone overstates: 724 against 427 on 2026-10-31. **Superseded by spec 03:** the status
+  is as of pull day only, so for any earlier date the rule is `open_date <= date AND close_date >=
+  date` (551 open on 2026-08-01; the status rule would return 724).
 - **Pay.** `pay_redacted` marks rows where OPM published `REDACTED`; `annualized_adjusted_basic_pay`
   is NULL on those rows.
 - **Join keys.** `silver.job_postings.agency_subelement_code` joins OPM `agency_subelement_code`

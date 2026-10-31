@@ -19,3 +19,6 @@ CLAUDE.local.md
 
 # Spec 02: source files pulled to the laptop before upload to the landing volume
 /challenge/data/
+
+# Python bytecode (a .pyc was tracked by mistake until spec 03)
+__pycache__/

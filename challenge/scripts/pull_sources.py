@@ -1,7 +1,7 @@
 """Spec 02, step 1: one-time pull of the source files to challenge/data/ (gitignored).
 
 Upload afterwards with `databricks fs cp -r` (spec 02, step 2). No key is needed: OPM FWD is
-open and the USAJOBS Historic JOA only wants a User-Agent header.
+open, the USAJOBS Historic JOA only wants a User-Agent header, and the Census Gazetteer (spec 03) is a plain file.
 
     python scripts/pull_sources.py                 # everything
     python scripts/pull_sources.py separations joa # a subset, by name
@@ -80,12 +80,29 @@ def codelists():
         ndjson(out / f"{name}.json", body["CodeList"][0]["ValidValue"])
 
 
+def gazetteer():
+    # Spec 03: one point per incorporated place or CDP, for approximate map geometries.
+    # Pipe-delimited text with INTPTLAT/INTPTLONG; 32,350 places, 3.3 MB unzipped.
+    import io
+    import zipfile
+
+    out = OUT / "census"
+    out.mkdir(parents=True, exist_ok=True)
+    url = "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_Gaz_place_national.zip"
+    z = zipfile.ZipFile(io.BytesIO(client.get(url, headers=UA).raise_for_status().content))
+    (name,) = [n for n in z.namelist() if n.endswith(".txt")]
+    path = out / name
+    path.write_bytes(z.read(name))
+    print(path.relative_to(OUT), f"{path.stat().st_size / 1e6:.1f} MB")
+
+
 STEPS = {
     "employment": lambda: opm("employment"),
     "separations": lambda: opm("separations"),
     "accessions": lambda: opm("accessions"),
     "joa": joa,
     "codelists": codelists,
+    "gazetteer": gazetteer,
 }
 
 if __name__ == "__main__":

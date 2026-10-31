@@ -63,6 +63,13 @@ Revisit:   what evidence would change this
   status alone lags, 297 more carried it after closing), so the Search API would add a second
   copy of the open ones. The Search key stays in `challenge/.env`, unused
   ([spec 02](challenge/specs/02-one-time-load.md)).
+- **Amended 2026-10-31 (spec 03):** "open on a date" is `open_date <= date AND close_date >= date`.
+  `opening_status` is the status on pull day only; for 2026-08-01 it returns 724 postings against
+  551 actually open, missing 503 that have since closed. Status adds information only on pull day.
+- **Amended 2026-10-31 (spec 03, Ryan):** a fourth source, the Census Bureau 2025 Gazetteer
+  places file (one interior point per place, 32,350 rows, no key), for approximate map geometries.
+  It matches about 88% of DHS duty-station cities by exact name; the rest fall to a state centroid
+  ([spec 03](challenge/specs/03-semantic-layer.md)).
 
 ## 2026-10-30  LLM access: the model is called from the agent layer, Databricks is the governed tool layer
 
@@ -186,6 +193,11 @@ Revisit:   what evidence would change this
 - **Revisit:** if OMB Table 16.1 cannot be crosswalked to the home agency in an hour, scale to
   the agency's own trailing headcount instead and say so; if the panel includes an agency human
   capital person, offer to swap in their real plan shape.
+- **Amended 2026-10-31 (spec 03):** no crosswalk needed, DHS is a department column in Table
+  16.1 (FY2027 edition: 227,000 FTE for FY2026, 224,000 for FY2027, estimates). The table lives in
+  the `synthetic` schema next to the imputed tables. Planned hires replace non-DRP trailing
+  separations plus any growth to the FTE target, split evenly over four quarters; the two stress
+  cells are TSA 1802 and CBP 1895 in FY2026 ([spec 03](challenge/specs/03-semantic-layer.md)).
 
 ## 2026-10-30  MCP path: AgentCore Gateway in front of the Databricks workspace MCP endpoints
 
@@ -346,7 +358,7 @@ Revisit:   what evidence would change this
 
 Four things done properly: bronze and silver Delta tables loaded once by a notebook job from a
 Unity Catalog volume (one-time since 2026-10-31; the recurring Lakeflow job starts at silver); Unity Catalog
-governance (read-only service principal, grants, lineage, a Genie space over silver); the
+governance (read-only service principal, grants, lineage, a Genie space over the semantic views); the
 workspace MCP endpoints; an AI/BI dashboard over the eval table. Skipped and named as skipped:
 MLflow (day-five stretch), stored procedures, Lakebase, Databricks Apps, in-platform AI
 functions, Agent Bricks.
@@ -393,6 +405,11 @@ functions, Agent Bricks.
   function-level `EXECUTE` grants (each new function would need a grant change and a second apply).
 - **Revisit:** if the provider fights the trial workspace for more than an hour, fall back to the
   SQL in the first version of spec 01.
+- **Amended 2026-10-31 (spec 03):** `SELECT` on `semantic` added so Genie can query the semantic
+  views as the service principal, and the spec 01 `USE_SCHEMA` on `silver` removed: functions and
+  views read `silver` and `synthetic` with their owner's rights (spec 01 step 9), so that grant
+  gave the agent nothing readable and only muddied the story. Four grants remain, all on the
+  catalog and `semantic`; the agent holds nothing on `bronze`, `silver`, or `synthetic`.
 
 ## 2026-10-31  Ingest: land the source files in a Unity Catalog volume from a laptop
 
@@ -436,6 +453,36 @@ functions, Agent Bricks.
   with an `_imputed` suffix (puts published and synthetic data in one schema).
 - **Revisit:** if the masking test on FEMA and CISA lands far from the truth, or if the agent
   cannot reliably disclose imputed values, fall back to "not published" for redacted rows.
+  **Withdrawn 2026-10-31 (Ryan):** the demo is "more art than science"; the masking result is
+  recorded and disclosed but changes nothing, and the implementing session needs no sign-off on it.
+- **Amended 2026-10-31 (spec 03):** three of the nineteen redacted location columns are imputed
+  (city, state, state abbreviation), the three a posting supplies; the rest stay `REDACTED`. The
+  draw is a hash of the row's published columns plus its position among identical rows, so a
+  rerun reproduces the tables; draws are independent per snapshot (no id links a person across
+  months). Pay is uniform within the matched posting's salary range, matched on pay plan and
+  zero-padded grade. "Far from the truth" is defined: distribution overlap of imputed versus true
+  state under 0.5 on FEMA or CISA ([spec 03](challenge/specs/03-semantic-layer.md)). Later the
+  same day the bar was withdrawn (Revisit, above) and approximate point geometries were added:
+  every row with a city gets the Census Gazetteer place point, or the state centroid, with a
+  `geo_precision` flag, so the spec 05 dashboard can draw a map (Data, amended).
+
+## 2026-10-31  Counting: separations and accessions by effective month across all files
+
+- **Context:** each monthly OPM file carries actions effective up to two years earlier, and rows
+  have no action id. Spec 02 left the choice between counting by the reporting file and counting
+  by `effective_month` ([spec 02 results](challenge/specs/02-results.md)).
+- **Chosen:** count by `effective_month` across all twelve files. Rows identical on every
+  published column that appear in more than one file are the only detectable restatements: 0.8%
+  of DHS separation rows, 9% of accession rows (mostly identical new hires in one month, not
+  restatements). A restatement that changes a column is invisible, so this is evidence, not a
+  bound. The latest months are right-censored: most of a month's late-reported actions arrive in
+  the next two files, so trailing counts ending in the demo month will grow. Every counting
+  function states both.
+- **Rejected:** counting by reporting month (no restatement risk, but "left in January" would
+  mean "reported in January", which is not what the user asks); counting only rows effective in
+  the reporting month (drops 25% of rows, under half in two months).
+- **Revisit:** if OPM adds an action id, deduplicate on it; if a later file's restatement is ever
+  shown to exceed a few percent for separations, switch to reporting month and say so.
 
 ## Build-week items, not decisions
 

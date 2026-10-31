@@ -179,3 +179,33 @@ reported, not "few" as the spec guessed. `challenge/specs/02-results.md`; cost d
 Measured redaction in the DHS silver tables: location, pay, and bargaining unit masked together on
 76% of employee records, by occupation. Ryan chose synthetic location and pay in a `synthetic`
 schema, specified in spec 03. Filed `analyses/opm-redaction-and-imputation.md`; DECISIONS.md entry.
+
+## [2026-10-31] spec | 03 synthetic schema and semantic layer
+Wrote `challenge/specs/03-semantic-layer.md`: deterministic imputation of city, state, and pay
+from USAJOBS postings into a `synthetic` schema with per-row flags and a FEMA/CISA masking test,
+the OMB-scaled staffing plan, eight `semantic` views and eight table-valued functions mapped to
+question families, a Genie space, and the fifth grant. Measured first: restatement across files
+(0.8% separations, 9% accessions), duplicate rows within a snapshot, grade formats, pool coverage.
+DECISIONS.md: new Counting entry; Imputation, Synthetic data, and Terraform amended. The notebook
+`03_semantic.sql` is the next step.
+
+## [2026-10-31] query | Freeform SQL tool in mission environments
+Exa research on how analytics agents query data. Production teams (Block, AWS/dbt, Pinterest),
+enterprise benchmarks (Spider 2.0, BEAVER), OWASP, Google, Databricks, and Palantir converge on
+governed fixed-SQL tools plus a bounded natural-language path and no freeform SQL. Filed
+`analyses/freeform-sql-vs-governed-tools.md`; spec 03 step 6 now registers the functions as Genie
+trusted assets.
+
+## [2026-10-31] lint | Adversarial review of spec 03
+A fresh reviewer agent found two blocking problems (location-pool order left ties, so reruns could
+differ; the open-postings status rule is wrong for any date but pull day) and several mediums
+(grants prose contradicted main.tf, right-censoring unstated, letter-grade rule ambiguous).
+All fixed in the spec; `agent_silver` dropped from Terraform; spec 02 results annotated; Data,
+Counting, and Terraform entries in DECISIONS.md amended; stray tracked `.pyc` untracked.
+
+## [2026-10-31] update | Spec 03: masking bar withdrawn, point geometries added
+Ryan: resolve the masking test without sign-off, it is more art than science; add approximate
+points for a dashboard map. Census Gazetteer 2025 places pulled (new `gazetteer` step in
+`pull_sources.py`) and landed in the volume; exact-name match covers 87 to 89% of cities, state
+centroid fallback for the rest, `geo_precision` flag. Spec, DECISIONS (Data, Imputation), and the
+redaction analysis updated.
