@@ -169,3 +169,8 @@ MCP as the service principal. Placeholders in `challenge/example.env`.
 Ryan chose a one-time load with no refresh. `challenge/specs/02-one-time-load.md`, the laptop
 pull script, and the SQL load notebook written; small datasets pulled and the Historic JOA
 replaces the Search API (DECISIONS.md, Data and Ingest amended).
+
+## [2026-10-31] spec | 02 one-time load executed
+Ten bronze and silver tables loaded in one 137-second job run; every step 4 check matched and
+the service principal's grants are unchanged. 75% of DHS separations take effect in the month
+reported, not "few" as the spec guessed. `challenge/specs/02-results.md`; cost due 2026-11-01.
