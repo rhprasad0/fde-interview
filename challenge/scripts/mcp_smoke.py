@@ -8,15 +8,15 @@ import asyncio
 import os
 
 import httpx
+import httpx2  # the transport mcp>=2 requires
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
 
 HOST = os.environ["DATABRICKS_HOST"].rstrip("/")
 FN_URL = f"{HOST}/api/2.0/mcp/functions/workforce/semantic/headcount_for"
 SCHEMA_URL = f"{HOST}/api/2.0/mcp/functions/workforce/semantic"
-# all-apis is capped by the secret's own scopes (unity-catalog, genie). If the token endpoint
-# rejects it, change to "unity-catalog" and record which string worked.
-SCOPE = "all-apis"
+# Must be a subset of the secret's scopes; "all-apis" is refused with 403 access_denied.
+SCOPE = "unity-catalog genie"
 
 
 def token() -> str:
@@ -32,7 +32,10 @@ def token() -> str:
 
 
 async def probe(url: str, tok: str) -> None:
-    async with streamablehttp_client(url, headers={"Authorization": f"Bearer {tok}"}) as (r, w, _):
+    async with (
+        httpx2.AsyncClient(headers={"Authorization": f"Bearer {tok}"}, timeout=60) as http,
+        streamable_http_client(url, http_client=http) as (r, w),
+    ):
         async with ClientSession(r, w) as s:
             await s.initialize()
             tools = await s.list_tools()

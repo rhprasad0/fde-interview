@@ -137,8 +137,9 @@ SELECT semantic.headcount_for('HS');  -- expect 3
 
 ## Step 7: enable Managed MCP Servers
 
-- **Do.** Settings, Previews, enable Managed MCP Servers ([built-in MCPs](https://docs.databricks.com/aws/en/agents/mcp-tools/built-in-mcp-services)).
-  Leave the Unity Gateway beta off; the chosen path does not use it.
+- **Do.** Username menu (top right), Previews, enable Managed MCP Servers ([built-in MCPs](https://docs.databricks.com/aws/en/agents/mcp-tools/built-in-mcp-services)).
+  Leave the Unity Gateway betas at their defaults: the workspace MCP endpoints bypass Unity
+  Gateway, so none of its policies apply; AgentCore Gateway and the grants are the policy layer.
 - **Done when.** The preview shows On.
 
 ## Step 8: secret values for the USAJOBS key
@@ -160,7 +161,7 @@ authentication method and scope string the token endpoint accepted, and whether 
 MCP URL works (one Gateway target per schema) or only per-function URLs (one target per function).
 
 ```bash
-cd challenge && uv venv && source .venv/bin/activate && uv pip install mcp httpx python-dotenv
+cd challenge && uv venv && source .venv/bin/activate && uv pip install "mcp>=2.3,<3" httpx
 set -a; source .env; set +a
 curl -s "$DATABRICKS_HOST/oidc/.well-known/oauth-authorization-server" \
   | python -c 'import json,sys; d=json.load(sys.stdin); print({k:d.get(k) for k in ("issuer","token_endpoint","token_endpoint_auth_methods_supported")})'
