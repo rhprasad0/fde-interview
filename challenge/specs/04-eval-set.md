@@ -84,6 +84,11 @@ the steps below: `challenge/scripts/validate_questions.py` (step 4),
 
 ## Step 1: capture the session (2026-11-01, before anything else)
 
+The tester and the facilitator both watch the three-minute briefing video before the session
+(<https://youtu.be/5UgPAHnXmUE>, made from `challenge/eval/sessions/2026-11-01-tester-briefing.md`
+and the four screenshots beside it). Ryan chose to show the screens in advance so the tester is
+not blindsided; the test measures how they use the screens, not whether they can find them.
+
 The session log is the raw material. The template exists before the tester arrives:
 `challenge/eval/sessions/2026-11-01-tester-a-log.csv`, one row per question the tester asks or
 would ask, with these columns:

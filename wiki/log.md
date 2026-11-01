@@ -292,3 +292,12 @@ agent built at first question, `/new` on 401; `callback_handler=None`; a during-
 tool-name normalization, rule 9/10 contradictions, five-minute auto-stop and a $5 to $8 day,
 `ts` and `git_dirty` fields, harness identity, skills concatenated, two-turn plumbing,
 governance stated plainly, trace upload to the volume.
+
+## [2026-11-01] build | Spec 05 prototype built; tester briefing video
+An Opus builder agent wrote the agent, prompt, skills, session loop, and harness; acceptance
+checks 1 to 7, 9, 10 passed live (0 of 11 format misses on the final prompt, median 4.2 s per
+turn). Genie is wrapped in one local tool that runs the query-then-poll flow and redacts the
+space id. Tester briefing written as a one-page document with four screenshots rendered from the
+concept pages, and a three-minute video generated from them
+(`challenge/eval/sessions/2026-11-01-tester-briefing.md`, <https://youtu.be/5UgPAHnXmUE>).
+Spec 04 step 1 now records that the screens are shown in advance by choice.
