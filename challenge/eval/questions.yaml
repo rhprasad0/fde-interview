@@ -1,0 +1,12 @@
+# Golden questions for the workforce variance-review agent. Spec 04.
+# Every question is written by a human. No model-generated or model-paraphrased questions.
+# Tester rows keep their session-log q_id (A01...). Ryan's rows are R01... with a reason.
+# Schema and rules: challenge/specs/04-eval-set.md, step 4.
+set_version: eval-v1
+opm_through: 2026-08-01
+usajobs_pulled: 2026-10-31
+frozen: false
+sources:
+  tester_a: former federal HR professional, current contractor in an unrelated field, not a Palantir user; session 2026-11-01
+  ryan: domain-literate analyst; rows written after classification, before any run
+questions: []

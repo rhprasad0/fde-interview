@@ -230,3 +230,38 @@ proposal-then-approve collides with the read-only decision. Recorded that AIP De
 signups have been paused since 2026-10-23 (attempt 2026-11-01) and the Firm's 2025-06-30 Palantir
 partnership (saved to raw/, URL carries the name). Filed
 `analyses/palantir-aip-for-workforce-variance-review.md`; DECISIONS Agent-layer entry amended.
+
+## [2026-11-01] query | What makes an executive agent demo land; where our wow moment is
+Exa research across AIPCon demos (Onyx, Hertz), Databricks keynotes (Zero Ops, public-sector
+"double click"), Navy, Army CGSC, Air Force DASH, chief-of-staff agents, demo-craft guides, and
+hackathon judges. Three forms of wow; the build has all three. Verified in the warehouse: CBP
+Officer accessions dipped to 80 in October 2025 (shutdown month) against about 230 in surrounding
+months, and FEMA recorded 19 accessions in eight months before resuming in May 2026, so its plan
+cells are the exception the agent should raise. Proposed a 15-minute arc that opens on outcome;
+this collides with the 2026-10-30 demo-shape decision and awaits Ryan. Filed
+`analyses/executive-agent-demo-wow.md`.
+
+## [2026-11-01] spec | 04 eval set from human traces
+Ryan: build the eval set around real user traces from the prototype session, never LLM-simulated
+users; eval spec before the prototype spec so the prototype emits the traces the evals need.
+Answers: Ryan's own rows may fill to a floor of 20 and cover untouched families; numbering is
+04 eval, 05 prototype, 06 AgentCore and dashboard; SQL truth grades with the tester's label beside
+it; verbatim questions committed, tester anonymized. Spec written as a process spec with truth
+independent of `semantic`, pinned data state, git-tag freeze, headline pass^3 over the Verified
+tier only. Session log template and empty questions file created
+(`challenge/specs/04-eval-set.md`, `challenge/eval/`).
+
+## [2026-11-01] lint | Adversarial review of spec 04
+A fresh reviewer agent found 10 blocking defects (a truth table and a volume that do not exist;
+a calibration view with no data path; "deterministic" scorers with no extraction rule; label
+flags undefined for narrative rows; no rule for errored runs; pass^1 misdefined as pass@3; prompt
+leakage after freeze; no class for in-scope-but-unanswerable questions; refusal and clarify
+scorers that were judgment calls), 15 mediums, 6 minors. All fixed in the spec: `silver.places`
+and `silver.state_centroids`; session files under `bronze.landing/eval/`; `run_index 0` loads
+the live-agent session so calibration compares the same answer; structured `answer_value` and
+`cited_tools` fields the agent fills; flags computed for every graded row; errors fail with
+category `error`; tau-bench pass^1; prompt hash recorded at tag time and paraphrase rows held out
+of prompt development; `data_limit` class; mechanical refusal and clarify rules; Genie floor of
+ten rows aimed at the five known errors; freeze procedure; two-turn row shape; redaction on every
+free-text column with the tester's name in `.forbidden-terms`; list truth carries values; a
+disagreement between truth and a function is fixed in the function. Dry run moved to spec 05.

@@ -106,6 +106,17 @@ Revisit:   what evidence would change this
   Unity Catalog trace table; if the notebook's boto3 call to AgentCore fights IAM, run the harness
   locally and push results through the Statement Execution API.
 - **Superseded:** the earlier version chose MLflow as the harness; see git history.
+- **Amended 2026-11-01 (spec 04):** the questions come only from humans: Tester A's verbatim
+  questions from the 2026-11-01 prototype session and Ryan's own rows, written afterward to reach
+  a floor of 20 graded questions and cover every function family, each row marked by author.
+  LLM-simulated users are rejected (Ryan: "huge mistake"; the set would measure the simulator).
+  Truth SQL runs against `synthetic` and `silver` base tables and never through a `semantic`
+  function, so a function bug fails the eval instead of passing it. The data state is pinned to
+  files through August 2026; the set is frozen by git tag and results rows carry the version. The
+  headline pass^3 covers the Verified tier only; Genie, refusal, and clarify rows get their own
+  lines. SQL truth grades; the tester's judgment is a second column that calibrates the judge.
+  Specs renumbered: 04 eval set, 05 prototype agent, 06 AgentCore and dashboard
+  ([spec 04](challenge/specs/04-eval-set.md)).
 
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
