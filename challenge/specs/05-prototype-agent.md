@@ -24,7 +24,11 @@ pass^3 can be measured locally, before anything is deployed.
   is realistic: a standard-library HTTP server on localhost serves the three screens, the ask
   screen is live against the same agent, the brief's ask box and example questions go to it,
   and the Accept, Reject, and Flag buttons record the click. Nothing about the agent, the trace
-  line, or the redaction changes; the terminal loop stays as a fallback. Decision capture in the
+  line, or the redaction changes; the terminal loop stays as a fallback. After the dry run the
+  app gained a guide bar (six tasks, kept per session and stamped on every trace and decision
+  line), state that survives navigation, a prominent assistant page, a "Final paragraph" box
+  that saves the OPM paragraph the tester settles on, and a sixth page that collects feedback,
+  including how to demo this to the panel. Each capture writes its own JSONL under `raw/`. Decision capture in the
   app writes a local JSONL file under its own identity, not Databricks, which is the first of the
   three options the AIP analysis listed and leaves the read-only decision intact.
 - **Structured answer by contract.** Every answer ends with a fenced JSON block holding
@@ -148,7 +152,10 @@ without a total for a "how many" question (step 1: 49 state rows, no sum), the a
 rows and says so, under rule 9.
 
 **Model.** `AnthropicModel(client_args={"api_key": ...}, model_id="claude-haiku-5-5",
-max_tokens=16000, cache_config=...)`. No router and no fallback. A connection, 5xx, or
+max_tokens=16000, cache_config=..., params={"output_config": {"effort": "high"}})`. Effort
+raised from the default `medium` after the dry run (Ryan: the agent should put reasoning effort
+into inferring intent); confirmed on the wire by inspecting the outgoing request body. No router
+and no fallback. A connection, 5xx, or
 overloaded error surfaces from the turn as `error = model` on the trace line; the Anthropic
 SDK's own retries (two by default) are the only automatic recovery, and the session list in step 3
 is the manual one.
@@ -182,10 +189,17 @@ spec 04 scorers map to one for one:
    and name the nearest in-scope alternative.
 5. When the data cannot answer an in-scope question (no start snapshot for the month, no plan
    before FY2026 Q1), say which limit applies and offer the nearest answerable variant.
-6. When intent is ambiguous, ask one clarifying question that names the readings, and call no
-   tool first.
-7. When the user supplies a fact the data lacks, recompute under it, state it as the user's
-   assumption with the arithmetic shown, and never present it as a discovered fact.
+6. Never ask a clarifying question (Ryan, 2026-11-01, after four of eight dry-run turns came
+   back as questions). Infer the most plausible reading, with the open cell (CBP Officer,
+   FY2026 Q1) as the default subject when none is named, answer it, and end with one sentence
+   stating the reading taken and the nearest alternative so the analyst can correct it. The
+   `Question` label is retired; labels are Verified, Exploratory, Not available.
+7. When the user supplies a fact the data lacks, fetch the figures it bears on with the standard
+   calculations if they are not already in the conversation, recompute under it, state it as
+   the user's assumption with the arithmetic shown, and never present it as a discovered fact.
+   The app attaches the open cell to the fact. Recompute convention: scale the plan to the days
+   hiring was possible; never adjust the actuals; never claim the assumption "explains" the
+   shortfall.
 8. End every answer with a fenced block tagged `json` holding exactly `{"answer_value": <number
    | [{"key":..,"value":..}] | null>, "cited_tools": [<tool names or "genie">]}`. The wrapper
    accepts the last fenced block whether or not the tag is present, so a dropped tag is not a

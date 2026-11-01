@@ -19,7 +19,7 @@ import httpx2  # the transport mcp>=2 requires
 import yaml
 from mcp.client.streamable_http import streamable_http_client
 from strands import Agent, tool
-from strands.hooks import AfterToolCallEvent
+from strands.hooks import AfterToolCallEvent, BeforeToolCallEvent
 from strands.models.anthropic import AnthropicModel
 from strands.models.model import CacheConfig
 from strands.telemetry import StrandsTelemetry
@@ -179,14 +179,26 @@ def build_agent(session_id: str, run_index: int = 0) -> Agent:
         _spans = _RedactedFile(RAW / f"{day}-{session_id}-spans.log")
         StrandsTelemetry().setup_console_exporter(out=_spans)
     model = AnthropicModel(client_args={"api_key": ENV["ANTHROPIC_API_KEY"]}, model_id=MODEL_ID, max_tokens=16000,
-                           cache_config=CacheConfig(strategy="anthropic"))
+                           cache_config=CacheConfig(strategy="anthropic"),
+                           params={"output_config": {"effort": "high"}})  # Haiku 5.5 defaults to medium
     functions = MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/functions/workforce/semantic"))
     agent = Agent(model=model, tools=[functions, one_off_query], system_prompt=SYSTEM, callback_handler=None)
     durations = {}
     agent.add_hook(lambda e: durations.__setitem__(e.tool_use["toolUseId"], e.duration), AfterToolCallEvent)
+    agent.add_hook(_null_args, BeforeToolCallEvent)
     agent.trace = {"session_id": session_id, "run_index": run_index, "n": 0, "prev_answer": None,
                    "durations": durations, "path": RAW / f"{day}-{session_id}-trace.jsonl"}
     return agent
+
+
+def _null_args(event) -> None:
+    """The functions' MCP schema types every argument as a string, so the model writes "null" for "all of DHS";
+    the string matches nothing and returns zero rows. Send a real null, which the functions read as "all"."""
+    if event.tool_use["name"].startswith(FN_PREFIX):
+        args = event.tool_use.get("input") or {}
+        for k, v in args.items():
+            if isinstance(v, str) and v.strip().lower() in ("null", "none", ""):
+                args[k] = None
 
 
 def _norm(name: str) -> str:
@@ -234,11 +246,13 @@ def _model_error(e: BaseException) -> bool:
     return False
 
 
-def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | None = None, extra: dict | None = None) -> dict:
+def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | None = None, extra: dict | None = None,
+             scope: str | None = None) -> dict:
     st = agent.trace
     st["n"] += 1
     if context:
-        msg = f"The analyst supplies this fact, which the data does not contain: {context}" + (f"\n\n{text}" if text else "")
+        about = f" about {scope}" if scope else ""
+        msg = f"The analyst supplies this fact{about}, which the data does not contain: {context}" + (f"\n\n{text}" if text else "")
     else:
         msg = text
     start = len(agent.messages)

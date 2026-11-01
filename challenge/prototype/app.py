@@ -22,17 +22,19 @@ from agent import RAW, build_agent, redact, run_turn
 HOST, PORT = "127.0.0.1", 8765
 SCREENS = Path(__file__).resolve().parent / "screens"
 PAGES = {"/": "Main", "/Main.dc.html": "Main", "/quarter": "Quarter", "/Quarter.dc.html": "Quarter",
-         "/ask": "Ask", "/Ask.dc.html": "Ask"}
-LABELS = ("Verified", "Exploratory", "Not available", "Question")
+         "/ask": "Ask", "/Ask.dc.html": "Ask", "/feedback": "Feedback"}
+LABELS = ("Verified", "Exploratory", "Not available")
+SCOPE = "CBP Officers, FY2026 Q1"  # the cell the screens are open on; attached to context turns
 CHOICES = ("accept", "reject", "flag")
 DIM, OFF = "\033[2m", "\033[0m"
 TOKEN_SECONDS = 3300  # the service principal token lives 3600 s; rebuild before it expires (same as /new)
 TASKS = [  # the user-test script: instruction, page, and anchor for each task
     {"text": "Read the draft explanation. What is it telling you? Would you hand it to your director as it stands?", "page": "/", "anchor": ""},
     {"text": "The CHCO's quarterly staffing review is Thursday. Pick the three cells that go on the agenda.", "page": "/quarter", "anchor": ""},
-    {"text": "Open one cell and draft the one-paragraph explanation OPM gets. Ask the assistant anything you need.", "page": "/ask", "anchor": ""},
+    {"text": "Work with the assistant to draft the one-paragraph explanation OPM gets. When you are satisfied, paste the final paragraph into the box under the chat and submit it.", "page": "/ask", "anchor": ""},
     {"text": "Act on the recommended actions: accept, reject, or flag each one. What should happen next?", "page": "/", "anchor": "recommendations"},
     {"text": "Try to break it. Ask something it should not know or cannot know.", "page": "/ask", "anchor": ""},
+    {"text": "Tell us what you think.", "page": "/feedback", "anchor": ""},
 ]
 
 _sessions, _sessions_lock = {}, threading.Lock()
@@ -41,7 +43,17 @@ _sessions, _sessions_lock = {}, threading.Lock()
 def _session(cookie_id):
     with _sessions_lock:
         return _sessions.setdefault(cookie_id, {"lock": threading.Lock(), "agent": None, "built": 0.0, "turns": [],
-                                                "sid": f"s-{uuid.uuid4().hex[:8]}", "task": 1, "decisions": {}, "know": ""})
+                                                "sid": f"s-{uuid.uuid4().hex[:8]}", "task": 1, "decisions": {}, "know": "",
+                                                "paragraph": "", "feedback": {}})
+
+
+def _append(s, kind, fields):
+    """One line to raw/<date>-<session>-<kind>.jsonl, stamped with time, session, and task."""
+    now = datetime.now(timezone.utc)
+    RAW.mkdir(exist_ok=True)
+    with open(RAW / f"{now.date().isoformat()}-{s['sid']}-{kind}.jsonl", "a") as f:
+        f.write(redact(json.dumps({"ts": now.isoformat(timespec="seconds"), "session_id": s["sid"], "task": s["task"], **fields})) + "\n")
+    print(f"{DIM}{s['sid']} task {s['task']} {kind} saved{OFF}", flush=True)
 
 
 def _new(s):
@@ -113,10 +125,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, page, "text/html", rid if fresh else None)
         elif path == "/support.js":  # the screens reference it; nothing in it is needed here
             self._send(200, "", "text/javascript")
-        elif path in ("/api/history", "/api/decisions", "/api/task", "/api/know"):
+        elif path in ("/api/history", "/api/decisions", "/api/task", "/api/know", "/api/paragraph", "/api/feedback"):
             s = _session(rid)
             body = {"/api/history": s["turns"], "/api/decisions": s["decisions"], "/api/task": {"task": s["task"]},
-                    "/api/know": {"text": s["know"]}}[path]
+                    "/api/know": {"text": s["know"]}, "/api/paragraph": {"text": s["paragraph"]},
+                    "/api/feedback": s["feedback"]}[path]
             self._send(200, body, cookie=rid if fresh else None)
         else:
             self._send(404, {"error": "not found"})
@@ -141,14 +154,22 @@ class Handler(BaseHTTPRequestHandler):
             choice, rec = req.get("choice"), str(req.get("recommendation") or "")[:1000]
             if choice not in CHOICES or not rec:
                 return self._send(400, {"error": "choice must be accept, reject, or flag, with a recommendation"})
-            now = datetime.now(timezone.utc)
-            line = {"ts": now.isoformat(timespec="seconds"), "session_id": s["sid"], "task": s["task"], "recommendation": rec,
-                    "choice": choice}
             s["decisions"][rec] = choice
-            RAW.mkdir(exist_ok=True)
-            with open(RAW / f"{now.date().isoformat()}-{s['sid']}-decisions.jsonl", "a") as f:
-                f.write(redact(json.dumps(line)) + "\n")
-            print(f"{DIM}{s['sid']} task {s['task']} decision | {choice} | {rec[:60]}{OFF}", flush=True)
+            _append(s, "decisions", {"recommendation": rec, "choice": choice})
+            return self._send(200, {"ok": True}, cookie=cookie)
+        if path == "/api/paragraph":
+            text = str(req.get("text") or "").strip()[:5000]
+            if not text:
+                return self._send(400, {"error": "empty paragraph"})
+            s["paragraph"] = text
+            _append(s, "paragraph", {"text": text})
+            return self._send(200, {"ok": True}, cookie=cookie)
+        if path == "/api/feedback":
+            answers = req.get("answers")
+            if not isinstance(answers, dict):
+                return self._send(400, {"error": "answers must be an object"})
+            s["feedback"] = {str(k)[:200]: str(v)[:5000] for k, v in answers.items()}
+            _append(s, "feedback", {"answers": s["feedback"]})
             return self._send(200, {"ok": True}, cookie=cookie)
         if path == "/api/task":
             n = req.get("task")
@@ -172,7 +193,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 if s["agent"] is None:
                     s["agent"], s["built"] = build_agent(s["sid"]), time.monotonic()
-                r = run_turn(s["agent"], text, q_id=req.get("q_id") or None, context=context, extra={"task": s["task"]})
+                r = run_turn(s["agent"], text, q_id=req.get("q_id") or None, context=context, extra={"task": s["task"]},
+                             scope=SCOPE if context else None)
             except Exception as e:  # noqa: BLE001  (never a traceback; the next question gets a fresh agent)
                 print(f"{DIM}{s['sid']} agent failed: {redact(type(e).__name__)}{OFF}", flush=True)
                 _new(s)
@@ -185,7 +207,7 @@ class Handler(BaseHTTPRequestHandler):
             print(f"{DIM}{s['sid']} task {s['task']} {r['q_id']} | {tools} | {r['latency_ms'] / 1000:.1f}s | error={r['error']}{OFF}", flush=True)
             out = {"label": None if failed else label, "body_html": body, "answer_value": r["answer_value"],
                    "cited_tools": r["cited_tools"], "latency_ms": r["latency_ms"], "error": r["error"]}
-            s["turns"].append({"question": text or f"You added: {context}", **out})
+            s["turns"].append({"question": text or context, "context": bool(context), **out})
             if r["error"] == "model":
                 _new(s)  # the web equivalent of typing /new after "one moment"
             return out
@@ -212,6 +234,11 @@ MAIN_JS = r"""
   });
   fetch('/api/decisions').then(r => r.json()).then(d => buttons.forEach(b => { if (d[recOf(b)] === b.dataset.choice) press(b); }));
   const f = document.querySelector('form[action="Ask.dc.html"]'), inp = f.querySelector('input');
+  const box = f.closest('section');  // the main event: accent border, larger type
+  box.style.cssText += ';border: 3px solid #005ea2; padding: 32px; gap: 18px; box-shadow: 0 2px 10px rgba(0,94,162,.15)';
+  box.querySelector('h2').style.fontSize = '26px';
+  box.querySelector('h2').insertAdjacentHTML('afterend', '<p style="margin: -8px 0 0; font-size: 16px; color: #3d4551">The assistant is where the work happens: check any figure, test an assumption, and draft the paragraph OPM gets.</p>');
+  inp.style.minHeight = '54px'; inp.style.fontSize = '17px';
   const go = e => { e.preventDefault(); const q = inp.value.trim(); location.href = '/ask' + (q ? '?q=' + encodeURIComponent(q) : ''); };
   f.addEventListener('submit', go); f.querySelector('a').addEventListener('click', go);
   f.nextElementSibling.querySelectorAll('a').forEach(a => { a.href = '/ask?q=' + encodeURIComponent(a.textContent.trim()); });
@@ -262,6 +289,7 @@ GUIDE_JS = r"""
     bar.querySelector('[data-n]').textContent = `Task ${n} of ${TASKS.length}`;
     bar.querySelector('[data-t]').textContent = TASKS[n - 1].text;
     back.disabled = n === 1; next.disabled = n === TASKS.length;
+    next.textContent = n === TASKS.length - 1 ? 'Finish' : 'Next task';
     back.style.opacity = back.disabled ? .4 : 1; next.style.opacity = next.disabled ? .4 : 1;
   };
   const go = async m => {
@@ -282,18 +310,42 @@ ASK_JS = r"""
     'Verified': ['#2e8540', '<path d="M20 6 9 17l-5-5"></path>'],
     'Exploratory': ['#8a5a00', '<path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path>'],
     'Not available': ['#4b4f58', '<circle cx="12" cy="12" r="10"></circle><path d="m4.9 4.9 14.2 14.2"></path>'],
-    'Question': ['#005ea2', '<circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path>'],
   };
   const SOURCE = {'Verified': "Source: the review's standard calculations.", 'Exploratory': 'Source: a one-off query, shown above. Check it before quoting.'};
   const conv = document.querySelector('section[aria-label="Conversation"] > div:nth-of-type(2)');
   const qlist = [...document.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Questions asked in this review').parentElement.querySelector('ol');
   const inp = document.getElementById('q'), btn = inp.form.querySelector('button');
   conv.innerHTML = ''; qlist.innerHTML = '';
+  document.querySelector('header').insertAdjacentHTML('afterend', `<div style="background: #1a4480; color: #ffffff">
+    <div style="max-width: 1120px; margin: 0 auto; padding: 18px 24px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 24px; font-weight: 700">The assistant: this is where the work happens</span>
+      <span style="font-size: 15px; color: #d9e8f6">Ask about CBP Officers in FY2026 Q1, test an assumption, and draft the paragraph OPM gets.</span>
+    </div></div>`);
+  inp.form.insertAdjacentHTML('beforebegin', `<div style="padding: 0 24px 4px; display: flex; flex-wrap: wrap; gap: 8px">
+    <button type="button" data-chip style="font-size: 14px; padding: 10px 14px; border: 1px solid #005ea2; border-radius: 999px; background: #ffffff; color: #005ea2; font-weight: 600; min-height: 44px; cursor: pointer; font-family: inherit">Draft the OPM paragraph</button></div>`);
+  inp.form.insertAdjacentHTML('afterend', `<div style="border-top: 1px solid #dfe1e5; padding: 16px 24px 20px; display: flex; flex-direction: column; gap: 8px">
+    <label for="finaltext" style="font-size: 16px; font-weight: 700">Final paragraph for OPM</label>
+    <span style="font-size: 13px; color: #4b4f58">Paste or write the paragraph you would send, then submit it.</span>
+    <textarea id="finaltext" rows="6" style="font: inherit; font-size: 15px; line-height: 1.5; padding: 10px 14px; border: 1px solid #565c65; border-radius: 4px; resize: vertical"></textarea>
+    <div style="display: flex; align-items: center; gap: 12px"><button id="finalsubmit" type="button" style="min-height: 44px; padding: 0 18px; border-radius: 4px; border: 1px solid #005ea2; background: #005ea2; color: #ffffff; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit">Submit paragraph</button>
+    <span id="finalstatus" role="status" style="font-size: 14px; font-weight: 600; color: #2e8540"></span></div></div>`);
+  const fin = document.getElementById('finaltext'), finStatus = document.getElementById('finalstatus');
+  fetch('/api/paragraph').then(r => r.json()).then(p => { if (!fin.value) fin.value = p.text; });
+  fin.addEventListener('input', () => { finStatus.textContent = ''; });
+  document.getElementById('finalsubmit').addEventListener('click', async () => {
+    if (!fin.value.trim()) return;
+    const r = await fetch('/api/paragraph', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: fin.value})});
+    finStatus.textContent = r.ok ? 'Saved' : 'Not saved, please try again';
+  });
   const reveal = el => { el.style.scrollMarginBottom = '130px'; el.scrollIntoView({block: 'nearest'}); return el; };  // clear the guide bar
   const add = h => { conv.insertAdjacentHTML('beforeend', h); return reveal(conv.lastElementChild); };
   const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
   const bubble = (inner, ex) => `<div style="background: ${ex ? '#fff8e6' : '#f4f5f7'};${ex ? ' border: 1px solid #ffd27a;' : ''} border-radius: 2px 12px 12px 12px; padding: 14px 18px; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 10px">${inner}</div>`;
-  const user = q => { add(`<div style="align-self: flex-end; max-width: 640px; background: #e7f1fb; border-radius: 12px 12px 2px 12px; padding: 12px 16px; font-size: 15px; line-height: 1.5">${esc(q)}</div>`); qlist.insertAdjacentHTML('beforeend', `<li>${esc(q)}</li>`); };
+  const TAG = '<span style="display: inline-block; margin-bottom: 6px; padding: 2px 8px; border: 1px solid #1a4480; border-radius: 999px; background: #ffffff; color: #1a4480; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase">Your assumption</span><br>';
+  const user = (q, ctx) => {
+    add(`<div style="align-self: flex-end; max-width: 640px; background: #e7f1fb; border-radius: 12px 12px 2px 12px; padding: 12px 16px; font-size: 15px; line-height: 1.5${ctx ? '; border: 1px solid #1a4480' : ''}">${ctx ? TAG : ''}${esc(q)}</div>`);
+    qlist.insertAdjacentHTML('beforeend', `<li>${ctx ? 'Your assumption: ' : ''}${esc(q)}</li>`);
+  };
   const answer = (r, el) => {
     const k = KIND[r.label];
     const status = k ? `<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: ${k[0]}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${k[0]}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${k[1]}</svg>${r.label}</div>` : '';
@@ -305,7 +357,7 @@ ASK_JS = r"""
   const ask = async (text, context) => {
     if (busy || !(text || context)) return;
     busy = true; inp.disabled = btn.disabled = true;
-    user(text || 'You added: ' + context);
+    user(text || context, !text);
     const t0 = Date.now();
     const w = add(`<div style="max-width: 760px">${bubble('<p style="margin: 0; color: #4b4f58">Working<span>...</span> A standard calculation takes 5 to 10 seconds; a one-off query about 30. <span data-s>0</span> s</p>')}</div>`);
     const tick = setInterval(() => { const s = w.querySelector('[data-s]'); if (s) s.textContent = Math.round((Date.now() - t0) / 1000); }, 1000);
@@ -319,10 +371,11 @@ ASK_JS = r"""
   };
   btn.type = 'submit';
   inp.form.addEventListener('submit', e => { e.preventDefault(); ask(inp.value.trim(), null); });
+  document.querySelector('[data-chip]').addEventListener('click', () => ask('Draft the OPM paragraph.', null));
   const p = new URLSearchParams(location.search);
   history.replaceState(null, '', '/ask');  // a ?q= submits once: reload and back navigation see /ask
   (async () => {
-    for (const t of await (await fetch('/api/history')).json()) { user(t.question); answer(t); }
+    for (const t of await (await fetch('/api/history')).json()) { user(t.question, t.context); answer(t); }
     if (p.get('q')) ask(p.get('q').trim(), null);
     else if (p.get('context')) ask('', p.get('context').trim());
   })();

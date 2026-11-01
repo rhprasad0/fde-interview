@@ -44,9 +44,9 @@ the defaults stated rather than asked:
 - **Headline scope.** pass^3 at 80% over Verified-tier graded rows (number, list, narrative,
   context-supplied). Narrative rows are the only model-judged rows inside that headline, and the
   summary says so. Genie-tier rows are reported on their own line against the 70% bar already
-  decided, with a floor of ten rows so the line is a measurement. Refusal, data-limit, and
-  clarify rows are reported on their own lines and never folded into the headline, so perfect
-  refusals cannot hide wrong answers.
+  decided, with a floor of ten rows so the line is a measurement. Refusal and data-limit rows
+  are reported on their own lines and never folded into the headline, so perfect refusals
+  cannot hide wrong answers. Reading-stated rows are Verified-tier and count in the headline.
 - **Two-turn cases are allowed, few, and scored on the final turn.** The context-supplied class
   (the analyst adds a fact the data lacks, such as the 2025-10-01 to 2025-11-12 lapse in
   appropriations, and the agent recomputes) is graded on the second answer, with the supplied
@@ -139,7 +139,7 @@ After the session, each log row becomes a candidate question with a `class` and 
 | `context_supplied` | Two turns: the analyst adds a fact, the agent recomputes with a labeled assumption | `number` on the second turn | Verified |
 | `refusal` | Out of scope: an individual, another department, budget, why someone left | `refusal` | Refusal |
 | `data_limit` | In scope, but this data cannot answer it (a twelve-month rate for a month with no start snapshot; a plan quarter before FY2026) | `data_limit` | Refusal |
-| `clarify` | Intent is ambiguous enough that a correct agent asks before answering | `clarify` | Clarify |
+| `reading_stated` (was `clarify`; changed 2026-11-01 after the dry run) | Intent is ambiguous; a correct agent answers the most plausible reading for the open cell and ends by stating the reading it took and the nearest alternative, so the analyst can correct it. Clarifying questions are retired: four of eight turns in Ryan's dry run were questions, two of them on supplied context | `number` or `list`, plus the stated reading | Verified |
 
 Rows that are not questions (a comment, a reaction) stay in the log and do not become rows in the
 set. Rows with identical `verbatim` text are merged into the earliest row; its judgment survives
@@ -199,7 +199,12 @@ names. `clarify` rows carry `acceptable_readings`: the two or more interpretatio
 question should distinguish.
 
 `context_supplied` rows carry `turn_1`, `supplied_context`, `turn_2`, and truth for turn 2 under
-the stated assumption, with `assumption_text` that the answer must label.
+the stated assumption, with `assumption_text` that the answer must label. The recompute
+convention, pinned 2026-11-01: a supplied period in which hiring could not happen scales the
+planned hires to the days hiring was possible (plan x open days / days in the quarter); the
+actuals are never adjusted, since they already reflect what happened. Truth for turn 2 is
+computed under that convention. For the FY2026 Q1 lapse (2025-10-01 to 2025-11-12, 43 of 92
+days), the CBP Officer plan of 594 scales to about 316 and the 475 actuals land about +50% over it.
 
 ## Step 4: the questions file
 
@@ -227,7 +232,7 @@ Fields of one entry, all required unless marked:
 | `truth_facts`, `must_not_claim` | narrative rows |
 | `must_offer` | refusal rows |
 | `limit_text`, `nearest` | data-limit rows |
-| `acceptable_readings` | clarify rows |
+| `acceptable_readings` | reading-stated rows; the first entry is the reading the truth is computed for |
 | `turn_1`, `supplied_context`, `turn_2`, `assumption_text` | context-supplied rows |
 | `tester_judgment`, `answered_by` | from the log; null for Ryan's rows |
 | `notes` | optional |
@@ -296,7 +301,7 @@ non-null `error` fails with `failure_category = error` and is never retried.
 | `genie_sql_stored` | Genie rows | `genie_sql` and `genie_statement_id` are non-null and the statement appears in `system.query.history`; fallback if the MCP tool returns no statement id: `genie_sql` non-null and the Genie message id stored |
 | `refusal` | `refusal` | no tool call returned rows, `answer_value` is null, and `answer_text` contains a `must_offer` phrase |
 | `data_limit` | `data_limit` | `answer_value` is null, `answer_text` contains the `limit_text` key phrase and names `nearest` |
-| `clarify` | `clarify` | `answer_value` is null, `answer_text` ends in a question, and it names at least two of the `acceptable_readings` by their key phrases |
+| `reading_stated` | `reading_stated` | `answer_value` passes `numeric_match` or `list_match` against the truth for the reading listed first in `acceptable_readings`, and the last sentence of `answer_text` contains the key phrases of that reading and of one alternative |
 | `faithfulness` | `narrative` | the judge finds every `truth_facts` number stated correctly and nothing from `must_not_claim` asserted; the judge's rationale is stored |
 | `assumption_labeled` | `context_supplied` | the second answer's `answer_text` contains the `assumption_text` key phrase and its `answer_value` matches turn-2 truth |
 

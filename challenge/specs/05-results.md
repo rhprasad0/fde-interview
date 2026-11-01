@@ -83,3 +83,32 @@ Decided by the lead after the build:
 
 Not verified: any live write to `eval`; the judge call; recovery after the one-hour token expiry;
 whether Ryan's user can see the service principal's statements in query history.
+
+## Dry run and round three (2026-11-01, 16:00 to 17:30)
+
+Ryan's own dry run (session `s-090ef514`, 8 turns, 3 decision clicks): every trace field present,
+task stamps on every line, no leaks. Four of eight turns were clarifying questions, including
+both supplied-context turns (the first had no variance figure in the conversation and asked
+instead of fetching one). Changes made in response, all verified with scripted clicks in headless
+Chrome against the workspace:
+
+- Context turns carry the open cell and the agent fetches the figures first; two fresh
+  sessions gave the same prorated-plan recompute (594 x 49/92 = 316.4; 475 against it is +158.6,
+  +50.1%), with the actuals unchanged and no claim that the assumption "explains" anything.
+- Clarifying questions retired; the `Question` label is gone. Ten varied turns produced only
+  Verified or Not available, each ending with the reading taken and the alternative.
+- Effort `high` passed as `params={"output_config": {"effort": "high"}}` and confirmed on the
+  outgoing request body.
+- The assistant page has a header band; the brief's ask box is prominent.
+- "Draft the OPM paragraph" chip, the four-sentence paragraph skill, and a "Final paragraph" box
+  saving to `raw/<date>-<session>-paragraph.jsonl` with the task stamp.
+- A sixth page, `/feedback`, task 6, saving five answers to `raw/<date>-<session>-feedback.jsonl`.
+- A bug found on the way: the function tools' schema types every argument as a required string,
+  so the model sent `"null"` for an optional argument and FEMA came back empty. A before-tool
+  hook now turns `"null"`, `"none"`, and `""` into real nulls; the trace records the argument
+  actually sent.
+
+Known: two sessions building agents at the same instant print one stray tracer-provider line and
+the second session's spans file stays empty; trace lines are unaffected. The FEMA prose total
+once differed from the row sum (20,159 against 20,208), a model arithmetic slip rule 9 does not
+fully prevent.

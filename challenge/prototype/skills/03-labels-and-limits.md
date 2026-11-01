@@ -1,6 +1,6 @@
 # Skill: label vocabulary and data limits
 
-Label line words, exactly: `Verified`, `Exploratory`, `Not available`, `Question`.
+Label line words, exactly: `Verified`, `Exploratory`, `Not available`. Nothing else.
 
 Caveat words, exactly as the review uses them:
 
