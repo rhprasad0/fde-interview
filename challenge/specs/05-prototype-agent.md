@@ -95,7 +95,8 @@ Pin `strands-agents`, `mcp`, `httpx2`, `anthropic`, `pyyaml` at their installed 
 
 ## Step 1: the first check this afternoon
 
-Before any agent code runs against the tester, confirm the two things memory lists as untested:
+Run 2026-11-01 13:10 by a reviewer agent, read-only; all four checks passed and no Terraform
+change was needed. Findings in `05-results.md`. The checks as specified:
 
 1. Genie as the service principal. Call the Genie MCP endpoint with the smoke script's token and
    ask one question. If it fails on warehouse permission, add `CAN USE` on the warehouse for the
@@ -124,9 +125,22 @@ URL (`/api/2.0/mcp/functions/workforce/semantic`, confirmed in spec 03 results t
 tools). Client two points at the Genie URL (`/api/2.0/mcp/genie/<space id>`). The two clients
 are passed directly into `Agent(tools=[functions_client, genie_client])` as tool providers, so
 their lifetime follows the agent and no `with` block closes them when `build_agent` returns.
-Client-credentials tokens are short-lived (about an hour; the exact lifetime is unverified), so
-the session agent is built at the tester's first question, not at setup, and `/new` is the
-recovery for a 401.
+Client-credentials tokens live one hour (`expires_in: 3600`, step 1), so the session agent is
+built at the tester's first question, not at setup, and `/new` is the recovery for a 401.
+
+**Genie as one local tool.** The Genie endpoint exposes two MCP tools whose names embed the space
+id: a query tool that returns `EXECUTING_QUERY` with a conversation id and message id after about
+fifteen seconds, and a poll tool that returns `COMPLETED` with the generated SQL, a statement id,
+and rows about thirty seconds after submission (step 1). Rather than let the model drive the
+poll loop (two or three model calls and the space id in every tool result), the Genie client is
+not handed to the model directly. A local Strands tool `one_off_query(question)` calls the query
+tool through the Genie `MCPClient`, polls until `COMPLETED` or 120 seconds, and returns a compact
+result: `sql`, `statement_id`, `columns`, `rows` (cast from Genie's all-string cells to numbers
+where the column is numeric), `truncated`, and `row_count`, with the space id removed from any
+text. The model sees one tool named `one_off_query`; the trace records it as `genie` with
+`genie_sql` and `genie_statement_id` filled from the result. When Genie returns a breakdown
+without a total for a "how many" question (step 1: 49 state rows, no sum), the agent sums the
+rows and says so, under rule 9.
 
 **Model.** `AnthropicModel(client_args={"api_key": ...}, model_id="claude-haiku-5-5",
 max_tokens=16000, cache_config=...)`. No router and no fallback. A connection, 5xx, or
@@ -175,6 +189,7 @@ spec 04 scorers map to one for one:
    arithmetic shown step by step from such numbers.
 10. Call at most one tool per question unless the question names two cells to compare;
     `imputation_quality` may accompany `headcount` on a location answer, as its comment asks.
+    `one_off_query` counts as one call; the polling happens inside it.
 
 The agent's system prompt is passed as the Anthropic provider's system content; whether a cache
 point on it is honored by this provider is checked in acceptance by reading
@@ -202,9 +217,11 @@ model recovered from one).
 
 **Tool-name normalization.** MCP names the functions `workforce__semantic__<fn>`; spec 04's
 `expected_tools` uses bare function names and the word `genie`. The trace writer strips the
-prefix and records any tool served by the Genie client as `genie`, in both `tool_calls` and
-`cited_tools`. Without this the `tool_use` and `provenance` scorers fail by construction, and a
-Genie tool name that embeds the space id would reach a tracked file.
+prefix and records `one_off_query` as `genie`, in both `tool_calls` and `cited_tools`. Without
+this the `tool_use` and `provenance` scorers fail by construction. The space id appears in Genie
+tool names and in Genie result text (a prose line that names the poll tool), so the
+`one_off_query` wrapper redacts it from every string before anything reaches the model or the
+trace. Function results carry a top-level `is_truncated` flag; the trace records it per call.
 
 The Strands console exporter writes spans to `raw/<date>-<session>-spans.log` for the
 span-level record; it is not parsed.
@@ -303,14 +320,21 @@ Nothing beyond spec 01. Trace files stay under `raw/`.
 - Flag columns on function outputs: `headcount_location_imputed` on `headcount` only;
   `is_synthetic` on `plan_variance` only; no imputation column on the other six.
 - The warehouse auto-stop is five minutes in Terraform.
+- Step 1 (2026-11-01): the token lives 3600 seconds; the functions endpoint lists all eight
+  tools; `open_postings` serializes `states` as a nested JSON array (six of eleven CBP Officer
+  postings open on 2026-08-01 carry `[null]`, a data fact, not a transport fault); `plan_variance`
+  returns the 248-character `generation_rule` intact; function results carry `is_truncated`;
+  Genie runs as the service principal with no extra grant, through a two-step query-then-poll
+  flow whose results carry the generated SQL, a statement id, conversation and message ids, and
+  rows with every cell typed as a string. Cold warehouse first call 25 seconds, warm 1.5.
 - Spec 04's hand-off list and `invoke` interface are the contract this spec implements.
 - Haiku 5.5 prices: $0.10 and $0.50 per million tokens for prompts under 100K tokens.
 
 ## Not verified before writing
 
-- Genie as the service principal: whether it needs `CAN USE` on the warehouse (step 1).
-- Whether the Genie MCP tool result carries a statement id, and whether `open_postings` and
-  `plan_variance` serialize cleanly over MCP (step 1).
+- Whether Genie ran as the service principal on its own grant or with the space owner's rights;
+  it worked, and the distinction matters only for the deep dive.
+- How long an immediate poll loop takes against the thirty-second figure measured with a gap.
 - Which span attributes the Strands console exporter populates for the Anthropic provider.
 - Whether `cache_config` on `AnthropicModel` produces cache reads on the second turn
   (acceptance 7).
