@@ -242,6 +242,13 @@ Revisit:   what evidence would change this
 - **Added (2026-10-30 evening):** inbound auth to the Gateway is IAM SigV4 from the Runtime role
   via `mcp-proxy-for-aws`, no Cognito. There is no write target; the agent is read-only
   ([pre-spec gaps](wiki/analyses/pre-spec-gaps.md)).
+- **Amended 2026-11-01 (spec 05):** the Revisit clause is invoked, for a different reason than
+  time lost on Gateway setup: a human tester session on 2026-11-01 needs a working agent before
+  any AgentCore resource exists. The prototype calls the two workspace MCP endpoints directly
+  with the service principal's token; Gateway and Runtime move to spec 06 with no change to the
+  agent code. The token scope (`unity-catalog genie`) and the read-only grants hold without the
+  Gateway, so the SQL tool is still refused and nothing can be written
+  ([spec 05](challenge/specs/05-prototype-agent.md)).
 
 ## 2026-10-30  Model: Claude Haiku 5.5 primary, GPT-6 Luna as the outage fallback
 

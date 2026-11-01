@@ -265,3 +265,30 @@ of prompt development; `data_limit` class; mechanical refusal and clarify rules;
 ten rows aimed at the five known errors; freeze procedure; two-turn row shape; redaction on every
 free-text column with the tester's name in `.forbidden-terms`; list truth carries values; a
 disagreement between truth and a function is fixed in the function. Dry run moved to spec 05.
+
+## [2026-11-01] spec | 05 prototype agent and session traces
+Written against spec 04's hand-off list: one Strands agent on Haiku 5.5, two MCP clients built
+the way `mcp_smoke.py` already does (mcp 2, httpx2, bearer token with `unity-catalog genie`
+scopes), direct to the workspace endpoints under the MCP-path decision's fallback clause, Gateway
+deferred to spec 06. Ten numbered prompt rules that map one for one to the spec 04 scorers; a
+trailing JSON block carries `answer_value` and `cited_tools`, with a missing block recorded as a
+`format` error so the formatting miss rate is its own number. Terminal session loop with `/q`,
+`/context`, `/new`; harness with `invoke`, `--stub`, and `load-session` for run zero. First
+check this afternoon: Genie as the service principal and the two unverified MCP serializations.
+
+## [2026-11-01] lint | Adversarial review of spec 05
+A fresh reviewer agent checked the spec against spec 04's contract, the smoke script, the
+notebook, Terraform, and the installed venv. Blocking: `openai` not installed so the fallback
+could not import; the imputed-row rule named columns seven of eight functions do not carry (and
+spec 04's label flag would have failed every TSA count question); token and MCP client lifetime
+unstated across a 45-minute session; Strands' default callback would print function names on
+the shared screen; no stated move for session failures; build order contradicted spec 04. All
+fixed: step 0 installs the extra; rule 3 and the trace writer name `headcount_location_imputed`
+and `is_synthetic` only, and spec 04's `requires_imputed_label` fires only when truth reads a
+location or pay column; clients passed as tool providers with the token minted in the factory,
+agent built at first question, `/new` on 401; `callback_handler=None`; a during-session list;
+"built blind" stated in both specs. Mediums fixed: `cache_config`, `max_tokens` 16000 with
+`stop_reason` recorded, per-invocation usage, `ModelRouter` fallback tested via dead port,
+tool-name normalization, rule 9/10 contradictions, five-minute auto-stop and a $5 to $8 day,
+`ts` and `git_dirty` fields, harness identity, skills concatenated, two-turn plumbing,
+governance stated plainly, trace upload to the volume.

@@ -140,7 +140,9 @@ Rows that are not questions (a comment, a reaction) stay in the log and do not b
 set. Rows with identical `verbatim` text are merged into the earliest row; its judgment survives
 and the later judgments go in `notes`. Near-duplicates are kept with `paraphrase_of`.
 
-Then Ryan writes his rows, all before any eval run and before spec 05 development starts:
+Then Ryan writes his rows, all before any eval run. The spec 05 prototype and its prompt are
+built blind before the session, so the questions never shape the first prompt; any prompt change
+after the rows exist shows as a new `prompt_hash`.
 
 - enough to reach 20 graded Verified-tier questions, `reason: floor`;
 - at least one per family the tester did not touch, `reason: coverage`;
@@ -171,8 +173,12 @@ Two more truth columns are computed by SQL, not by hand, so the caveat scorer is
 They are computed for every graded row, including narrative, exploratory, and context-supplied
 rows, from every truth SQL the row carries:
 
-- `requires_imputed_label`: true when any row any truth SQL touched has `location_imputed = true`
-  or `pay_imputed = true`. For a location or pay question about TSA or CBP this is always true.
+- `requires_imputed_label`: true when a truth SQL reads a location or pay column (duty station,
+  state, point, or pay) and any row it touched has `location_imputed = true` or `pay_imputed =
+  true`. A count, rate, tenure, or posting question that reads no such column does not require
+  the label even when its rows are imputed elsewhere; the agent sees no imputation flag in those
+  function outputs and must not be failed for a label it had no basis to add. For a location or
+  pay question about TSA or CBP this is always true.
 - `requires_synthetic_label`: true when any truth SQL touches `synthetic.staffing_plan`.
 
 `narrative` rows carry `truth_facts`: a list of `{name, truth_sql, truth_value, tolerance}`, the
@@ -233,7 +239,7 @@ Genie errors at least once; `frozen: true` only when `git tag --points-at HEAD` 
 `eval-v*` tag. The script also prints the coverage report: rows per class, per author, per
 family, distinct truths, and the count of Verified-tier graded rows against the floor of 20.
 
-**Freeze procedure.** After acceptance checks 1 to 3 pass and before spec 05 step 1 begins, set
+**Freeze procedure.** After acceptance checks 1 to 3 pass and before any eval run, set
 `frozen: true`, commit, and tag that commit `eval-v1`. The tag's commit sha and the agent prompt
 hash in force that day are recorded in `04-results.md`, so a prompt change after the freeze is
 visible as a different hash. Rows with `paraphrase_of` set are held out of prompt development:
