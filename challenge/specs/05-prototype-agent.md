@@ -18,10 +18,15 @@ pass^3 can be measured locally, before anything is deployed.
   survives the fallback: the token carries the `unity-catalog` and `genie` scopes only, so a SQL
   tool is refused at the token, and the principal holds no write grant anywhere
   ([freeform SQL vs governed tools](../../wiki/analyses/freeform-sql-vs-governed-tools.md)).
-- **Terminal, not a web page.** The static concept pages stay in the browser for the brief and
-  the quarter list. The live assistant runs in a terminal with a large font on the shared
-  screen; Ryan types the tester's words verbatim, which is also the log. A web page would cost the
-  afternoon and test nothing the eval needs.
+- **A local web app, superseding the terminal (Ryan, 2026-11-01 afternoon).** The first
+  version ran the assistant in a terminal while the three concept screens sat in the browser.
+  After the build passed, Ryan asked for the whole thing as one app so the tester's experience
+  is realistic: a standard-library HTTP server on localhost serves the three screens, the ask
+  screen is live against the same agent, the brief's ask box and example questions go to it,
+  and the Accept, Reject, and Flag buttons record the click. Nothing about the agent, the trace
+  line, or the redaction changes; the terminal loop stays as a fallback. Decision capture in the
+  app writes a local JSONL file under its own identity, not Databricks, which is the first of the
+  three options the AIP analysis listed and leaves the read-only decision intact.
 - **Structured answer by contract.** Every answer ends with a fenced JSON block holding
   `answer_value` and `cited_tools`. The wrapper parses it, strips it from the displayed text, and
   stores the fields. A missing or malformed block does not fail the turn: the row still writes
