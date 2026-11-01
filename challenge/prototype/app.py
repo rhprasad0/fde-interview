@@ -1,8 +1,9 @@
 """The review as a local web app with live calls: challenge/.venv/bin/python -B challenge/prototype/app.py
 
 Serves the three screens (/, /quarter, /ask, and their file names, so their relative links resolve) with a
-small script injected into the brief and the ask screen, plus /api/ask, /api/new, /api/decide, /api/history.
-One agent per browser (cookie), built at the first question; every turn writes the agent.py trace line.
+small script injected into each (a task guide bar on all three; live behavior on the brief and the ask screen),
+plus /api/ask, /api/new, /api/decide, /api/history, /api/decisions, /api/task, /api/know. One agent per browser
+(cookie), built at the first question; every turn writes the agent.py trace line, stamped with the current task.
 """
 
 import html
@@ -26,6 +27,13 @@ LABELS = ("Verified", "Exploratory", "Not available", "Question")
 CHOICES = ("accept", "reject", "flag")
 DIM, OFF = "\033[2m", "\033[0m"
 TOKEN_SECONDS = 3300  # the service principal token lives 3600 s; rebuild before it expires (same as /new)
+TASKS = [  # the user-test script: instruction, page, and anchor for each task
+    {"text": "Read the draft explanation. What is it telling you? Would you hand it to your director as it stands?", "page": "/", "anchor": ""},
+    {"text": "The CHCO's quarterly staffing review is Thursday. Pick the three cells that go on the agenda.", "page": "/quarter", "anchor": ""},
+    {"text": "Open one cell and draft the one-paragraph explanation OPM gets. Ask the assistant anything you need.", "page": "/ask", "anchor": ""},
+    {"text": "Act on the recommended actions: accept, reject, or flag each one. What should happen next?", "page": "/", "anchor": "recommendations"},
+    {"text": "Try to break it. Ask something it should not know or cannot know.", "page": "/ask", "anchor": ""},
+]
 
 _sessions, _sessions_lock = {}, threading.Lock()
 
@@ -33,17 +41,17 @@ _sessions, _sessions_lock = {}, threading.Lock()
 def _session(cookie_id):
     with _sessions_lock:
         return _sessions.setdefault(cookie_id, {"lock": threading.Lock(), "agent": None, "built": 0.0, "turns": [],
-                                                "sid": f"s-{uuid.uuid4().hex[:8]}"})
+                                                "sid": f"s-{uuid.uuid4().hex[:8]}", "task": 1, "decisions": {}, "know": ""})
 
 
 def _new(s):
-    """Same semantics as the session loop's /new: fresh agent (built lazily), token, and session id."""
+    """As the session loop's /new: fresh agent (built lazily), token, and session id. What the tester sees stays."""
     if s["agent"] is not None:
         try:
             s["agent"].cleanup()
         except Exception:  # noqa: BLE001,S110  (a dead client must not block recovery)
             pass
-    s.update(agent=None, built=0.0, turns=[], sid=f"s-{uuid.uuid4().hex[:8]}")
+    s.update(agent=None, built=0.0, sid=f"s-{uuid.uuid4().hex[:8]}")
 
 
 def _inline(s):
@@ -91,7 +99,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         if cookie:
-            self.send_header("Set-Cookie", f"rid={cookie}; Path=/; HttpOnly; SameSite=Strict")
+            self.send_header("Set-Cookie", f"rid={cookie}; Path=/; Max-Age=43200; HttpOnly; SameSite=Strict")
         self.end_headers()
         self.wfile.write(data)
 
@@ -100,14 +108,16 @@ class Handler(BaseHTTPRequestHandler):
         rid, fresh = self._cookie()
         if path in PAGES:
             page = (SCREENS / f"{PAGES[path]}.dc.html").read_text()
-            script = {"Main": MAIN_JS, "Ask": ASK_JS}.get(PAGES[path])
-            if script:
-                page = page.replace("</body>", f"<script>{script}</script>\n</body>")
+            script = GUIDE_JS.replace("__TASKS__", json.dumps(TASKS)) + {"Main": MAIN_JS, "Ask": ASK_JS}.get(PAGES[path], "")
+            page = page.replace("</body>", f"<script>{script}</script>\n</body>")
             self._send(200, page, "text/html", rid if fresh else None)
         elif path == "/support.js":  # the screens reference it; nothing in it is needed here
             self._send(200, "", "text/javascript")
-        elif path == "/api/history":
-            self._send(200, _session(rid)["turns"], cookie=rid if fresh else None)
+        elif path in ("/api/history", "/api/decisions", "/api/task", "/api/know"):
+            s = _session(rid)
+            body = {"/api/history": s["turns"], "/api/decisions": s["decisions"], "/api/task": {"task": s["task"]},
+                    "/api/know": {"text": s["know"]}}[path]
+            self._send(200, body, cookie=rid if fresh else None)
         else:
             self._send(404, {"error": "not found"})
 
@@ -132,11 +142,23 @@ class Handler(BaseHTTPRequestHandler):
             if choice not in CHOICES or not rec:
                 return self._send(400, {"error": "choice must be accept, reject, or flag, with a recommendation"})
             now = datetime.now(timezone.utc)
-            line = {"ts": now.isoformat(timespec="seconds"), "session_id": s["sid"], "recommendation": rec, "choice": choice}
+            line = {"ts": now.isoformat(timespec="seconds"), "session_id": s["sid"], "task": s["task"], "recommendation": rec,
+                    "choice": choice}
+            s["decisions"][rec] = choice
             RAW.mkdir(exist_ok=True)
             with open(RAW / f"{now.date().isoformat()}-{s['sid']}-decisions.jsonl", "a") as f:
                 f.write(redact(json.dumps(line)) + "\n")
-            print(f"{DIM}{s['sid']} decision | {choice} | {rec[:60]}{OFF}", flush=True)
+            print(f"{DIM}{s['sid']} task {s['task']} decision | {choice} | {rec[:60]}{OFF}", flush=True)
+            return self._send(200, {"ok": True}, cookie=cookie)
+        if path == "/api/task":
+            n = req.get("task")
+            if not isinstance(n, int) or not 1 <= n <= len(TASKS):
+                return self._send(400, {"error": f"task must be 1 to {len(TASKS)}"})
+            s["task"] = n
+            print(f"{DIM}{s['sid']} task {n}{OFF}", flush=True)
+            return self._send(200, {"task": n}, cookie=cookie)
+        if path == "/api/know":
+            s["know"] = str(req.get("text") or "")[:2000]
             return self._send(200, {"ok": True}, cookie=cookie)
         return self._send(404, {"error": "not found"})
 
@@ -150,7 +172,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 if s["agent"] is None:
                     s["agent"], s["built"] = build_agent(s["sid"]), time.monotonic()
-                r = run_turn(s["agent"], text, q_id=req.get("q_id") or None, context=context)
+                r = run_turn(s["agent"], text, q_id=req.get("q_id") or None, context=context, extra={"task": s["task"]})
             except Exception as e:  # noqa: BLE001  (never a traceback; the next question gets a fresh agent)
                 print(f"{DIM}{s['sid']} agent failed: {redact(type(e).__name__)}{OFF}", flush=True)
                 _new(s)
@@ -160,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
             failed = r["error"] == "model" or not r["answer_text"]
             body = "<p style=\"margin:0\">One moment. Please ask that again.</p>" if failed else render(prose)
             tools = ", ".join(c["name"] for c in r["tool_calls"]) or "no tools"
-            print(f"{DIM}{s['sid']} {r['q_id']} | {tools} | {r['latency_ms'] / 1000:.1f}s | error={r['error']}{OFF}", flush=True)
+            print(f"{DIM}{s['sid']} task {s['task']} {r['q_id']} | {tools} | {r['latency_ms'] / 1000:.1f}s | error={r['error']}{OFF}", flush=True)
             out = {"label": None if failed else label, "body_html": body, "answer_value": r["answer_value"],
                    "cited_tools": r["cited_tools"], "latency_ms": r["latency_ms"], "error": r["error"]}
             s["turns"].append({"question": text or f"You added: {context}", **out})
@@ -172,26 +194,28 @@ class Handler(BaseHTTPRequestHandler):
 MAIN_JS = r"""
 (() => {
   const post = (u, b) => fetch(u, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(b)});
+  const reset = o => { o.setAttribute('style', o.dataset.orig); o.textContent = o.dataset.text; o.setAttribute('aria-pressed', 'false'); };
+  const press = b => {
+    b.parentElement.querySelectorAll('button[data-choice]').forEach(reset);
+    b.setAttribute('style', b.dataset.orig + ';background:#162e51;border-color:#162e51;color:#ffffff');
+    b.textContent = '✓ ' + b.dataset.text; b.setAttribute('aria-pressed', 'true');
+  };
+  const recOf = b => b.parentElement.parentElement.querySelector('p').textContent.trim();
+  const buttons = [];
   document.querySelectorAll('button').forEach(b => {
     const t = b.textContent.trim();
     const choice = t === 'Accept' ? 'accept' : t === 'Reject' ? 'reject' : t.startsWith('Flag') ? 'flag' : null;
     if (!choice) return;
-    b.dataset.orig = b.getAttribute('style'); b.dataset.text = t; b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', async () => {
-      const row = b.parentElement, rec = row.parentElement.querySelector('p').textContent.trim();
-      const r = await post('/api/decide', {recommendation: rec, choice});
-      if (!r.ok) return;
-      row.querySelectorAll('button').forEach(o => { o.setAttribute('style', o.dataset.orig); o.textContent = o.dataset.text; o.setAttribute('aria-pressed', 'false'); });
-      b.setAttribute('style', b.dataset.orig + ';background:#162e51;border-color:#162e51;color:#ffffff');
-      b.textContent = '✓ ' + t; b.setAttribute('aria-pressed', 'true');
-    });
+    Object.assign(b.dataset, {orig: b.getAttribute('style'), text: t, choice}); b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', async () => { if ((await post('/api/decide', {recommendation: recOf(b), choice})).ok) press(b); });
+    buttons.push(b);
   });
+  fetch('/api/decisions').then(r => r.json()).then(d => buttons.forEach(b => { if (d[recOf(b)] === b.dataset.choice) press(b); }));
   const f = document.querySelector('form[action="Ask.dc.html"]'), inp = f.querySelector('input');
   const go = e => { e.preventDefault(); const q = inp.value.trim(); location.href = '/ask' + (q ? '?q=' + encodeURIComponent(q) : ''); };
   f.addEventListener('submit', go); f.querySelector('a').addEventListener('click', go);
   f.nextElementSibling.querySelectorAll('a').forEach(a => { a.href = '/ask?q=' + encodeURIComponent(a.textContent.trim()); });
-  const rec = [...document.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Recommended for the review').closest('section');
-  rec.insertAdjacentHTML('beforeend', `
+  document.getElementById('recommendations').insertAdjacentHTML('beforeend', `
     <form id="know" style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #dfe1e5; padding-top: 16px">
       <label for="knowtext" style="font-size: 15px; font-weight: 600">Add what you know</label>
       <span style="font-size: 13px; color: #4b4f58">A fact the data does not have, such as a hiring pause. The assistant recomputes under it and labels it as your assumption.</span>
@@ -200,10 +224,55 @@ MAIN_JS = r"""
         <button type="submit" style="min-height: 44px; padding: 0 18px; border-radius: 4px; border: 1px solid #005ea2; background: #005ea2; color: #ffffff; font-weight: 600; font-size: 14px; cursor: pointer">Add and ask</button>
       </div>
     </form>`);
-  document.getElementById('know').addEventListener('submit', e => {
-    e.preventDefault(); const c = document.getElementById('knowtext').value.trim();
+  const know = document.getElementById('knowtext');
+  fetch('/api/know').then(r => r.json()).then(k => { if (!know.value) know.value = k.text; });
+  const keep = () => post('/api/know', {text: know.value});
+  know.addEventListener('change', keep);
+  document.getElementById('know').addEventListener('submit', async e => {
+    e.preventDefault(); const c = know.value.trim(); await keep();
     if (c) location.href = '/ask?context=' + encodeURIComponent(c);
   });
+})();
+"""
+
+GUIDE_JS = r"""
+(() => {
+  const TASKS = __TASKS__;
+  const post = (u, b) => fetch(u, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(b)});
+  const rec = [...document.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Recommended for the review');
+  if (rec) rec.closest('section').id = 'recommendations';
+  const btn = 'min-height: 44px; padding: 0 18px; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit';
+  const bar = document.createElement('div');
+  bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Test tasks');
+  bar.style.cssText = 'position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #ffffff; border-top: 3px solid #005ea2; box-shadow: 0 -2px 10px rgba(0,0,0,.10)';
+  bar.innerHTML = `<div style="max-width: 1120px; margin: 0 auto; padding: 12px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px">
+    <div style="flex: 1 1 480px; display: flex; flex-direction: column; gap: 2px">
+      <span data-n style="font-size: 13px; font-weight: 700; color: #005ea2; letter-spacing: .04em; text-transform: uppercase"></span>
+      <span data-t style="font-size: 16px; line-height: 1.4; color: #1b1b1b"></span>
+    </div>
+    <div style="display: flex; gap: 8px; flex: none">
+      <button data-back type="button" style="${btn}; border: 1px solid #565c65; background: #ffffff; color: #1b1b1b">Back</button>
+      <button data-next type="button" style="${btn}; border: 1px solid #005ea2; background: #005ea2; color: #ffffff">Next task</button>
+    </div></div>`;
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom = '120px';
+  const back = bar.querySelector('[data-back]'), next = bar.querySelector('[data-next]');
+  let n = 1;
+  const show = () => {
+    bar.querySelector('[data-n]').textContent = `Task ${n} of ${TASKS.length}`;
+    bar.querySelector('[data-t]').textContent = TASKS[n - 1].text;
+    back.disabled = n === 1; next.disabled = n === TASKS.length;
+    back.style.opacity = back.disabled ? .4 : 1; next.style.opacity = next.disabled ? .4 : 1;
+  };
+  const go = async m => {
+    n = (await (await post('/api/task', {task: m})).json()).task; show();
+    const t = TASKS[n - 1];
+    location.href = t.page + (t.anchor ? '#' + t.anchor : '');
+  };
+  back.addEventListener('click', () => go(n - 1)); next.addEventListener('click', () => go(n + 1));
+  show();
+  fetch('/api/task').then(r => r.json()).then(t => { n = t.task; show(); });
+  if (location.hash === '#recommendations' && rec) addEventListener('load', () => rec.scrollIntoView({block: 'start'}));
 })();
 """
 
@@ -220,7 +289,8 @@ ASK_JS = r"""
   const qlist = [...document.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Questions asked in this review').parentElement.querySelector('ol');
   const inp = document.getElementById('q'), btn = inp.form.querySelector('button');
   conv.innerHTML = ''; qlist.innerHTML = '';
-  const add = h => { conv.insertAdjacentHTML('beforeend', h); conv.lastElementChild.scrollIntoView({block: 'nearest'}); return conv.lastElementChild; };
+  const reveal = el => { el.style.scrollMarginBottom = '130px'; el.scrollIntoView({block: 'nearest'}); return el; };  // clear the guide bar
+  const add = h => { conv.insertAdjacentHTML('beforeend', h); return reveal(conv.lastElementChild); };
   const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
   const bubble = (inner, ex) => `<div style="background: ${ex ? '#fff8e6' : '#f4f5f7'};${ex ? ' border: 1px solid #ffd27a;' : ''} border-radius: 2px 12px 12px 12px; padding: 14px 18px; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 10px">${inner}</div>`;
   const user = q => { add(`<div style="align-self: flex-end; max-width: 640px; background: #e7f1fb; border-radius: 12px 12px 2px 12px; padding: 12px 16px; font-size: 15px; line-height: 1.5">${esc(q)}</div>`); qlist.insertAdjacentHTML('beforeend', `<li>${esc(q)}</li>`); };
@@ -229,7 +299,7 @@ ASK_JS = r"""
     const status = k ? `<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: ${k[0]}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${k[0]}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${k[1]}</svg>${r.label}</div>` : '';
     const src = SOURCE[r.label] ? `<p style="margin: 0; font-size: 13px; color: #4b4f58">${SOURCE[r.label]}</p>` : '';
     const h = `<div style="max-width: 760px; display: flex; flex-direction: column; gap: 10px">${status}${bubble(r.body_html, r.label === 'Exploratory')}${src}</div>`;
-    if (el) { el.outerHTML = h; conv.lastElementChild.scrollIntoView({block: 'nearest'}); } else add(h);
+    if (el) { el.outerHTML = h; reveal(conv.lastElementChild); } else add(h);
   };
   let busy = false;
   const ask = async (text, context) => {
@@ -245,14 +315,14 @@ ASK_JS = r"""
     } catch (e) {
       answer({label: null, body_html: '<p style="margin: 0">One moment. Please ask that again.</p>'}, w);
     }
-    clearInterval(tick); busy = false; inp.disabled = btn.disabled = false; inp.value = ''; inp.focus();
+    clearInterval(tick); busy = false; inp.disabled = btn.disabled = false; inp.value = ''; inp.focus({preventScroll: true}); reveal(inp.form);
   };
   btn.type = 'submit';
   inp.form.addEventListener('submit', e => { e.preventDefault(); ask(inp.value.trim(), null); });
+  const p = new URLSearchParams(location.search);
+  history.replaceState(null, '', '/ask');  // a ?q= submits once: reload and back navigation see /ask
   (async () => {
     for (const t of await (await fetch('/api/history')).json()) { user(t.question); answer(t); }
-    const p = new URLSearchParams(location.search);
-    history.replaceState(null, '', '/ask');
     if (p.get('q')) ask(p.get('q').trim(), null);
     else if (p.get('context')) ask('', p.get('context').trim());
   })();

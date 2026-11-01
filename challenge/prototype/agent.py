@@ -234,7 +234,7 @@ def _model_error(e: BaseException) -> bool:
     return False
 
 
-def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | None = None) -> dict:
+def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | None = None, extra: dict | None = None) -> dict:
     st = agent.trace
     st["n"] += 1
     if context:
@@ -294,6 +294,7 @@ def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | No
         "cache_read_tokens": usage["cacheReadInputTokens"], "cache_write_tokens": usage["cacheWriteInputTokens"],
         "cost_usd": round(sum(usage[k] * p for k, p in PRICE.items()) / 1e6, 6), "error": error,
         "error_detail": f"{type(detail).__name__}: {detail}"[:500] if detail else None,
+        **(extra or {}),  # caller fields such as the web app's task number
     }
     out = redact(json.dumps(line, default=str))
     with open(st["path"], "a") as f:
