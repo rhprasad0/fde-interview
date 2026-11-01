@@ -291,8 +291,9 @@ skips the label line or the block, the answer still prints; the trace records th
    and uploads the trace to the volume. The tables come from spec 04's `04_eval.sql`, which is
    run first and is a dependency of this check, not a product of this spec. The stub run never
    calls the judge; the three views are checked in spec 06 once real rows exist.
-10. The tool-name normalization holds: no `workforce__semantic__` prefix and no space id appears
-    in any trace field or in `05-results.md`.
+10. The tool-name normalization holds: no `workforce__semantic__` prefix in any trace field, and
+    no space id in any trace field, spans file, stdout, or tracked file. The results file may
+    name the prefix when describing it.
 9. `git grep -iFf .forbidden-terms --untracked` prints nothing; no trace file is tracked.
 
 ## Results file

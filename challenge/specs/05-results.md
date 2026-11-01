@@ -26,3 +26,60 @@ result fields `is_error`, `structured_content`, and `input_schema` (snake case);
 does not touch them and still works.
 
 Not measured: an immediate poll loop; the thirty seconds includes a gap between processes.
+
+## Build and acceptance (2026-11-01, 13:30 to 14:00, built by an Opus reviewer agent, spot-checked by the lead)
+
+Files: `challenge/prototype/agent.py` (302 lines), `session.py` (54), `prompt.md` (52),
+`skills/01-briefing-format.md`, `skills/02-codes.md`, `skills/03-labels-and-limits.md`,
+`requirements.txt`; `challenge/scripts/eval_harness.py` (311); `example.env` gains
+`ANTHROPIC_API_KEY`. Run the session with `challenge/.venv/bin/python -B
+challenge/prototype/session.py`. Traces land in `raw/2026-11-01-<session>-trace.jsonl`.
+
+| Check | Result |
+|---|---|
+| 1 Tool listing | Pass. Eight function tools; two Genie tools |
+| 2 Verified | Pass. TSA screener separation rate: label `Verified`, `answer_value` 0.1202, `cited_tools` `["separation_rate"]`. Lead's own run: CBP Officer rate 0.0351 in 4.3 s, HR vocabulary, no tool names on screen |
+| 3 Exploratory | Pass. CBP Officer accessions by month through `one_off_query`: label `Exploratory`, SQL shown, `genie_sql` and `genie_statement_id` on the trace, `answer_value` a six-pair list. A pay question said "imputed" |
+| 4 Refusal, data limit, ambiguous | Pass. Three refusals (`Not available`, no tool, alternative offered), two data limits (March 2026 rate; FY2025 Q4 plan), three clarifying `Question` replies; all `answer_value` null |
+| 5 Context turn | Pass. After the CBP Officer FY2026 Q1 variance, the lapse dates produced "Assuming, as you state..." with the arithmetic shown (594 x 49/92 = 316.4; 475 against it is +158.6); `supplied_context` and `turn_1_answer_text` filled |
+| 6 Dead port | Pass. `error = model`, "one moment" printed, no traceback, `/new` recovered |
+| 7 Cache | Pass. Second turn read 14,051 cached tokens; counts are per turn |
+| 8 Harness | Dry run only. `--stub --dry-run` builds the one-row insert; `load-session --dry-run` writes zero rows (empty questions file) and prints the upload path. No live write; `04_eval.sql` does not exist yet |
+| 9 Forbidden terms | Pass; no trace file tracked |
+| 10 Normalization | Pass on every trace field, spans file, and stdout after one fix: the Genie client's span names leaked the space id into a spans log before the exporter was wrapped in the redactor; the file was scrubbed and the cause fixed |
+
+Measured over 20 turns in 5 sessions: format miss rate 1 of 8 on the first prompt (a clarifying
+reply dropped the block), 0 of 11 after tightening rules 6 and 8; label line present on all 19
+answered turns; latency mean 8.3 s, median 4.2 s (no-tool 2.3 s, functions 5 to 10 s warm and
+29 s cold, Genie 27 to 36 s); $0.0094 in model tokens for all 20 turns. Prompt hash in force
+`22b1d089...`.
+
+Differences from the spec, kept:
+
+- Two-turn rows merge both turns' tool calls into the row's `tool_calls`; the context answer
+  cites `plan_variance` from turn 1, so second-turn-only would fail `provenance` by construction.
+- `/context` sends immediately as its own turn; `question_text` carries the prefixed message.
+- `one_off_query` opens a fresh Genie MCP session and token per call rather than holding one open.
+- Extra trace fields: `cache_write_tokens`, `error_detail`, per-call `is_truncated` and `status`;
+  the harness writes only spec 04's six `tool_calls` fields.
+- `error = tool` is set when the last tool call of the turn failed; on a forced Genie failure the
+  model retried once (two Genie calls) before answering "not available," which bends rule 10.
+- One spans file per process; `/new` does not start a new one. Ctrl-C mid-turn prints "one moment."
+- `imputed_rows` on `headcount` is the sum of `headcount_location_imputed`, people not rows, as
+  the spec words it (27,650 on a CBP question).
+
+Decided by the lead after the build:
+
+- `eval.runs` layout follows the harness: `answer_value` as JSON text, `tool_calls` as an array
+  of six-field structs with `params` as JSON text, `cited_tools` as an array of strings, scorer
+  columns boolean. Spec 04's `04_eval.sql` is written to match.
+- `genie_sql_stored` is scored lazily. `system.query.history` lagged about two hours at build
+  time, so the harness records the statement id at run time and the history check runs in a
+  later pass; statement `01f1d624...` is the probe for whether this is lag or a visibility gap.
+- Cache prices in `cost_usd`: reads at 0.1x and writes at 1.25x the input price (an assumption
+  from the API reference; confirm against the bill).
+- Judge: until `judge-prompt.md` exists, narrative rows score `fail` with a rationale saying why;
+  they never pass silently.
+
+Not verified: any live write to `eval`; the judge call; recovery after the one-hour token expiry;
+whether Ryan's user can see the service principal's statements in query history.
