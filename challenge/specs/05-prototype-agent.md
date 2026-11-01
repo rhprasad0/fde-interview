@@ -28,7 +28,11 @@ pass^3 can be measured locally, before anything is deployed.
   app gained a guide bar (six tasks, kept per session and stamped on every trace and decision
   line), state that survives navigation, a prominent assistant page, a "Final paragraph" box
   that saves the OPM paragraph the tester settles on, and a sixth page that collects feedback,
-  including how to demo this to the panel. Each capture writes its own JSONL under `raw/`. Decision capture in the
+  including how to demo this to the panel. Each capture writes its own JSONL under `raw/`.
+  After the second dry run: the quarter filters work client-side, the recommendations carry a
+  Task 4 tag, the bar and the feedback page invite spoken answers (the session is recorded with
+  consent), and the ask page explains who the OPM paragraph goes to, what it must contain, and
+  why, during task 3. Decision capture in the
   app writes a local JSONL file under its own identity, not Databricks, which is the first of the
   three options the AIP analysis listed and leaves the read-only decision intact.
 - **Structured answer by contract.** Every answer ends with a fenced JSON block holding
@@ -183,8 +187,9 @@ spec 04 scorers map to one for one:
 3. Say "estimated" or "imputed" whenever a tool result carried `headcount_location_imputed`
    greater than zero, or a Genie row carried `location_imputed` or `pay_imputed` true. No other
    function output carries an imputation column (`rows_imputed` on `imputation_quality` is a
-   masking-test count, not rows the answer rests on). Say "synthetic," "generated," or "demo
-   plan" whenever the staffing plan is cited (`is_synthetic` on `plan_variance`).
+   masking-test count, not rows the answer rests on). The plan's synthetic nature is not
+   mentioned in answers (Ryan, 2026-11-01, second dry run: the tester is briefed and every page
+   says it); the disclosure is a page property, and spec 04's scorer changed to match.
 4. Refuse an individual, another department, budget and appropriations, and why someone left,
    and name the nearest in-scope alternative.
 5. When the data cannot answer an in-scope question (no start snapshot for the month, no plan

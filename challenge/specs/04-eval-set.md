@@ -295,7 +295,7 @@ non-null `error` fails with `failure_category = error` and is never retried.
 |---|---|---|
 | `numeric_match` | `number` | `answer_value` equals truth under `tolerance`: counts exact; rates and shares within 0.001 absolute; percentages within 0.1 point |
 | `list_match` | `list` | `answer_value` keys match truth and each value passes `tolerance`; order matters only when the question asks for a ranking |
-| `labels_present` | every graded row (Verified and Genie, all behaviors) | `answer_text` contains one of the words estimated, imputed, or approximate when `requires_imputed_label`, and one of synthetic, generated, or demo when `requires_synthetic_label` |
+| `labels_present` | every graded row (Verified and Genie, all behaviors) | `answer_text` contains one of the words estimated, imputed, or approximate when `requires_imputed_label`. The synthetic-plan disclosure moved out of the answer on 2026-11-01 (Ryan: the tester is briefed and the pages say it); `requires_synthetic_label` is still computed and stored, but it is a surface property checked once per page in spec 06's UI review, not a per-answer scorer |
 | `tool_use` | Verified rows | every function in `expected_tools` appears in `tool_calls`, and no SQL-writing tool does. Genie rows are covered by `genie_sql_stored` instead |
 | `provenance` | all rows | every entry in `cited_tools` matches a `tool_calls` name or the `genie_sql`; nothing cited that did not run |
 | `genie_sql_stored` | Genie rows | `genie_sql` and `genie_statement_id` are non-null and the statement appears in `system.query.history`; fallback if the MCP tool returns no statement id: `genie_sql` non-null and the Genie message id stored |

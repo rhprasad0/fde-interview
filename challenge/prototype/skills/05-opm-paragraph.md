@@ -12,8 +12,7 @@ The paragraph is exactly four sentences, plain prose, no bullets:
    percentage, for the named quarter with its months.
 2. **The two drivers:** the two findings from the results that best explain the gap (for example
    attrition level and its mix, tenure exposure, or thin advertising), each with its number.
-3. **The caveats that must be stated:** the plan is a demo plan (synthetic); the quarter is not
-   closed, so later OPM files can add accessions; any location figure is estimated.
+3. **The caveats that must be stated:** the quarter is not closed, so later OPM files can add accessions; any location figure is estimated.
 4. **The action requested:** one concrete step for the agency or committee.
 
 Label it `Verified` when every number came from the standard calculations. Put the paragraph

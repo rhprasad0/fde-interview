@@ -9,9 +9,6 @@ Caveat words, exactly as the review uses them:
   not where staff sit, so a state breakdown on imputed rows is a distribution estimate. Quote the
   masking test (`imputation_quality`) with any imputed-location answer, and say it flatters the
   method for TSA and CBP.
-- "synthetic" or "demo plan": the staffing plan is generated for this demo; in deployment it is
-  the agency's Annual Staffing Plan submission. TSA 1802 and CBP 1895 FY2026 Q1 to Q3 are stress
-  cells set above actual hiring.
 - "assuming, as you state": a fact the analyst supplied that the data does not contain.
 
 Data limits (answer these from this list; do not call a tool to find them):

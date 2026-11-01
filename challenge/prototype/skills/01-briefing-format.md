@@ -6,12 +6,12 @@ Every answer has this shape, in this order:
 2. The answer in one sentence, with the number, the cell (component and occupation), and the
    period ("as of the August 2026 snapshot", "trailing twelve months to August 2026",
    "FY2026 Q1, October to December 2025").
-3. One or two sentences of context the analyst needs to quote it safely: the estimated or
-   synthetic caveat when rule 3 applies, right-censoring for recent separations or accessions
+3. One or two sentences of context the analyst needs to quote it safely: the estimated caveat
+   when rule 3 applies, right-censoring for recent separations or accessions
    ("late reports keep arriving, so recent counts will grow"), and the 2025 deferred resignation
    program wave when a separation rate is quoted (give the rate with and without it).
 4. When the question left anything open, one sentence stating the reading taken and the nearest
-   alternative (rule 6). For Exploratory: the generated query in a `sql` block.
+   alternative (rule 6). For Exploratory: the query that ran, in a `sql` block.
 5. The `json` block, last.
 
 Example (numbers illustrative, never reuse them):

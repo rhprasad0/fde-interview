@@ -120,7 +120,7 @@ class Handler(BaseHTTPRequestHandler):
         rid, fresh = self._cookie()
         if path in PAGES:
             page = (SCREENS / f"{PAGES[path]}.dc.html").read_text()
-            script = GUIDE_JS.replace("__TASKS__", json.dumps(TASKS)) + {"Main": MAIN_JS, "Ask": ASK_JS}.get(PAGES[path], "")
+            script = GUIDE_JS.replace("__TASKS__", json.dumps(TASKS)) + {"Main": MAIN_JS, "Ask": ASK_JS, "Quarter": QUARTER_JS}.get(PAGES[path], "")
             page = page.replace("</body>", f"<script>{script}</script>\n</body>")
             self._send(200, page, "text/html", rid if fresh else None)
         elif path == "/support.js":  # the screens reference it; nothing in it is needed here
@@ -242,6 +242,7 @@ MAIN_JS = r"""
   const go = e => { e.preventDefault(); const q = inp.value.trim(); location.href = '/ask' + (q ? '?q=' + encodeURIComponent(q) : ''); };
   f.addEventListener('submit', go); f.querySelector('a').addEventListener('click', go);
   f.nextElementSibling.querySelectorAll('a').forEach(a => { a.href = '/ask?q=' + encodeURIComponent(a.textContent.trim()); });
+  document.querySelector('#recommendations h2').insertAdjacentHTML('beforeend', '<span style="margin-left: 12px; padding: 3px 10px; border: 1px solid #005ea2; border-radius: 999px; font-size: 13px; font-weight: 700; color: #005ea2; letter-spacing: .04em; text-transform: uppercase; vertical-align: middle">Task 4</span>');
   document.getElementById('recommendations').insertAdjacentHTML('beforeend', `
     <form id="know" style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #dfe1e5; padding-top: 16px">
       <label for="knowtext" style="font-size: 15px; font-weight: 600">Add what you know</label>
@@ -276,13 +277,14 @@ GUIDE_JS = r"""
     <div style="flex: 1 1 480px; display: flex; flex-direction: column; gap: 2px">
       <span data-n style="font-size: 13px; font-weight: 700; color: #005ea2; letter-spacing: .04em; text-transform: uppercase"></span>
       <span data-t style="font-size: 16px; line-height: 1.4; color: #1b1b1b"></span>
+      <span style="font-size: 13px; color: #4b4f58">Say your answer out loud; this session is recorded.</span>
     </div>
     <div style="display: flex; gap: 8px; flex: none">
       <button data-back type="button" style="${btn}; border: 1px solid #565c65; background: #ffffff; color: #1b1b1b">Back</button>
       <button data-next type="button" style="${btn}; border: 1px solid #005ea2; background: #005ea2; color: #ffffff">Next task</button>
     </div></div>`;
   document.body.appendChild(bar);
-  document.body.style.paddingBottom = '120px';
+  document.body.style.paddingBottom = '140px';
   const back = bar.querySelector('[data-back]'), next = bar.querySelector('[data-next]');
   let n = 1;
   const show = () => {
@@ -316,6 +318,15 @@ ASK_JS = r"""
   const qlist = [...document.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Questions asked in this review').parentElement.querySelector('ol');
   const inp = document.getElementById('q'), btn = inp.form.querySelector('button');
   conv.innerHTML = ''; qlist.innerHTML = '';
+  conv.insertAdjacentHTML('beforebegin', `<details data-brief style="margin: 16px 24px 0; border: 1px solid #c5d9ee; border-left: 4px solid #005ea2; border-radius: 4px; background: #f0f6fc; padding: 12px 16px; font-size: 14px; line-height: 1.55">
+    <summary style="cursor: pointer; font-size: 15px; font-weight: 700">The paragraph you are drafting</summary>
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px">
+      <p style="margin: 0"><strong>Who it goes to.</strong> The CHCO signs it. It goes to OPM and OMB as the quarter's variance explanation under the staffing-review rule effective November 30, 2026.</p>
+      <p style="margin: 0"><strong>What it must contain.</strong> Four sentences: the result against plan, with the numbers; the two drivers; the caveats that must be stated; the action requested.</p>
+      <p style="margin: 0"><strong>Why it matters.</strong> It is the record the agency stands behind when OPM asks why hiring landed where it did, and the input to the Strategic Hiring Committee's next decision.</p>
+      <p style="margin: 0; color: #3d4551">The assistant can draft it on request. The final version goes in the box under the chat.</p>
+    </div></details>`);
+  fetch('/api/task').then(r => r.json()).then(t => { document.querySelector('[data-brief]').open = t.task === 3; });
   document.querySelector('header').insertAdjacentHTML('afterend', `<div style="background: #1a4480; color: #ffffff">
     <div style="max-width: 1120px; margin: 0 auto; padding: 18px 24px; display: flex; flex-direction: column; gap: 4px">
       <span style="font-size: 24px; font-weight: 700">The assistant: this is where the work happens</span>
@@ -337,7 +348,7 @@ ASK_JS = r"""
     const r = await fetch('/api/paragraph', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: fin.value})});
     finStatus.textContent = r.ok ? 'Saved' : 'Not saved, please try again';
   });
-  const reveal = el => { el.style.scrollMarginBottom = '130px'; el.scrollIntoView({block: 'nearest'}); return el; };  // clear the guide bar
+  const reveal = el => { el.style.scrollMarginBottom = '150px'; el.scrollIntoView({block: 'nearest'}); return el; };  // clear the guide bar
   const add = h => { conv.insertAdjacentHTML('beforeend', h); return reveal(conv.lastElementChild); };
   const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
   const bubble = (inner, ex) => `<div style="background: ${ex ? '#fff8e6' : '#f4f5f7'};${ex ? ' border: 1px solid #ffd27a;' : ''} border-radius: 2px 12px 12px 12px; padding: 14px 18px; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 10px">${inner}</div>`;
@@ -379,6 +390,33 @@ ASK_JS = r"""
     if (p.get('q')) ask(p.get('q').trim(), null);
     else if (p.get('context')) ask('', p.get('context').trim());
   })();
+})();
+"""
+
+QUARTER_JS = r"""
+(() => {
+  const tbody = document.querySelector('tbody'), form = document.getElementById('component').form;
+  const comp = document.getElementById('component'), sort = document.getElementById('sort'), min = document.getElementById('min');
+  const num = s => parseFloat(s.replace(/−/g, '-').replace(/[+%,]/g, ''));
+  const rows = [...tbody.rows].map(r => ({r, comp: r.cells[0].textContent.trim(), planned: num(r.cells[2].textContent),
+                                         variance: num(r.cells[4].textContent), pct: num(r.cells[5].textContent)}));
+  form.insertAdjacentHTML('afterend', '<p data-note role="status" style="margin: -16px 0 0; font-size: 13px; color: #4b4f58"></p>');
+  const note = document.querySelector('[data-note]');
+  const showing = [...document.querySelectorAll('span')].find(x => x.textContent.trim().startsWith('Showing'));
+  const apply = () => {
+    const m = Number(min.value) || 0, key = sort.selectedIndex === 1 ? 'pct' : 'variance';
+    let shown = 0;
+    rows.slice().sort((a, b) => a[key] - b[key]).forEach(d => {
+      d.r.hidden = !((comp.selectedIndex === 0 || d.comp === comp.value) && d.planned >= m);
+      shown += !d.r.hidden; tbody.appendChild(d.r);
+    });
+    note.textContent = (sort.selectedIndex >= 2 ? `${sort.value} is not a column in this table, so rows are ordered by variance, most under plan first. ` : '')
+                     + (shown ? '' : 'No cells match these filters.');
+    if (showing) showing.firstChild.textContent = `Showing ${shown} of 210 planned cells. `;
+  };
+  comp.addEventListener('change', apply); sort.addEventListener('change', apply); min.addEventListener('input', apply);
+  form.addEventListener('submit', e => { e.preventDefault(); apply(); });
+  apply();
 })();
 """
 

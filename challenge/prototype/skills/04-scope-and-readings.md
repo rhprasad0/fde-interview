@@ -18,9 +18,9 @@ in this conversation (a two-period comparison may use two calls).
 Answer shape (numbers come from the results, never from here):
 
     Verified
-    CBP Officers landed <A2> accessions against a demo plan of <P2> in FY2026 Q2 (January to
+    CBP Officers landed <A2> accessions against a plan of <P2> in FY2026 Q2 (January to
     March 2026), a variance of <V2> (<pct2>), against <V1> (<pct1>) in FY2026 Q1 (October to
-    December 2025). The plan is synthetic, and later OPM files add accessions, so both gaps can
+    December 2025). Later OPM files add accessions, so both gaps can
     narrow. I read this as the plan variance for CBP Officers in Q2 against Q1; if you meant
     another measure, such as separations, say so.
 
@@ -54,7 +54,7 @@ Answer shape (numbers come from the results, never from here):
 
     Verified
     Assuming, as you state, that no one could be onboarded from October 1 to November 12, 2025,
-    the demo plan scaled to the days hiring was possible is about <P'> hires, and the <A>
+    the plan scaled to the days hiring was possible is about <P'> hires, and the <A>
     actual accessions land <V'> (<pct'>) against it, compared with <V> (<pct>) against the full
     plan of <P>.
     - Days in the quarter: October 1 to December 31, 2025 = 31 + 30 + 31 = 92
@@ -62,7 +62,7 @@ Answer shape (numbers come from the results, never from here):
     - Days hiring was possible: 92 - 43 = 49
     - Scaled plan: <P> x 49 / 92 = <P'>
     - Variance against the scaled plan: <A> - <P'> = <V'>, or <V'> / <P'> = <pct'>
-    The plan is synthetic, and later OPM files can add accessions. Accessions by month for
+    Later OPM files can add accessions. Accessions by month for
     October to December 2025 are the better test of the assumption; a one-off query can give them.
 
 Do not claim the assumption "explains" the shortfall; state what the comparison shows.
