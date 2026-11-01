@@ -220,3 +220,13 @@ lead in Alaska because remote airports re-post; disclosed, not fixed.
 No transferable number: vendor and independent figures run from 40% to 90% depending on data and
 grading. Defensible by design; spec 05 measures Genie's own pass^3 with a 70% bar that decides
 whether the agent keeps it ([Genie accuracy](analyses/genie-accuracy.md); DECISIONS.md entry).
+
+## [2026-11-01] query | How would the variance review be built on Palantir AIP
+Ryan reconsidered the analyst chatbot (heavy overlap with FWD Chat) and asked how the user and
+problem benefit from AIP. Exa research: Palantir ships AIP Analyst (agentic chat, GA April 2026)
+and Workshop apps with embedded, state-scoped agents, Actions, Scenarios, Automate, and Evals;
+the quarterly review is Workshop-shaped. Mapped each primitive onto the build; flagged that
+proposal-then-approve collides with the read-only decision. Recorded that AIP Developer Tier
+signups have been paused since 2026-10-23 (attempt 2026-11-01) and the Firm's 2025-06-30 Palantir
+partnership (saved to raw/, URL carries the name). Filed
+`analyses/palantir-aip-for-workforce-variance-review.md`; DECISIONS Agent-layer entry amended.

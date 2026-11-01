@@ -22,8 +22,17 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
    workforce shock makes the impact story current. The Firm has a (Palantir) posting in exactly this
    domain ([analysis](analyses/build-challenge-problem-selection.md)).
 4. **Expect a Palantir-literate panel.** The program's partnerships and its student build event
-   lean Foundry. Translate on the fly: Unity Catalog + Genie semantic layer for Ontology, UC
-   functions for AIP Logic, Databricks Apps for Workshop.
+   lean Foundry, and the Firm's federal subsidiary has been a Palantir preferred implementation
+   partner since 2025-06-30 with 1,000 staff to be certified on Foundry and AIP
+   (`raw/2026-11-01-firm-palantir-partnership.md`). Translate on the fly: Unity Catalog views
+   and the Genie space for the Ontology; the briefing agent for an AIP Logic function; the
+   Lakeflow job for Automate; the pass^3 harness for AIP Evals; Genie for AIP Analyst; the
+   variance-review app for a Workshop module with an embedded, state-scoped agent. Palantir
+   ships AIP Analyst for ad-hoc chat and Workshop for decisions; the CHCO's quarterly review is
+   a Workshop-shaped problem, which is why the build is an app and not a chatbot
+   ([AIP for the variance review](analyses/palantir-aip-for-workforce-variance-review.md)).
+   AIP Developer Tier signups have been paused since 2026-10-23, so the stack is mirrored, not
+   used.
 
 5. **The eval set decides the deep dive.** Across FDE loops the differentiating question is "how
    do you know it works," and the artifacts that pass are a decision log, a small governed eval

@@ -124,6 +124,11 @@ Revisit:   what evidence would change this
   tracing and identity for free and is the AWS-native answer a federal panel will recognize).
 - **Revisit:** if AgentCore Runtime costs or region gating threaten the $50 budget or the
   timeline, run the same Strands agent on Lambda or ECS; the agent code does not change.
+- **Amended 2026-11-01:** Ryan tried to sign up for AIP Developer Tier and could not. Palantir
+  paused online signups on 2026-10-23 with a waitlist; existing accounts still work. The
+  rejection above is now moot for the build week. The AIP patterns are still the design
+  reference: the build mirrors Workshop, AIP Logic, Actions, and Automate on Databricks and AWS
+  ([AIP for the variance review](wiki/analyses/palantir-aip-for-workforce-variance-review.md)).
 
 ## 2026-10-30  Domain model: an ontology-like semantic layer in Unity Catalog
 

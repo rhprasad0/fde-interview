@@ -32,6 +32,15 @@ A separate "Palantir FDE" posting for a workforce-planning decision-support solu
 different unit (Decision Analytics), not this program
 (`raw/2026-10-30-firm-palantir-workforce-posting.md`).
 
+## Palantir footprint of the federal arm
+
+Since 2025-06-30 the federal subsidiary is a Palantir preferred implementation partner for U.S.
+federal customers, with its 1,000-person Data & AI team to be trained and certified on Foundry
+and AIP. The three initial joint offerings are enterprise-to-edge data fusion, predictive supply
+chain orchestration, and financial intelligence; none is workforce planning
+(`raw/2026-11-01-firm-palantir-partnership.md`). How the build mirrors AIP:
+[AIP for the variance review](../analyses/palantir-aip-for-workforce-variance-review.md).
+
 ## Databricks footprint of the federal arm
 
 Documented wins are "executive insight in days" stories: a DOE lakehouse that unified 1.4 billion
