@@ -59,9 +59,9 @@ questions:
     AND x.occupational_series_code = p.s AND trunc(x.effective_month, 'QUARTER') = p.quarter_start GROUP BY p.c),
     pp AS (SELECT c, sum(planned_hires) AS planned FROM p GROUP BY c)
     SELECT pp.c AS key, coalesce(a.n, 0) - pp.planned AS value, row_number() OVER (ORDER BY coalesce(a.n, 0) - pp.planned, pp.c) AS rank
-    FROM pp LEFT JOIN a USING (c) ORDER BY 2
+    FROM pp LEFT JOIN a USING (c) WHERE coalesce(a.n, 0) - pp.planned < 0 ORDER BY 2
   key_by: component
-  notes: Ranked by variance; the plan is synthetic, so requires_synthetic_label is true (scored per page, spec 06).
+  notes: Ranked by variance, components that missed plan only (corrected 2026-11-02 in the hill-climbing journal; the first truth ranked all twelve); the plan is synthetic, so requires_synthetic_label is true (scored per page, spec 06).
 
 - id: C03
   author: ryan_claude

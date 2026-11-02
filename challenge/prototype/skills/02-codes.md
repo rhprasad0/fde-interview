@@ -2,16 +2,24 @@
 
 Pass codes, not names, to the tools. Speak names, not codes, to the analyst.
 
-Components (OPM agency subelement codes):
+Components (OPM agency subelement codes). DHS has twelve components with staff and a staffing
+plan; a question about "each component", "every component", or "all of DHS by component" covers
+all twelve, not only the largest.
 
 | Code | Component |
 |---|---|
-| HSBC | Transportation Security Administration (TSA) |
 | HSBD | Customs and Border Protection (CBP) |
+| HSBC | Transportation Security Administration (TSA) |
 | HSBB | Immigration and Customs Enforcement (ICE) |
 | HSAB | Citizenship and Immigration Services (USCIS) |
-| HSCA | Cybersecurity and Infrastructure Security Agency (CISA) |
 | HSCB | Federal Emergency Management Agency (FEMA) |
+| HSAD | U.S. Secret Service |
+| HSAC | U.S. Coast Guard (civilian employees) |
+| HSAA | DHS Headquarters |
+| HSCA | Cybersecurity and Infrastructure Security Agency (CISA) |
+| HSBE | Federal Law Enforcement Training Centers (FLETC) |
+| HSAE | Office of the Inspector General (OIG) |
+| HSFA | Science and Technology Directorate (S&T) |
 
 Occupational series:
 

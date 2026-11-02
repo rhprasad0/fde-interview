@@ -525,8 +525,12 @@ def run(set_version, runs=5):
         except Exception as e:  # noqa: BLE001  (a crashed turn is an error row, never a retry)
             lines = [{"tool_calls": [], "error": f"{type(e).__name__}: {A.redact(str(e))[:300]}", "session_id": sid}]
         finally:
-            if sid in _agents:
-                _agents.pop(sid).cleanup()
+            agent = _agents.pop(sid, None)
+            try:
+                if agent is not None:
+                    agent.cleanup()
+            except Exception:  # noqa: BLE001  (the MCP session already closed; the answer is in hand, keep it)
+                pass
         return q, {**build_row(q, r, lines), "startup_retries": retries}
 
     jobs = [(q, r) for r in range(1, runs + 1) for q in qs.values()]
