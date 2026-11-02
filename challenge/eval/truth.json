@@ -1,0 +1,417 @@
+{
+ "C01": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 0.3158
+ },
+ "C02": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "HSCB",
+    "value": -671,
+    "rank": 1
+   },
+   {
+    "key": "HSBC",
+    "value": -310,
+    "rank": 2
+   },
+   {
+    "key": "HSAB",
+    "value": -201,
+    "rank": 3
+   },
+   {
+    "key": "HSAC",
+    "value": -113,
+    "rank": 4
+   },
+   {
+    "key": "HSCA",
+    "value": -97,
+    "rank": 5
+   },
+   {
+    "key": "HSAA",
+    "value": -92,
+    "rank": 6
+   },
+   {
+    "key": "HSAE",
+    "value": -10,
+    "rank": 7
+   },
+   {
+    "key": "HSFA",
+    "value": -5,
+    "rank": 8
+   },
+   {
+    "key": "HSAD",
+    "value": 71,
+    "rank": 9
+   },
+   {
+    "key": "HSBE",
+    "value": 77,
+    "rank": 10
+   },
+   {
+    "key": "HSBD",
+    "value": 128,
+    "rank": 11
+   },
+   {
+    "key": "HSBB",
+    "value": 5123,
+    "rank": 12
+   }
+  ]
+ },
+ "C03": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "facts": {
+   "FEMA hiring variance against plan in FY2026": {
+    "to date, Q1 to Q4 with accessions through August 2026": -2252,
+    "complete quarters, Q1 to Q3 through June 2026": -1896
+   }
+  }
+ },
+ "C04": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 158.6
+ },
+ "C05": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 0.12
+ },
+ "C06": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "TOTAL",
+    "value": 1041
+   },
+   {
+    "key": "QUITS",
+    "value": 702
+   }
+  ]
+ },
+ "C07": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 94
+ },
+ "C08": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "2025-09",
+    "value": 224
+   },
+   {
+    "key": "2025-10",
+    "value": 80
+   },
+   {
+    "key": "2025-11",
+    "value": 236
+   },
+   {
+    "key": "2025-12",
+    "value": 159
+   },
+   {
+    "key": "2026-01",
+    "value": 232
+   },
+   {
+    "key": "2026-02",
+    "value": 166
+   },
+   {
+    "key": "2026-03",
+    "value": 243
+   },
+   {
+    "key": "2026-04",
+    "value": 159
+   },
+   {
+    "key": "2026-05",
+    "value": 319
+   },
+   {
+    "key": "2026-06",
+    "value": 160
+   },
+   {
+    "key": "2026-07",
+    "value": 242
+   },
+   {
+    "key": "2026-08",
+    "value": 236
+   }
+  ]
+ },
+ "C09": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "1802",
+    "value": 74762.38
+   },
+   {
+    "key": "1895",
+    "value": 104655.83
+   }
+  ]
+ },
+ "C10": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "WASHINGTON",
+    "value": 1920,
+    "rank": 1
+   },
+   {
+    "key": "STERLING",
+    "value": 751,
+    "rank": 2
+   },
+   {
+    "key": "ASHBURN",
+    "value": 678,
+    "rank": 3
+   },
+   {
+    "key": "EL PASO",
+    "value": 561,
+    "rank": 4
+   },
+   {
+    "key": "DETROIT",
+    "value": 440,
+    "rank": 5
+   },
+   {
+    "key": "NEW ORLEANS",
+    "value": 375,
+    "rank": 6
+   },
+   {
+    "key": "HOUSTON",
+    "value": 368,
+    "rank": 7
+   },
+   {
+    "key": "BLAINE",
+    "value": 362,
+    "rank": 8
+   },
+   {
+    "key": "MIAMI",
+    "value": 338,
+    "rank": 9
+   },
+   {
+    "key": "DERBY LINE",
+    "value": 321,
+    "rank": 10
+   }
+  ]
+ },
+ "C11": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "HSCB",
+    "value": -1896
+   },
+   {
+    "key": "HSBC",
+    "value": -1032
+   },
+   {
+    "key": "HSAC",
+    "value": -369
+   },
+   {
+    "key": "HSCA",
+    "value": -285
+   },
+   {
+    "key": "HSAA",
+    "value": -213
+   },
+   {
+    "key": "HSAB",
+    "value": -150
+   },
+   {
+    "key": "HSAE",
+    "value": -31
+   },
+   {
+    "key": "HSFA",
+    "value": -17
+   },
+   {
+    "key": "HSBE",
+    "value": 103
+   },
+   {
+    "key": "HSAD",
+    "value": 257
+   },
+   {
+    "key": "HSBD",
+    "value": 1552
+   },
+   {
+    "key": "HSBB",
+    "value": 4387
+   }
+  ]
+ },
+ "C12": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 889
+ },
+ "C13": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "facts": {
+   "Do CBP Officer postings at minimum grade 12 or above stay open longer, on average, than those at grade 11 or below (yes or no)": "no"
+  }
+ },
+ "C14": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "2025-09",
+    "value": 54
+   },
+   {
+    "key": "2025-10",
+    "value": 36
+   },
+   {
+    "key": "2025-11",
+    "value": 24
+   },
+   {
+    "key": "2025-12",
+    "value": 152
+   },
+   {
+    "key": "2026-01",
+    "value": 44
+   },
+   {
+    "key": "2026-02",
+    "value": 26
+   },
+   {
+    "key": "2026-03",
+    "value": 31
+   },
+   {
+    "key": "2026-04",
+    "value": 45
+   },
+   {
+    "key": "2026-05",
+    "value": 52
+   },
+   {
+    "key": "2026-06",
+    "value": 46
+   },
+   {
+    "key": "2026-07",
+    "value": 45
+   },
+   {
+    "key": "2026-08",
+    "value": 31
+   }
+  ]
+ },
+ "C15": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 170
+ },
+ "C16": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "HSAA",
+    "value": 57,
+    "rank": 1
+   },
+   {
+    "key": "HSCB",
+    "value": 44,
+    "rank": 2
+   },
+   {
+    "key": "HSBB",
+    "value": 37,
+    "rank": 3
+   },
+   {
+    "key": "HSBD",
+    "value": 31,
+    "rank": 4
+   },
+   {
+    "key": "HSAB",
+    "value": 30,
+    "rank": 5
+   }
+  ]
+ },
+ "C17": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": [
+   {
+    "key": "5",
+    "value": 0.1023
+   },
+   {
+    "key": "7",
+    "value": 0.0773
+   },
+   {
+    "key": "9",
+    "value": 0.0395
+   },
+   {
+    "key": "11",
+    "value": 0.0067
+   },
+   {
+    "key": "12",
+    "value": 0.0317
+   },
+   {
+    "key": "13",
+    "value": 0.0315
+   },
+   {
+    "key": "14",
+    "value": 0.0376
+   },
+   {
+    "key": "15",
+    "value": 0.0663
+   }
+  ]
+ },
+ "C18": {
+  "truth_computed_at": "2026-11-02T20:06:41+00:00",
+  "truth_value": 11387
+ }
+}

@@ -214,6 +214,16 @@ columns, plus a rank when the question asks for a ranking; the value is graded u
 `tolerance`, so a by-state question cannot pass on the set of 51 states alone. Truth runs once on
 the pinned data; the result is stored on the row as `truth_value` with `truth_computed_at`.
 
+**Built 2026-11-02.** `truth_sql` lives on each row of `questions.yaml` (and on each `truth_facts`
+entry); `eval_harness.py truth` runs them, refuses any SQL containing `semantic`, and writes the
+values to `challenge/eval/truth.json`, which the harness merges in at load. `truth --check` reruns
+them and fails unless every value reproduces (acceptance 2; passed on the first build). Truth
+copies each function's definition rather than calling it: counts are rows, rates divide by the mean
+of the start and end headcount, plan variance counts accessions in planned cells by calendar
+quarter start. List rows carry `key_by` (`component`, `month`, `series`, `grade`, `city`, or a map
+of canonical keys to patterns), so an answer's free-text keys ("FEMA (HSCB)", "GS-05") are reduced
+to the truth's before matching.
+
 Truth is written with the spec 03 results in view, so disagreement is possible. When a truth value
 disagrees with what the corresponding function returns, the disagreement is logged in
 `04-results.md` and the fix goes to `03_semantic.sql`, never to `truth_sql`. The functions are
@@ -232,7 +242,9 @@ rows, from every truth SQL the row carries:
 - `requires_synthetic_label`: true when any truth SQL touches `synthetic.staffing_plan`.
 
 `narrative` rows carry `truth_facts`: a list of `{name, truth_sql, truth_value, tolerance}`, the
-numbers the narrative must state correctly, and `must_not_claim`: statements the data cannot
+numbers the narrative must state correctly (a fact may instead carry `readings`, each with its own
+`truth_sql`, when more than one reading of the question is acceptable; the judge passes the fact when
+the answer states any one reading's value and says which period it covers; C03, 2026-11-02), and `must_not_claim`: statements the data cannot
 support (retirement eligibility, why people left, an individual).
 
 `data_limit` rows carry `limit_text`: the fact that makes the question unanswerable on this data
@@ -385,7 +397,7 @@ while the agent is built, before the question is sent, so it is a harness retry;
 |---|---|---|
 | `label_match` (added 2026-11-02; the label is the answer's first line) | all rows | the label line is `Verified` for Verified rows, `Exploratory` for Genie rows, `Not available` for refusal and data-limit rows. A row with truth answered `Not available` fails as `false_not_available` |
 | `numeric_match` | `number` | `answer_value` equals truth under `tolerance`: counts exact; rates and shares within 0.001 absolute; percentages within 0.1 point; `pct:x` within x percent |
-| `list_match` | `list` | `answer_value` keys match truth and each value passes `tolerance`; order matters only when the question asks for a ranking |
+| `list_match` | `list` | after `key_by` normalization: for a ranking, the answer's first N entries are truth's N in order; otherwise every truth key is present with its value within `tolerance`. Extra entries pass in both cases |
 | `labels_present` | every graded row (Verified and Genie, all behaviors) | `answer_text` contains one of the words estimated, imputed, or approximate when `requires_imputed_label`. The synthetic-plan disclosure moved out of the answer on 2026-11-01 (Ryan: the tester is briefed and the pages say it); `requires_synthetic_label` is still computed and stored, but it is a surface property checked once per page in spec 06's UI review, not a per-answer scorer |
 | `tool_use` | Verified rows | every function in `expected_tools` appears in `tool_calls`, and no SQL-writing tool does. Genie rows are covered by `genie_sql_stored` instead |
 | `provenance` | all rows | every entry in `cited_tools` matches a `tool_calls` name or the `genie_sql` from any turn of this run; nothing cited that did not run in this run. For `run_index = 0`, the run is the whole tester session |

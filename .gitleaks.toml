@@ -1,0 +1,11 @@
+# Default gitleaks rules, plus one narrow allowlist. Read by the pre-commit hook and the CI action.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Eval answer keys such as \"quits_oct_nov_2025\" match generic-api-key; only lowercase words joined by underscores in the eval results file are allowed, so a hex or mixed-case token still trips the rule"
+targetRules = ["generic-api-key"]
+condition = "AND"  # path AND pattern; the default OR would allow the whole file
+paths = ['''challenge/eval/experiments\.jsonl$''']
+regexTarget = "match"
+regexes = ['''key": "[a-z]+(_[a-z0-9]+)+"''']

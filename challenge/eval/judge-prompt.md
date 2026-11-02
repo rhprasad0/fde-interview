@@ -13,6 +13,9 @@ Grade in this order:
    within its tolerance. Equivalent forms count: 0.0351 and 3.51% are the same rate; 475 and "475
    accessions" are the same count; rounding is fine when it stays within tolerance. A fact the
    answer never states is a miss, not a pass.
+   When a fact's `truth_value` is an object, its keys are acceptable readings of the question (for
+   example two periods). The fact is correct when the answer states the value of any one reading
+   within tolerance and makes clear which period or scope it covers.
 2. For each `must_not_claim` entry, check whether the answer asserts it as a finding. Mentioning a
    topic in order to say the data cannot answer it is not asserting it. Public context labelled as
    context (for example, "a hiring freeze was in effect") is not a claim that the data shows it.

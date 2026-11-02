@@ -37,7 +37,9 @@ questions:
   expected_behavior: number
   tier: verified
   expected_tools: [length_of_service_profile]
-  tolerance: pp:0.1
+  tolerance: abs:0.001
+  truth_sql: |
+    SELECT round(count_if(length_of_service_years >= 20) / count(*), 4) FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'
   notes: Retirement exposure, the nearest answerable view of the tester's eligibility question.
 
 - id: C02
@@ -50,6 +52,15 @@ questions:
   tier: verified
   expected_tools: [plan_variance]
   tolerance: exact
+  truth_sql: |
+    WITH p AS (SELECT agency_subelement_code AS c, occupational_series_code AS s, quarter_start, planned_hires
+    FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter IN ('FY2026Q1')),
+    a AS (SELECT p.c, count(*) AS n FROM workforce.synthetic.accessions x JOIN p ON x.agency_subelement_code = p.c
+    AND x.occupational_series_code = p.s AND trunc(x.effective_month, 'QUARTER') = p.quarter_start GROUP BY p.c),
+    pp AS (SELECT c, sum(planned_hires) AS planned FROM p GROUP BY c)
+    SELECT pp.c AS key, coalesce(a.n, 0) - pp.planned AS value, row_number() OVER (ORDER BY coalesce(a.n, 0) - pp.planned, pp.c) AS rank
+    FROM pp LEFT JOIN a USING (c) ORDER BY 2
+  key_by: component
   notes: Ranked by variance; the plan is synthetic, so requires_synthetic_label is true (scored per page, spec 06).
 
 - id: C03
@@ -61,6 +72,24 @@ questions:
   expected_behavior: narrative
   tier: verified
   expected_tools: [plan_variance]
+  truth_facts:
+    - name: FEMA hiring variance against plan in FY2026
+      tolerance: abs:1
+      readings:  # "this year" read either way is acceptable (Ryan, 2026-11-02); the answer must say which period
+        - name: to date, Q1 to Q4 with accessions through August 2026
+          truth_sql: |
+            WITH p AS (SELECT occupational_series_code AS s, quarter_start, planned_hires FROM workforce.synthetic.staffing_plan
+              WHERE fiscal_quarter IN ('FY2026Q1', 'FY2026Q2', 'FY2026Q3', 'FY2026Q4') AND agency_subelement_code = 'HSCB'),
+            a AS (SELECT count(*) AS n FROM workforce.synthetic.accessions x JOIN p ON x.agency_subelement_code = 'HSCB'
+              AND x.occupational_series_code = p.s AND trunc(x.effective_month, 'QUARTER') = p.quarter_start)
+            SELECT a.n - (SELECT sum(planned_hires) FROM p) FROM a
+        - name: complete quarters, Q1 to Q3 through June 2026
+          truth_sql: |
+            WITH p AS (SELECT occupational_series_code AS s, quarter_start, planned_hires FROM workforce.synthetic.staffing_plan
+              WHERE fiscal_quarter IN ('FY2026Q1', 'FY2026Q2', 'FY2026Q3') AND agency_subelement_code = 'HSCB'),
+            a AS (SELECT count(*) AS n FROM workforce.synthetic.accessions x JOIN p ON x.agency_subelement_code = 'HSCB'
+              AND x.occupational_series_code = p.s AND trunc(x.effective_month, 'QUARTER') = p.quarter_start)
+            SELECT a.n - (SELECT sum(planned_hires) FROM p) FROM a
   must_not_claim:
     - that the data shows why FEMA hiring paused (the hiring freeze is public context, not a data finding)
     - any named individual
@@ -79,7 +108,12 @@ questions:
   supplied_context: The government was shut down from October 1 to November 12, 2025.
   turn_2: Redo that with the shutdown taken out.
   assumption_text: scaled to the days hiring was possible
-  tolerance: exact
+  tolerance: abs:1
+  truth_sql: |
+    WITH p AS (SELECT planned_hires, quarter_start FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter = 'FY2026Q1' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'),
+    a AS (SELECT count(*) AS n FROM workforce.synthetic.accessions x JOIN p ON trunc(x.effective_month, 'QUARTER') = p.quarter_start
+    WHERE x.agency_subelement_code = 'HSBD' AND x.occupational_series_code = '1895')
+    SELECT round(a.n - p.planned_hires * 49 / 92, 1) FROM p CROSS JOIN a
   notes: Pinned convention (spec 04 step 3) scales the plan of 594 to about 316 over 49 of 92 days; actuals of 475 are not adjusted.
 
 - id: C05
@@ -94,6 +128,11 @@ questions:
   prior_turns:
     - What was the attrition rate for TSA screeners over the last twelve months?
   tolerance: abs:0.001
+  truth_sql: |
+    WITH hc AS (SELECT count_if(snapshot_month = DATE'2025-09-01') AS s, count_if(snapshot_month = DATE'2026-08-01') AS e
+    FROM workforce.synthetic.employment WHERE snapshot_month IN (DATE'2025-09-01', DATE'2026-08-01') AND agency_subelement_code = 'HSBC' AND occupational_series_code = '1802'),
+    sp AS (SELECT count_if(drp_indicator <> 'Y') AS x FROM workforce.synthetic.separations WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND agency_subelement_code = 'HSBC' AND occupational_series_code = '1802')
+    SELECT round(sp.x / ((hc.s + hc.e) / 2), 4) FROM hc CROSS JOIN sp
   notes: Tester did not know the deferred resignation program (10:44). Graded on the second answer; the rate must come from a call in this run.
 
 # ---- Genie tier (13) ----
@@ -108,6 +147,11 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT 'TOTAL' AS key, count(*) AS value FROM workforce.synthetic.separations WHERE effective_month IN (DATE'2025-10-01', DATE'2025-11-01') AND agency_subelement_code = 'HSBC' AND occupational_series_code = '1802'
+    UNION ALL
+    SELECT 'QUITS', count_if(separation_category = 'QUIT') FROM workforce.synthetic.separations WHERE effective_month IN (DATE'2025-10-01', DATE'2025-11-01') AND agency_subelement_code = 'HSBC' AND occupational_series_code = '1802'
+  key_by: {QUITS: quit, TOTAL: separ|total|left}
   must_not_claim: [that the OPM count matches the testimony, unless the truth does]
   notes: Checks a public figure against OPM. Truth by effective month, October and November 2025, series 1802, total and QUIT. must_not_claim is advisory until a scorer reads it; only the number is graded.
 
@@ -121,6 +165,8 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT count(*) FROM workforce.synthetic.accessions WHERE agency_subelement_code = 'HSCB' AND effective_month BETWEEN DATE'2025-10-01' AND DATE'2026-05-01'
   must_not_claim: [that the OPM count matches GAO, unless the truth does]
   notes: Trap; must_not_claim is advisory until a scorer reads it, so batch 2 may make this a narrative row. Spec 04 records 19 FEMA accessions September 2025 to April 2026; GAO used National Finance Center data. A good answer gives the OPM count and names the source difference. Pin the window (through May 2026 or April 2026) in step 3.
 
@@ -135,6 +181,9 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT date_format(effective_month, 'yyyy-MM') AS key, count(*) AS value FROM workforce.synthetic.accessions WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' GROUP BY 1 ORDER BY 1
+  key_by: month
   notes: Truth by effective month, not the file month.
 
 - id: C09
@@ -148,6 +197,10 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: abs:1
+  truth_sql: |
+    SELECT occupational_series_code AS key, round(avg(annualized_adjusted_basic_pay), 2) AS value FROM workforce.synthetic.employment
+    WHERE snapshot_month = DATE'2026-08-01' AND ((agency_subelement_code = 'HSBC' AND occupational_series_code = '1802') OR (agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')) GROUP BY 1 ORDER BY 1
+  key_by: series
   notes: Pay is imputed for redacted rows; requires_imputed_label is true. Pin in step 3 whether truth averages reported pay only or reported plus imputed.
 
 - id: C10
@@ -161,6 +214,10 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT duty_station_city AS key, count(*) AS value, row_number() OVER (ORDER BY count(*) DESC, duty_station_city) AS rank
+    FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' GROUP BY duty_station_city ORDER BY rank LIMIT 10
+  key_by: city
   notes: Location is imputed for most CBP Officer rows; requires_imputed_label is true. Truth is the top ten, the reading a good answer states.
 
 - id: C11
@@ -173,6 +230,15 @@ questions:
   tier: verified
   expected_tools: [plan_variance]
   tolerance: exact
+  truth_sql: |
+    WITH p AS (SELECT agency_subelement_code AS c, occupational_series_code AS s, quarter_start, planned_hires
+    FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter IN ('FY2026Q1', 'FY2026Q2', 'FY2026Q3')),
+    a AS (SELECT p.c, count(*) AS n FROM workforce.synthetic.accessions x JOIN p ON x.agency_subelement_code = p.c
+    AND x.occupational_series_code = p.s AND trunc(x.effective_month, 'QUARTER') = p.quarter_start GROUP BY p.c),
+    pp AS (SELECT c, sum(planned_hires) AS planned FROM p GROUP BY c)
+    SELECT pp.c AS key, coalesce(a.n, 0) - pp.planned AS value
+    FROM pp LEFT JOIN a USING (c) ORDER BY 2
+  key_by: component
   notes: Moved from Genie to Verified 2026-11-02 (Ryan) after the first smoke, where the agent answered it correctly in all three runs by summing plan_variance over the quarters. Not backfilled, so the synthetic_plan Genie error has no row. requires_synthetic_label is true.
 
 - id: C12
@@ -186,18 +252,28 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT count(DISTINCT control_number) FROM workforce.silver.job_postings WHERE array_contains(occupational_series_codes, '1896') AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-10-31'
 
 - id: C13
   author: ryan_claude
   seed: [A07]
   reason: genie
   verbatim: Do higher-grade CBP Officer postings stay open longer than lower-grade ones?
-  class: exploratory
-  expected_behavior: list
+  class: narrative
+  expected_behavior: narrative
   tier: genie
   expected_tools: [genie]
-  tolerance: abs:0.5
-  notes: Mean days open by grade band. The tester's own question, which the agent wrongly called unanswerable.
+  truth_facts:
+    - name: Do CBP Officer postings at minimum grade 12 or above stay open longer, on average, than those at grade 11 or below (yes or no)
+      tolerance: exact
+      truth_sql: |
+        SELECT CASE WHEN avg(CASE WHEN g >= 12 THEN d END) > avg(CASE WHEN g <= 11 THEN d END) THEN 'yes' ELSE 'no' END
+        FROM (SELECT try_cast(minimum_grade AS INT) AS g, datediff(close_date, open_date) AS d FROM workforce.silver.job_postings
+        WHERE agency_subelement_code = 'HSBD' AND array_contains(occupational_series_codes, '1895')
+        AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-10-31')
+        WHERE g BETWEEN 1 AND 15
+  notes: Moved to narrative 2026-11-02 when truth was written; agents answered with grade-by-grade means, medians, and bands, so the graded fact is the direction. Postings opened September 2025 to October 2026, days open = close minus open date. The tester's own question, which the agent wrongly called unanswerable.
 
 - id: C14
   author: ryan_claude
@@ -209,6 +285,9 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT date_format(effective_month, 'yyyy-MM') AS key, count(*) AS value FROM workforce.synthetic.separations WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' AND separation_category LIKE 'RETIREMENT%' GROUP BY 1 ORDER BY 1
+  key_by: month
   notes: Tester at 65:06, use prior years to anticipate departures. Effective month, September 2025 to August 2026.
 
 - id: C15
@@ -221,6 +300,8 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT count_if(length_of_service_years < 1) FROM workforce.synthetic.separations WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'
   notes: New-hire attrition. Truth for the twelve months to August 2026; a good answer states that reading.
 
 - id: C16
@@ -233,6 +314,10 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: exact
+  truth_sql: |
+    SELECT agency_subelement_code AS key, count(*) AS value, row_number() OVER (ORDER BY count(*) DESC, agency_subelement_code) AS rank
+    FROM workforce.synthetic.separations WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND pay_plan_code = 'ES' GROUP BY 1 ORDER BY rank LIMIT 5
+  key_by: component
   notes: GAO counts 58 FEMA SES departures January 2025 to January 2026. SES is pay plan ES (grade 00). Twelve months to August 2026.
 
 - id: C17
@@ -245,6 +330,14 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: abs:0.001
+  truth_sql: |
+    WITH hc AS (SELECT try_cast(grade AS INT) AS g, count_if(snapshot_month = DATE'2025-09-01') AS s,
+    count_if(snapshot_month = DATE'2026-08-01') AS e
+    FROM workforce.synthetic.employment WHERE snapshot_month IN (DATE'2025-09-01', DATE'2026-08-01') AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' GROUP BY 1),
+    sp AS (SELECT try_cast(grade AS INT) AS g, count(*) AS t FROM workforce.synthetic.separations WHERE effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' GROUP BY 1)
+    SELECT cast(hc.g AS STRING) AS key, round(coalesce(sp.t, 0) / ((hc.s + hc.e) / 2), 4) AS value
+    FROM hc LEFT JOIN sp USING (g) WHERE hc.e >= 100 ORDER BY hc.g
+  key_by: grade
   notes: In the tester session the agent said there is no grade field for staff; grade is on the workforce, separation, and accession views. Not available fails as false_not_available.
 
 - id: C18
@@ -257,6 +350,9 @@ questions:
   tier: genie
   expected_tools: [genie]
   tolerance: pct:10
+  truth_sql: |
+    SELECT count_if((a + 5 >= 50 AND length_of_service_years + 5 >= 20) OR length_of_service_years + 5 >= 25)
+    FROM (SELECT try_cast(regexp_extract(age_bracket, '^([0-9]+)', 1) AS INT) AS a, length_of_service_years FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')
   notes: In the tester session the agent said there is no age; age_bracket and length_of_service_years exist. Truth convention pinned in step 3 (CBP Officer enhanced retirement, age 50 with 20 years or 25 years at any age, applied to bracket lower bounds). The answer must call the figure an approximation.
 
 # ---- Not available (2) ----

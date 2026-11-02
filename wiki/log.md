@@ -356,3 +356,11 @@ data-limit content moved from phrase lists to a `gpt-6-luna` judge (`limit_state
 matching failed four correct answers. Genie review: five Genie calls timed out because the rate-limit
 wait ate the poll budget (fixed); the agent skipped Genie in 9 of 36 Genie-tier runs (C10, C16,
 C18, C13). No prompt change yet: a clean baseline first.
+
+## [2026-11-02] build | Truth written; first truth-graded baseline
+`eval_harness.py truth` computes 18 graded rows from `synthetic` and `silver` only into
+`challenge/eval/truth.json`; `--check` reproduces every value. List keys normalized by `key_by`.
+Baseline `20261102T193041Z-4f3bf1e2` (prompt 4f3bf1e2): pass^3 Verified 2/6, Genie 6/12, Not
+available 2/2; pass^1 36/60. Failed runs: false Not available 8, six-component codes gap 6, Genie
+definition or partial answers 6, wrong scope 2, ambiguous question 2 (C03, now two acceptable
+readings). C13 became a narrative row graded on the direction of the answer.
