@@ -172,3 +172,33 @@ wrong-month query), C15 2/10 to 6/10, C02 6/10 to 9/10, C01, C13, C17 to 10/10. 
 - **C18** 0/10 and **C15** 4 misses: ambiguity in the questions (see iteration 2). For Ryan.
 
 **Decision.** Kept: Genie beyond noise, Verified up, the one Not-available miss explained.
+
+## Iteration 4: prompt `b06cf68a`, kept
+
+**Hypothesis.** C11's errors are a burst problem (about 45 concurrent calls to the functions
+server), and C19's one proxy answer comes from a limit missing from the list rule 5 trusts.
+
+**Change.** `skills/03-labels-and-limits.md`: no applicant records, no link from a posting to a
+hire (so no time to hire, no applicants per posting), no budget data. `prompt.md` rule 10:
+breakdown calls in batches of at most twelve, one quarter's calls at a time; the "together in a
+single step" wording from iteration 2 removed.
+
+**Result.** `20261102T224153Z`, `20261102T225444Z`, against iteration 3.
+
+| Line | Pooled pass^1 | Iteration 3 | Change | Baseline | pass^5 (each run) |
+|---|---|---|---|---|---|
+| Verified | 60/60 (100%) | 50/60 (83%) | **+17** | 56% | 6/6, 6/6 |
+| Genie | 100/120 (83%) | 104/120 (87%) | -4 (noise) | 54% | 9/12, 6/12 |
+| Not available | 20/20 (100%) | 19/20 | +5 | 100% | 2/2, 2/2 |
+
+Zero errors. **C11 1/10 to 10/10**, every run exactly 36 calls (twelve components by three
+quarters). C19 back to 10/10. All rows passing every run: 17/20 and 14/20. Cost $0.42.
+
+**What is left.** 20 failed runs: C18 10 and C15 4 (ambiguity in the questions; for Ryan), and six
+single misses on Genie rows (C07 2, C06, C12, C13, C17), Genie's own run-to-run variance.
+
+**Headroom.** If C18 and C15 stay as written, the Genie line's ceiling is about 100/120 plus C15's
+passes. The headroom left on every line is now smaller than the noise (about 8 points), so a
+change can no longer be shown to help on these 20 questions.
+
+**Decision.** Kept: Verified beyond noise, Genie within it, no errors.
