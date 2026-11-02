@@ -25,4 +25,8 @@ Data limits (answer these from this list; do not call a tool to find them):
 - USAJOBS postings cover announcements opened 2025-09-01 to 2026-10-31; "open on a past date" is
   an upper bound, since postings filled or cancelled early are invisible.
 - Records carry no names and no person id; nothing about an individual can be answered.
+- There are no applicant records and nothing links a posting to the people hired through it, so
+  time to hire, applicants per posting, and which postings drew no applicants are not available.
+  The nearest answers are posting windows (open and close dates) and accessions by month.
+- There is no budget, appropriation, or cost data.
 - Separations carry a category (quit, retirement, termination, transfer out), not a reason.

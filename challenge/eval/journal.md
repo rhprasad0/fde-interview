@@ -137,3 +137,38 @@ iteration 1). Fell: C18 5/10 to 0/10, C15 6/10 to 2/10. Five errors (C11). Cost 
   in one step did not stop it), and mixed count and percentage answers.
 
 **Decision.** Kept: both answer lines beyond noise, the largest gain of the climb so far.
+
+## Iteration 3: prompt `6c5b037a`, kept
+
+**Hypothesis.** The answers that still miss come from vague requests to Genie (C10 queried
+December 2025 because the request named no month) and from loose structured output (component
+keys without codes, variance as a percentage in one run and hires in the next).
+
+**Change.** `prompt.md` rule 8: one key form (component "Name (CODE)", month YYYY-MM, series four
+digits, grade number, "City, State"). Rule 10: every one-off query states its period and
+population in full; with no period in the question, the latest snapshot for staff counts and the
+twelve months to August 2026 for separations and accessions. New rule 11: a plan variance is in
+hires, with the percentage in the prose.
+
+**Result.** `20261102T221348Z`, `20261102T222654Z`, against iteration 2.
+
+| Line | Pooled pass^1 | Iteration 2 | Change | Baseline | pass^5 (each run) |
+|---|---|---|---|---|---|
+| Verified | 50/60 (83%) | 46/60 (77%) | +6 | 56% | 5/6, 4/6 |
+| Genie | 104/120 (87%) | 93/120 (78%) | **+9** | 54% | 10/12, 8/12 |
+| Not available | 19/20 (95%) | 20/20 | -5 (one run) | 100% | 1/2, 2/2 |
+
+All rows passing every run: 16/20 and 14/20. C10 4/10 to **9/10** (the explicit period ended the
+wrong-month query), C15 2/10 to 6/10, C02 6/10 to 9/10, C01, C13, C17 to 10/10. Cost $0.48.
+
+**What is left.**
+- **C11** 1/10, nine errors. Asking for per-component calls together now fires about 45 calls at
+  once (twelve components by three quarters, plus retries); 6 to 12 of them come back as errors
+  from the functions MCP server, and a run whose last call failed is an error row.
+- **C19** one run computed a 30-day proxy for time to hire instead of saying it cannot be
+  measured: an over-reach from iteration 1's rule 5 ("try a one-off query first"). The missing
+  link from a posting to a hire is in the data-fields skill's list of things the records lack,
+  but not in the limits skill, which rule 5 names as the only list.
+- **C18** 0/10 and **C15** 4 misses: ambiguity in the questions (see iteration 2). For Ryan.
+
+**Decision.** Kept: Genie beyond noise, Verified up, the one Not-available miss explained.

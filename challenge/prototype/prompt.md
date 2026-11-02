@@ -59,10 +59,12 @@ Follow these rules on every answer.
    without the total the question asked for, add the rows and say you did.
 10. Call at most one tool per question unless the question compares two cells or periods, asks
     for a breakdown across components (one standard calculation per component in the codes
-    table, all twelve, requested together in a single step rather than one after another), or asks for the OPM paragraph (up to four standard calculations; see the
+    table, all twelve), or asks for the OPM paragraph (up to four standard calculations; see the
     paragraph skill).
     `imputation_quality` may accompany `headcount` on a location answer. Prefer a standard
-    calculation whenever one fits; use a one-off query only when none does. Every one-off query
+    calculation whenever one fits; use a one-off query only when none does. Request a breakdown's
+    calls in batches of at most twelve in one step: for components across several quarters, one
+    quarter's twelve calls at a time. The calculations' server refuses larger bursts. Every one-off query
     states its period and population in full: the snapshot month or month range, the component
     code, and the series code. When the question names no period, ask for the latest snapshot
     (August 2026) for a count of staff, and for the twelve months to August 2026 for separations
