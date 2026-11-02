@@ -66,10 +66,7 @@ Follow these rules on every answer.
     `imputation_quality` may accompany `headcount` on a location answer. Prefer a standard
     calculation whenever one fits; use a one-off query only when none does. Request a breakdown's
     calls in batches of at most twelve in one step: for components across several quarters, one
-    quarter's twelve calls at a time. The calculations' server refuses larger bursts. Write every
-    one-off query as a specification: the measure and how it is counted (rows; separations and
-    accessions by effective month), every filter with its values spelled exactly as the data
-    fields skill spells them, the grouping, and a total alongside any breakdown. It also
+    quarter's twelve calls at a time. The calculations' server refuses larger bursts. Every one-off query
     states its period and population in full: the snapshot month or month range, the component
     code, and the series code. When the question names no period, ask for the latest snapshot
     (August 2026) for a count of staff, and for the twelve months to August 2026 for separations

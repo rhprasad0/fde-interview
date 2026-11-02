@@ -202,3 +202,45 @@ passes. The headroom left on every line is now smaller than the noise (about 8 p
 change can no longer be shown to help on these 20 questions.
 
 **Decision.** Kept: Verified beyond noise, Genie within it, no errors.
+
+## Iteration 5: prompt `c0924a3a`, reverted
+
+**Hypothesis.** Genie's remaining single misses come from loosely worded requests; writing each
+one-off query as a specification (measure, counting rule, exact filter values, grouping, a total)
+would steady them.
+
+**Change.** `prompt.md` rule 10: write every one-off query as a specification.
+
+**Result.** `20261102T230916Z`, `20261102T232229Z`, against iteration 4.
+
+| Line | Pooled pass^1 | Iteration 4 | Change |
+|---|---|---|---|
+| Verified | 57/60 (95%) | 60/60 | -5 (noise) |
+| Genie | 103/120 (86%) | 100/120 (83%) | +3 (noise) |
+| Not available | 18/20 (90%) | 20/20 | -10 (two runs) |
+
+**Read from the answers.** Two C20 refusals failed `limit_stated` although they decline correctly
+and offer counts: the judge called "the records hold no names" unsupported because C20's row gave
+no limit text to check it against (the same reason passed in 18 other runs). A gap in the set's
+reference, not an agent error; **set fix:** C20 now carries its limit. Most remaining Genie misses
+are the shape of `answer_value`, not the number: C12 and C07 report the right figure (889, 94)
+inside a list of total plus breakdown when the question asks for one number, which iteration 2's
+"more than one figure means a list" wording invites. One C07 query counted by reported month (84),
+a true Genie error.
+
+**Decision.** Reverted to iteration 4's prompt (`b06cf68a`): no line beat noise. First
+non-improving change in a row.
+
+**Process slip.** The revert first restored the prompt from the commit that carried iteration 5,
+and iteration 6's edit landed on top of it in commit `40b7214`. A hash check caught it before any
+run; the next commit restores iteration 4's prompt and applies only iteration 6's edit (verified
+by diff). No experiment ran on the mixed prompt `9c28ad3a`.
+
+## Iteration 6: prompt `8c1cc317`
+
+**Hypothesis.** C12 and C07 fail on the shape of `answer_value`, not the number. Make the shape
+follow the question: one number for a one-number question.
+
+**Change.** `prompt.md` rule 8, on iteration 4's prompt: a question that asks for one number gets
+that number even when the prose adds a breakdown; a breakdown or several named figures get the
+list.
