@@ -309,3 +309,7 @@ with speaker reference clips resolved both and labelled speakers. Redacted names
 to roles and filed as `wiki/sources/2026-11-01-tester-a-session-transcript.md`. Hooks now match
 forbidden terms as whole words so short names can be listed. Summary and criticism analysis
 still to file; session log CSV still to fill.
+
+## [2026-11-02] query | Tester A session findings
+Summary, ranked criticism, and eval-seed questions from the transcript filed as
+`wiki/analyses/tester-a-session-findings.md`; synthesis gains a first-user-evidence section.

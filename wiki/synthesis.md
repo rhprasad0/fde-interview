@@ -59,3 +59,10 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
   concept page (`concepts/forward-deployed-engineering.md`) is still missing.
 - Which frontier-lab partnership does the Firm's federal arm lean on most? The public
   announcements found so far are for OpenAI, Google, and Palantir.
+
+## First user evidence (2026-11-01)
+
+One session with a retired federal HR director ([findings](analyses/tester-a-session-findings.md)).
+The tool's strongest value was surfacing the questions to ask and saying plainly what it cannot
+answer; its gap is the why behind the numbers. The buyer who would pay sits at the component, not
+at OPM, and wants to plug in their own data. Navigation and HR vocabulary need work before a second test.
