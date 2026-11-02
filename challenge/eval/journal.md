@@ -92,3 +92,48 @@ C11 0/14 to 2/10 (all three false-limit rows came alive). Regressions: **C14 12/
 
 **Decision.** Kept: Verified beyond noise, Genie at the edge of it, three always-fail rows alive,
 and both regressions traced to wording errors in this change rather than to its direction.
+
+## Iteration 2: prompt `f947333c`, kept
+
+**Hypothesis.** Iteration 1's two regressions came from its own wording: an incomplete category
+list steered Genie's filter, and rule 8 did not say what `answer_value` holds when an answer has a
+breakdown and a total. Fix both; also ask for per-component calls in one step to shorten fan-outs.
+
+**Verified first.** In iteration 1, 8 of 10 C14 Genie queries filtered to exactly `RETIREMENT -
+VOLUNTARY` and `RETIREMENT - EARLY OUT`, the skill's two words, against 3 of 24 before it.
+
+**Change.**
+- `skills/06-data-fields.md`: the separation categories exactly as the records spell them, and
+  "a question about retirements means all three".
+- `prompt.md` rule 8: a breakdown or a multi-figure question puts the full key-value list in
+  `answer_value`, even when the prose also gives a total. Rule 10: per-component calls requested
+  together in a single step.
+
+**Result.** `20261102T214522Z`, `20261102T215835Z`, against iteration 1.
+
+| Line | Pooled pass^1 | Iteration 1 | Change | Baseline | pass^5 (each run) |
+|---|---|---|---|---|---|
+| Verified | 46/60 (77%) | 39/60 (65%) | **+12** | 56% | 3/6, 4/6 |
+| Genie | 93/120 (78%) | 73/120 (61%) | **+17** | 54% | 7/12, 9/12 |
+| Not available | 20/20 | 20/20 | 0 | 100% | 2/2, 2/2 |
+
+All rows passing every run: 12/20 and 15/20 (baseline 9/20). Fixed: C14 0/10 to **10/10**, C06
+2/10 to **10/10**, C08 8/10 to 10/10, C13 6/10 to 9/10, C02 0/10 to 6/10 (corrected truth; see
+iteration 1). Fell: C18 5/10 to 0/10, C15 6/10 to 2/10. Five errors (C11). Cost $0.45.
+
+**What is left, read from the answers.**
+- **C18** no longer says Not available. It answers with a floor of 8,005 (age 50 with 20 years)
+  and a ceiling of "about 11,400", and puts the floor in `answer_value`. Truth (11,387) counts 25
+  years at any age as well. The question does not state a convention, so this is ambiguity in
+  the set, not an agent error. For Ryan.
+- **C15**: 7 of 10 runs read "this year" as calendar 2026 (138); truth is the trailing twelve
+  months (170). The answer states its reading. Ambiguity in the set; for Ryan.
+- **C10**: Genie queried the **December 2025** snapshot, because the agent's question to Genie named
+  no month: the wrong-month Genie error the set was built to catch, triggered by an
+  underspecified request.
+- **C02**: some runs key components by name only ("FEMA"), so the key cannot be matched; one ranked
+  by percentage missed rather than hires missed.
+- **C11**: three errors from the functions MCP session closing mid fan-out (asking for the calls
+  in one step did not stop it), and mixed count and percentage answers.
+
+**Decision.** Kept: both answer lines beyond noise, the largest gain of the climb so far.
