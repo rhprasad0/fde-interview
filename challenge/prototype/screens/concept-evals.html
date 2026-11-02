@@ -1,0 +1,403 @@
+<title>Lantern Evals</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: evals-suite chrome; the metrics canvas on the left, the test-case debug view in a right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pass:#2a78d6; --pass-soft:#dbe9fb;
+  --f-list:#eb6834; --f-fna:#1baf7a; --f-other:#6b717c;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --bad-bg:#fde3e1; --bad-ink:#7a1a16; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px}
+@media (max-width:1040px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:72ch}
+.headrow{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn small{font-weight:400;opacity:.85}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .mono{font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.scroll{overflow-x:auto}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:280px;z-index:20}
+.tip b{display:block}
+
+aside.debug{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1040px){aside.debug{position:static;max-height:none}}
+.dhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dhead b{font-size:14px}
+.dhead small{font-size:12px;color:var(--ink-3)}
+.dbody{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.dsec{display:flex;flex-direction:column;gap:6px}
+.dsec h3{margin:0;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.dsec p{margin:0}
+.q{background:var(--bg);border-radius:6px;padding:8px 12px}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink)}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+@media (prefers-reduced-motion:no-preference){.card svg rect,.card svg circle{transition:opacity .15s}}
+</style>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg>
+      <span>Lantern Evals</span>
+      <small>HOW DO YOU KNOW IT WORKS · v0.0.1-demo</small>
+    </div>
+    <nav class="tabs" aria-label="Evaluation suite">
+      <a href="#run">Run tests</a>
+      <a href="#tests">View tests</a>
+      <a href="#metrics" aria-current="page">Metrics dashboard</a>
+      <a href="#objectives" class="off" title="Not supported in the dashboard view. We checked the original. Same.">Metric objectives</a>
+    </nav>
+    <div class="status">
+      <span>Suite <b>dhs-variance-review · eval-v1</b></span>
+      <span>Target functions <b>1</b></span>
+      <span>Eval spend to date <b class="num">$0.89</b></span>
+      <span>Budget <b class="num">$50.00</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter">20 TEST CASES // 5 RUNS EACH // THE POINT ESTIMATE IS NOT THE ARGUMENT, THE HEATMAP IS</div>
+
+<div class="shell gutter">
+<main id="metrics">
+  <div class="crumb">
+    <span>Evaluation suite: <b>dhs-variance-review</b></span><span>/</span>
+    <span>Run: <b>20261102T204103Z</b></span><span>/</span>
+    <span>Target: <b>variance review assistant @ a5e8517</b></span><span>/</span>
+    <span>Evaluators: <b>14</b> (11 code rules, 3 judges, 0 vibes)</span>
+  </div>
+
+  <div class="headrow">
+    <div>
+      <h1>8 of 20 questions pass five times out of five. We are telling you this on purpose.</h1>
+      <p class="lede">Every refusal and data limit passes every time. The agent's own calculations pass most of the time. The one-off queries are where it gets interesting, and the heatmap says exactly where.</p>
+    </div>
+    <button class="btn primary" type="button"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Analyze with human FDE <small>(he is standing right there)</small></button>
+  </div>
+
+  <section class="tiles" aria-label="Overall">
+    <div class="tile"><span>pass^1, mean per run</span><strong class="num">61%</strong><em>61 of 100 graded runs</em></div>
+    <div class="tile"><span>pass^5, all five runs</span><strong class="num">8 / 20</strong><em>Reported, never compared. Too coarse.</em></div>
+    <div class="tile"><span>Cost of this run</span><strong class="num">$0.18</strong><em>100 agent runs plus the judge calls</em></div>
+    <div class="tile"><span>Latency, median</span><strong class="num">44 s</strong><em>Refusals 4 s. Two rankings took a nap.</em></div>
+  </section>
+
+  <section class="card" id="tests">
+    <h2>The heatmap: 20 test cases, 5 runs, colored by the first scorer that failed</h2>
+    <p class="sub">Rows grouped by tier. Flat rows are the argument: six questions fail every run, and each has a named cause. The speckled rows are noise, which is why one experiment's pass^5 is never compared with another's.</p>
+    <div class="scroll"><div id="heat"></div></div>
+    <div class="legend" id="heatlegend"></div>
+    <p class="src">Evaluators run in table order; failure_category is the first one that fails. Click any cell to load it in the debug view. None are wired up. It is a concept page.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Four baselines of the same prompt. Nothing changed. The lines moved anyway.</h2>
+      <p class="sub">pass^1 by tier across three pass^3 baselines and the pass^5 run, prompt unchanged. This chart is why changes are judged on pooled pass^1 over two experiments, never on one number.</p>
+      <div id="base"></div>
+      <div class="legend"><span><i style="background:var(--pass)"></i>Verified (6 questions)</span><span><i style="background:var(--f-list)"></i>Exploratory (12)</span><span><i style="background:var(--f-fna)"></i>Not available (2)</span></div>
+      <p class="src">Experiments 193041Z, 200924Z, 202445Z (3 runs each) and 204103Z (5 runs). Same prompt hash on all four; only harness commits differ.</p>
+    </section>
+
+    <section class="card">
+      <h2>What fails, and whose fault it is</h2>
+      <p class="sub">39 failing runs out of 100. Most are rankings from a one-off query that ordered the list differently from truth. Eleven are the agent declining a question it could have answered, which is the opposite problem from the one everyone worries about.</p>
+      <div id="fails"></div>
+      <p class="src">Zero runs failed provenance, first-failing or otherwise: nothing was ever cited that did not run. Zero errors in this experiment; the two in the first baseline were a scorer bug, since fixed.</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Latency by tier. Refusals are instant, rankings take a coffee, two took a nap.</h2>
+    <p class="sub">Every graded run, seconds from question to answer. The one-off query path waits in a five-per-minute queue, so its latency includes standing in line. The 500 s marks are the harness cap.</p>
+    <div id="lat"></div>
+    <p class="src">Latency is comparable only between passes with the same worker count. This one ran 16.</p>
+  </section>
+</main>
+
+<aside class="debug" aria-label="Test case debug view">
+  <div class="dhead">
+    <b>Test case debug view</b>
+    <small>C16, run 1 of 5 · double-clicked, as the manual says</small>
+  </div>
+  <div class="dbody">
+    <div class="dsec">
+      <h3>Test case</h3>
+      <div class="q">Which DHS components lost the most senior executives this year?</div>
+      <span class="meta">tier: genie · class: exploratory · expected: list · author: ryan_claude</span>
+    </div>
+
+    <div class="dsec">
+      <h3>Function output</h3>
+      <span class="chip no">Exploratory</span>
+      <p>Across the twelve months from September 2025 to August 2026, FEMA recorded the most senior-executive separations with 322, followed by DHS Headquarters with 107 and CISA with 70. The twelve components total 661. These are raw counts, not rates. The one-off query identified senior executives by pay plan or grade code, which I have not checked against an executive roster.</p>
+<pre>SELECT
+  `agency_subelement_code`,
+  `agency_subelement`,
+  COUNT(*) AS `separation_count`
+FROM `workforce`.`semantic`.`separation`
+WHERE `effective_month` >= DATE '2025-09-01'
+  AND `effective_month` <= DATE '2026-08-31'
+  AND `agency_subelement_code` IS NOT NULL
+  AND `agency_subelement` IS NOT NULL
+  AND (
+    `pay_plan_code` ILIKE '%ES%'
+    OR `grade` ILIKE '%SES%'
+    OR `grade` = '00'
+  )
+GROUP BY `agency_subelement_code`, `agency_subelement`
+ORDER BY `separation_count` DESC, `agency_subelement_code` ASC</pre>
+      <span class="meta">one-off query · 12 rows · 254 s of a 270 s turn · $0.003 · 3,305 output tokens</span>
+    </div>
+
+    <div class="dsec">
+      <h3>Evaluators</h3>
+      <table>
+        <thead><tr><th>Evaluator</th><th>Kind</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>label_match</td><td>code</td><td><span class="chip ok">Passed</span></td></tr>
+          <tr><td>list_match</td><td>code</td><td><span class="chip bad">Failed</span></td></tr>
+          <tr><td>labels_present</td><td>code</td><td><span class="chip ok">Passed</span></td></tr>
+          <tr><td>provenance</td><td>code</td><td><span class="chip ok">Passed</span></td></tr>
+          <tr><td>genie_sql_stored</td><td>code</td><td><span class="chip ok">Passed</span></td></tr>
+          <tr><td>faithfulness</td><td>judge</td><td><span class="chip no">n/a</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dsec">
+      <h3>Expected vs actual, first three</h3>
+      <table>
+        <thead><tr><th>Rank</th><th>Truth (independent SQL)</th><th class="r"></th><th>Answer</th><th class="r"></th></tr></thead>
+        <tbody class="num">
+          <tr><td>1</td><td>DHS HQ</td><td class="r">57</td><td>FEMA</td><td class="r">322</td></tr>
+          <tr><td>2</td><td>FEMA</td><td class="r">44</td><td>DHS HQ</td><td class="r">107</td></tr>
+          <tr><td>3</td><td>ICE</td><td class="r">37</td><td>CISA</td><td class="r">70</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dsec">
+      <h3>Debug outputs</h3>
+      <p>Truth filters on pay plan ES alone. The generated filter also took every row with grade 00, which ES rows carry but so do other ungraded rows, so it counted 661 separations where truth finds far fewer. The agent said it had not checked the filter against a roster, which is honest and still wrong.</p>
+      <p class="meta">Judge reasoning: none. list_match is a code rule. It has no feelings.</p>
+    </div>
+
+    <div class="dsec">
+      <h3>Proposed fix</h3>
+      <p>A data-fields skill, drafted today, that names the pay plans and says ES rows carry grade 00, so the one-off query can filter on pay plan alone. Judged on pooled pass^1 over two experiments against this baseline, on the rows that failed every run.</p>
+    </div>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">pass^5 is reported, not compared. The heatmap and the explained failures are the argument. Fourteen evaluators, eleven of them code rules over structured fields, three of them a judge with a rubric you can read. Results are never cached across runs. Total spent on evaluation so far: $0.89.</footer>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('mousemove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 300) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  node.addEventListener('mouseleave', () => { tip.hidden = true; });
+}
+
+// Experiment 20261102T204103Z, five runs per question. P = pass; otherwise the first failing scorer.
+// L list_match, N numeric_match, F false_not_available, B label_match. Latency in seconds per run.
+const Q = [
+  ['C01', 'Verified', 'Share of CBP Officers with 20+ years', 'NPPNP', [36, 40, 26, 14, 7]],
+  ['C02', 'Verified', 'Components that missed plan by the most, Q1', 'LLLLL', [63, 66, 48, 55, 29]],
+  ['C03', 'Verified', 'Two sentences on FEMA hiring (narrative)', 'PPPPP', [44, 42, 29, 42, 16]],
+  ['C04', 'Verified', 'Redo that with the shutdown taken out', 'PPPPP', [44, 40, 29, 39, 12]],
+  ['C05', 'Verified', 'Leave out deferred resignations', 'PPPPP', [39, 36, 19, 31, 12]],
+  ['C11', 'Verified', 'First three quarters, behind plan by component', 'LBLBL', [103, 500, 66, 207, 72]],
+  ['C06', 'Exploratory', 'TSA screeners who left Oct and Nov, vs 1,110', 'LLLLL', [40, 51, 196, 58, 59]],
+  ['C07', 'Exploratory', 'FEMA hires Oct to mid-May, vs GAO 134', 'NNPPP', [99, 53, 77, 297, 111]],
+  ['C08', 'Exploratory', 'CBP Officer hires month by month', 'PPPPP', [152, 44, 135, 35, 104]],
+  ['C09', 'Exploratory', 'TSA screener average salary vs CBP', 'PPPPP', [44, 327, 129, 139, 161]],
+  ['C10', 'Exploratory', 'Cities with the most CBP Officers', 'BFFBF', [41, 29, 21, 21, 6]],
+  ['C12', 'Exploratory', 'Border Patrol postings, Sep to Aug', 'PPPPP', [35, 62, 50, 63, 199]],
+  ['C13', 'Exploratory', 'Do higher-grade postings stay open longer', 'PPBPP', [93, 250, 15, 246, 62]],
+  ['C14', 'Exploratory', 'Retirements by month', 'LPPPP', [39, 60, 55, 64, 59]],
+  ['C15', 'Exploratory', 'Leavers with under one year of service', 'PNPPN', [156, 62, 63, 237, 173]],
+  ['C16', 'Exploratory', 'Components that lost the most senior executives', 'LFFLF', [270, 5, 6, 319, 5]],
+  ['C17', 'Exploratory', 'Separation rate by grade', 'PLPPP', [195, 500, 233, 81, 128]],
+  ['C18', 'Exploratory', 'Retirement-eligible in five years', 'FFFFF', [6, 18, 7, 27, 19]],
+  ['C19', 'Not available', 'Time to hire, announcement to first day (data limit)', 'PPPPP', [4, 6, 4, 5, 4]],
+  ['C20', 'Not available', 'Names of officers in Laredo who resigned (refusal)', 'PPPPP', [3, 2, 3, 3, 4]],
+];
+// Three hues only (validated all-pairs); the two rarer code rules share grey and are told apart by their letter.
+const CAT = { P: ['Passed', 'var(--pass)'], L: ['list_match', 'var(--f-list)'], F: ['false_not_available', 'var(--f-fna)'], N: ['numeric_match', 'var(--f-other)'], B: ['label_match', 'var(--f-other)'] };
+const TIER = { Verified: 'var(--pass)', Exploratory: 'var(--f-list)', 'Not available': 'var(--f-fna)' };
+
+// Heatmap.
+(function () {
+  const cell = 30, gap = 3, L = 330, top = 24, W = L + 5 * (cell + gap) + 40, H = top + Q.length * (cell + gap) + 2 * 10;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Pass and failure heatmap, 20 questions by 5 runs', style: 'min-width:520px' });
+  for (let r = 0; r < 5; r++) svg.append(el('text', { x: L + r * (cell + gap) + cell / 2, y: 14, 'text-anchor': 'middle', class: 'mono' }, 'run ' + (r + 1)));
+  let y = top, lastTier = '';
+  Q.forEach(([id, tier, text, runs, lat]) => {
+    if (tier !== lastTier && lastTier) y += 10;
+    lastTier = tier;
+    svg.append(el('text', { x: 0, y: y + cell / 2 + 4, class: 'mono lbl' }, id));
+    svg.append(el('text', { x: 40, y: y + cell / 2 + 4 }, text.length > 44 ? text.slice(0, 43) + '…' : text));
+    [...runs].forEach((c, r) => {
+      const [name, color] = CAT[c];
+      const g = el('g', {});
+      g.append(el('rect', { x: L + r * (cell + gap), y, width: cell, height: cell, rx: 4, fill: color, opacity: c === 'P' ? .35 : 1 }));
+      // Aqua is too light for white text in light mode; ink reads on it in both themes.
+      if (c !== 'P') g.append(el('text', { x: L + r * (cell + gap) + cell / 2, y: y + cell / 2 + 4, 'text-anchor': 'middle', class: 'mono', style: (c === 'F' ? 'fill:var(--ink)' : 'fill:#fff') + ';font-weight:600' }, c));
+      hover(g, `<b>${id} · run ${r + 1} · ${name}</b>${text}<br>${lat[r]} s`);
+      svg.append(g);
+    });
+    const n = [...runs].filter(c => c === 'P').length;
+    svg.append(el('text', { x: L + 5 * (cell + gap) + 6, y: y + cell / 2 + 4, class: 'mono' }, n + '/5'));
+    y += cell + gap;
+  });
+  document.getElementById('heat').append(svg);
+  document.getElementById('heatlegend').innerHTML = Object.entries(CAT).map(([k, [n, c]]) => `<span><i style="background:${c};opacity:${k === 'P' ? .35 : 1}"></i>${k === 'P' ? n : k + ' = ' + n}</span>`).join('');
+})();
+
+// Baselines: pass^1 by tier across four experiments.
+(function () {
+  const exps = ['193041Z', '200924Z', '202445Z', '204103Z'];
+  const series = [
+    ['Verified', [8 / 18, 10 / 18, 11 / 18, 18 / 30]],
+    ['Exploratory', [22 / 36, 19 / 36, 17 / 36, 33 / 60]],
+    ['Not available', [1, 1, 1, 1]],
+  ];
+  const W = 640, H = 230, P = { t: 20, r: 110, b: 30, l: 40 };
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'pass^1 by tier across four baseline experiments' });
+  const x = i => P.l + (W - P.l - P.r) * i / 3, y = v => P.t + (H - P.t - P.b) * (1 - v);
+  for (let v = 0; v <= 1; v += .25) {
+    svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), class: v ? 'gridline' : 'axis' }));
+    svg.append(el('text', { x: P.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, Math.round(v * 100) + '%'));
+  }
+  exps.forEach((e, i) => svg.append(el('text', { x: x(i), y: H - 10, 'text-anchor': 'middle', class: 'mono' }, e)));
+  series.forEach(([name, vals]) => {
+    const c = TIER[name];
+    svg.append(el('polyline', { points: vals.map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+    vals.forEach((v, i) => { const d = el('circle', { cx: x(i), cy: y(v), r: 5, fill: c, stroke: 'var(--panel)', 'stroke-width': 2 }); hover(d, `<b>${name} · ${exps[i]}</b>pass^1 ${Math.round(v * 100)}%`); svg.append(d); });
+    svg.append(el('text', { x: x(3) + 10, y: y(vals[3]) + 4, class: 'lbl' }, name));
+  });
+  document.getElementById('base').append(svg);
+})();
+
+// Failure categories, horizontal bars.
+(function () {
+  const data = [['list_match', 17, 'var(--f-list)', 'Ranking rows from the one-off query: right numbers, wrong order, or a filter that pulled in the wrong people (see C16).'], ['false_not_available', 11, 'var(--f-fna)', 'The agent declined a question truth says it could answer. Too polite is still wrong.'], ['numeric_match', 6, 'var(--f-other)', 'A number outside tolerance.'], ['label_match', 5, 'var(--f-other)', 'Wrong first line. Said Verified on a one-off query, or the reverse.'], ['provenance', 0, 'var(--f-other)', 'Cited a tool that did not run. Never happened.'], ['error', 0, 'var(--f-other)', 'Infrastructure. Zero this run; two in the first baseline when the functions server choked on 16 connects.']];
+  const W = 640, rowH = 30, P = { l: 150, r: 40 }, H = rowH * data.length + 4, max = 20, x = v => P.l + (W - P.l - P.r) * v / max;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Failing runs by first failing scorer' });
+  data.forEach(([lab, v, c, why], i) => {
+    const yy = i * rowH + 2;
+    svg.append(el('text', { x: P.l - 8, y: yy + 19, 'text-anchor': 'end', class: 'mono' }, lab));
+    const r = el('rect', { x: P.l, y: yy + 4, width: Math.max(x(v) - P.l, 2), height: rowH - 8, rx: 3, fill: v ? c : 'var(--line)' });
+    hover(r, `<b>${lab} · ${v} runs</b>${why}`);
+    svg.append(r);
+    svg.append(el('text', { x: x(v) + 6, y: yy + 19, class: 'lbl' }, v));
+  });
+  document.getElementById('fails').append(svg);
+})();
+
+// Latency strip plot by tier.
+(function () {
+  const tiers = ['Not available', 'Verified', 'Exploratory'];
+  const W = 640, rowH = 46, P = { l: 100, r: 20, t: 24 }, H = P.t + rowH * tiers.length + 24, max = 520, x = s => P.l + (W - P.l - P.r) * s / max;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Latency of every run by tier, seconds' });
+  [0, 100, 200, 300, 400, 500].forEach(s => { svg.append(el('line', { x1: x(s), x2: x(s), y1: P.t - 4, y2: H - 20, class: 'gridline' })); svg.append(el('text', { x: x(s), y: H - 4, 'text-anchor': 'middle' }, s + ' s')); });
+  tiers.forEach((t, i) => {
+    const cy = P.t + i * rowH + rowH / 2;
+    svg.append(el('text', { x: P.l - 10, y: cy + 4, 'text-anchor': 'end', class: 'lbl' }, t));
+    const pts = Q.filter(q => q[1] === t).flatMap(q => q[4].map((s, r) => [s, q, r]));
+    const med = pts.map(p => p[0]).sort((a, b) => a - b)[Math.floor(pts.length / 2)];
+    svg.append(el('line', { x1: x(med), x2: x(med), y1: cy - 16, y2: cy + 16, stroke: 'var(--ink)', 'stroke-width': 2 }));
+    pts.forEach(([s, q, r], j) => {
+      const jitter = ((j * 7919) % 17 - 8) * 1.4; // deterministic jitter, no library
+      const d = el('circle', { cx: x(s), cy: cy + jitter, r: 5, fill: TIER[t], opacity: .55, stroke: 'var(--panel)', 'stroke-width': 1 });
+      hover(d, `<b>${q[0]} · run ${r + 1} · ${s} s</b>${q[2]}${s >= 500 ? '<br>Harness cap. It napped.' : ''}`);
+      svg.append(d);
+    });
+    svg.append(el('text', { x: x(med), y: cy - 20, 'text-anchor': 'middle', class: 'mono' }, 'median ' + med + ' s'));
+  });
+  document.getElementById('lat').append(svg);
+})();
+
+// Self-check: the headline numbers agree with the run grid.
+const runs = Q.flatMap(q => [...q[3]]);
+console.assert(runs.length === 100 && runs.filter(c => c === 'P').length === 61 && Q.filter(q => q[3] === 'PPPPP').length === 8, 'headline numbers drifted from the grid');
+</script>
