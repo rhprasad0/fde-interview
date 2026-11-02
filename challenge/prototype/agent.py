@@ -8,7 +8,9 @@ import hashlib
 import json
 import re
 import subprocess
+import threading
 import time
+from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -107,6 +109,25 @@ def _cell(v: dict, type_name: str):
     return s
 
 
+GENIE_PER_MINUTE, GENIE_WINDOW = 5, 60.0  # Conversation API free tier: best effort 5 questions/min per workspace
+_genie_lock, _genie_asks = threading.Lock(), deque()
+
+
+def _genie_slot() -> None:
+    """Block until one more Genie question fits the per-workspace rate. Parallel eval runs share this, so a burst
+    queues here instead of coming back throttled, which the model would report as Not available."""
+    while True:
+        with _genie_lock:
+            now = time.monotonic()
+            while _genie_asks and now - _genie_asks[0] >= GENIE_WINDOW:
+                _genie_asks.popleft()
+            if len(_genie_asks) < GENIE_PER_MINUTE:
+                _genie_asks.append(now)
+                return
+            wait = GENIE_WINDOW - (now - _genie_asks[0])
+        time.sleep(wait)
+
+
 def _genie(question: str) -> dict:
     """Query-then-poll on the Genie space; a fresh MCP session per call (ids are Genie-side, not session-side)."""
     with MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/genie/{SPACE}")) as c:
@@ -115,6 +136,7 @@ def _genie(question: str) -> dict:
         poll = next(n for n in names if n.startswith("poll_response_"))
         wait = timedelta(seconds=120)
         deadline = time.monotonic() + 120
+        _genie_slot()  # shortcut: the wait counts in the tool's duration and the turn's latency; subtract it if latency is compared across worker counts
         r = _structured(c.call_tool_sync("ask", ask, {"query": question}, read_timeout_seconds=wait))
         while r["status"] in _GENIE_PENDING and time.monotonic() < deadline:
             time.sleep(2)
@@ -168,16 +190,17 @@ class _RedactedFile:
         self.f.flush()
 
 
-_spans = None
+_spans, _spans_lock = None, threading.Lock()
 
 
 def build_agent(session_id: str, run_index: int = 0) -> Agent:
     global _spans
     RAW.mkdir(exist_ok=True)
     day = datetime.now(timezone.utc).date().isoformat()
-    if _spans is None:  # one span file per process; the tracer provider is global
-        _spans = _RedactedFile(RAW / f"{day}-{session_id}-spans.log")
-        StrandsTelemetry().setup_console_exporter(out=_spans)
+    with _spans_lock:  # parallel eval workers build agents at once; one span file per process
+        if _spans is None:  # the tracer provider is global
+            _spans = _RedactedFile(RAW / f"{day}-{session_id}-spans.log")
+            StrandsTelemetry().setup_console_exporter(out=_spans)
     model = AnthropicModel(client_args={"api_key": ENV["ANTHROPIC_API_KEY"]}, model_id=MODEL_ID, max_tokens=16000,
                            cache_config=CacheConfig(strategy="anthropic"),
                            params={"output_config": {"effort": "high"}})  # Haiku 5.5 defaults to medium
@@ -235,7 +258,9 @@ def _result_stats(result: dict) -> dict:
     flags = [i for i, n in enumerate(cols) if n in ("location_imputed", "pay_imputed")]
     imputed = sum(v or 0 for v in col("headcount_location_imputed")) + sum(1 for r in rows if any(r[i] is True for i in flags))
     return {"result_rows": len(rows), "imputed_rows": imputed, "synthetic_rows": sum(1 for v in col("is_synthetic") if v is True),
-            "is_truncated": body.get("is_truncated", body.get("truncated")), "status": result.get("status"), "body": body}
+            "is_truncated": body.get("is_truncated", body.get("truncated")), "status": result.get("status"), "body": body,
+            # Small results kept whole so an answer given from memory can be checked against what the tool returned.
+            "result_values": {"columns": cols, "rows": rows} if len(rows) <= 50 else None}
 
 
 def _model_error(e: BaseException) -> bool:

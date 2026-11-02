@@ -90,7 +90,7 @@ turns over 42 minutes, total model cost about $0.03, median latency 25 s, worst 
   cross-component comparison, A08 grade mix over time, both via Genie and the two slowest turns),
   4 Not available (A01 retirement eligibility, A04 why recruitment is thin, A06 what "Many"
   means, A07 which grades applicants skip). Half the answers were refusals, which is the trace-side
-  view of criticism 1.
+  view of criticism 1. Two of the four rest on false data limits; see the trajectory section.
 - **The praised answer was volunteered.** A01 refused eligibility but offered a comparison; the
   tester took it (A02, "now that you asked") and called the result "great data" ([21:45](../sources/2026-11-01-tester-a-session-transcript.md)).
 - **Tool use:** A02 called `length_of_service_profile` eight times, once per component. A04 to
@@ -99,6 +99,38 @@ turns over 42 minutes, total model cost about $0.03, median latency 25 s, worst 
   UTC), no reject or flag, no paragraph or written feedback submitted in the app. The trace alone
   would read as a clean session; the criticism lives only in the recording.
 - No errors, no refusals of out-of-scope requests, because Task 5 ("try to break it") was never run.
+
+## Trajectory: what the tool calls show
+
+Checked 2026-11-02 against the trace and the view definitions in
+`challenge/notebooks/03_semantic.sql`. The clean surface in the section above hides four problems.
+
+1. **Two Not-available answers rest on false data limits.** A07 said the data "has no grade field
+   for staff" after zero tool calls in 8.8 s; `grade` is a column of `semantic.workforce_snapshot`,
+   `semantic.separation`, and `semantic.accession`. A01 said "no age or birth date, so eligibility
+   cannot be computed"; there is no birth date, but `age_bracket` and `length_of_service_years` are
+   on the same three views, enough for an approximate, caveated eligibility count. Neither limit is
+   in the prompt or the skills: the model asserted them unchecked, likely because the eight
+   functions return neither field. This is the most dangerous failure in the session, because
+   Not available was the answer type the tester trusted most ([73:07](../sources/2026-11-01-tester-a-session-transcript.md)).
+2. **Four turns answered from memory.** A04 to A07 made no tool calls (5 to 9 s each). A05
+   labelled Verified a count (11 announcements) read off A03's `open_postings` result two turns
+   earlier. A06 quoted three posting control numbers that cannot be checked from the trace,
+   because the trace stores result row counts, not values.
+3. **A02 fanned out to nine calls in 69 s:** `length_of_service_profile` once per component (five)
+   and once per CBP series (three), then a Genie query returning 115 rows. The answer was the one
+   the tester praised. Its "second only to ICE" ranks CBP against the six components in the codes
+   skill; whether the data holds other DHS components is unchecked.
+4. **Noise, not failure.** The three ERROR spans are the MCP client's `server/discover` probe
+   (`-32601`, method not found) on each agent build. A01's first call took 23 s on a cold
+   warehouse.
+
+**What it changed in the eval (spec 04, amended 2026-11-02):** two Genie rows seeded from the false
+limits (C17 grade, C18 approximate eligibility), where a Not-available answer fails as
+`false_not_available`; provenance scoped to the run, so a replayed follow-up must re-call its
+tools; tool-call count and latency reported per row but not gated (gating would fail A02, the
+best-received answer); and a hand-off to spec 05 to store result values for small results.
+The agent-side fix (check with Genie before declaring a field missing) belongs to spec 05.
 
 ## Caveats
 

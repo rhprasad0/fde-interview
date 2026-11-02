@@ -8,24 +8,38 @@ classified, how truth is authored, how the set is frozen, and what the prototype
 emit so every row can be scored. Its own acceptance is structural. The agent's pass^3 is measured
 in specs 05 and 06, not here.
 
-**Scope, decided 2026-11-01.** Ryan's answers to the four questions that shaped this spec, plus
+**Amended 2026-11-02, after the Tester A session** ([findings](../../wiki/analyses/tester-a-session-findings.md)).
+Six of the tester's eight questions fell outside the eight functions, half the answers were Not
+available, two of those rested on data limits that do not exist, and three questions only made
+sense after the turn before. Ryan's decisions, applied in place below: questions are co-written by
+Ryan and Claude from cited seeds and approved row by row; the set leans Genie (floors Genie 20,
+Verified 12); Not-available answers get their own pass^3 line; follow-up rows replay prior turns;
+the harness is Strands Evals with `gpt-6-luna` as judge; and the leftovers of the `clarify` class
+are gone. The first batch of 20 co-written rows is in `challenge/eval/questions.yaml`.
+
+**Scope, decided 2026-11-01, amended 2026-11-02.** Ryan's answers to the four questions that shaped this spec, plus
 the defaults stated rather than asked:
 
-- **Human sources only.** Every question is written by a person: Tester A's verbatim questions
-  from the 2026-11-01 session, and Ryan's own questions written afterward as a domain-literate
-  analyst. No question is generated, paraphrased, or expanded by a model. Reason: the set measures
-  the real question distribution of a Human Capital professional; a simulated user measures the
-  simulator. A tester paraphrase of an earlier question is kept as its own row with
-  `paraphrase_of` set, because robustness to rewording is a property worth grading.
-- **Ryan's rows fill, they do not dominate.** Ryan writes his rows after the tester rows are
-  classified and before any eval run, to reach a floor of 20 graded questions and to give every
-  one of the eight function families at least one question. Each row carries `author`, so the
-  panel sees the uncontaminated sample and the coverage fill as separate lines.
+- **Real askers, co-written rows (amended 2026-11-02).** Two kinds of row. Tester rows are
+  Tester A's questions, verbatim, from the 2026-11-01 session. Co-written rows are drafted by
+  Ryan and Claude together, each from a `seed` that names a tester question or a public source
+  where a real person asked it (GAO reports, congressional testimony, OPM workforce-analysis
+  practice), and Ryan approves each row before it enters the file. No row comes from a simulated
+  user: the set measures the questions real Human Capital people ask, and a simulator measures
+  itself. A co-written row must be the same kind of question as its seed, not a rewording of it;
+  a rewording shares its seed's truth and does not lift a floor. A tester paraphrase of an earlier
+  tester question is still its own row with `paraphrase_of` set.
+- **The set leans Genie (amended 2026-11-02).** Six of the tester's eight questions fell outside
+  the eight functions, so most rows target the Genie path: floors of 20 Genie rows and 12 Verified
+  rows (one per family, plus a narrative, a context-supplied, and a follow-up row). Every row
+  carries `author`, so the panel sees the tester sample and the co-written rows as separate lines.
 - **Numbering.** 04 eval set (this), 05 prototype agent and session traces, 06 AgentCore
   deployment and the AI/BI dashboard. The 2026-10-30 Evaluation decision is amended.
 - **Truth grades; the tester's label sits beside it.** Pass or fail comes from SQL truth. The
   tester's judgment of an answer (right, wrong, unsure, would not quote) is a second column, used
-  to calibrate the LLM judge and to flag questions whose specification was wrong.
+  to calibrate the LLM judge and to flag questions whose specification was wrong. Tester A gave an
+  explicit judgment on two answers (A02 "great data", A08 "helpful"), so v1 calibration is
+  reported as too small to measure, not as a rate.
 - **Verbatim in the repo, tester anonymized.** Questions and labels are committed as the eval
   source file, attributed to `tester_a` with role only (former federal HR professional, current
   contractor in an unrelated field, not a Palantir user). No name, employer, or recording in the repo. Ryan confirms
@@ -41,24 +55,32 @@ the defaults stated rather than asked:
 - **Freeze.** A set version is a git tag (`eval-v1`, `eval-v2`). After the tag, rows never change;
   corrections create the next version. Every results row carries `set_version`. This answers "did
   you tune the questions after seeing failures."
-- **Headline scope.** pass^3 at 80% over Verified-tier graded rows (number, list, narrative,
-  context-supplied). Narrative rows are the only model-judged rows inside that headline, and the
-  summary says so. Genie-tier rows are reported on their own line against the 70% bar already
-  decided, with a floor of ten rows so the line is a measurement. Refusal and data-limit rows
-  are reported on their own lines and never folded into the headline, so perfect refusals
-  cannot hide wrong answers. Reading-stated rows are Verified-tier and count in the headline.
-- **Two-turn cases are allowed, few, and scored on the final turn.** The context-supplied class
-  (the analyst adds a fact the data lacks, such as the 2025-10-01 to 2025-11-12 lapse in
-  appropriations, and the agent recomputes) is graded on the second answer, with the supplied
-  context stored on the row.
-- **Judge.** One LLM judge for narrative faithfulness only, a different model from the agent
-  (`claude-sonnet-5-5` when the agent runs Haiku; confirm the API id on day one, as the Model
-  decision does for the fallback), with its prompt versioned in the repo and its rationale stored
-  on every row.
+- **Headline scope (amended 2026-11-02).** Two pass^3 lines side by side, never merged. Verified:
+  80% over Verified-tier graded rows (number, list, narrative, context-supplied, follow-up,
+  reading-stated); narrative rows are its only model-judged rows, and the summary says so. Not
+  available: refusal and data-limit rows, scored on the label line, the stated limit, and the
+  nearest answerable question; Not available was half of what the tester saw and the answer type
+  they trusted most. Keeping it off the Verified line still means perfect refusals cannot hide
+  wrong numbers. Genie: its own line against the 70% bar already decided, floor 20 rows. A fourth
+  line, from tester rows only, reports the share of real questions that were in scope.
+- **Follow-ups are allowed and scored on the final turn (amended 2026-11-02).** Two kinds. A
+  context-supplied row (the analyst adds a fact the data lacks, such as the 2025-10-01 to
+  2025-11-12 lapse in appropriations, and the agent recomputes) stores the supplied context. A
+  follow-up row stores the earlier user turns verbatim as `prior_turns`; one run replays them in a
+  fresh session and grades the last answer. A02, A05, and A06 only make sense after the turn
+  before them, and multi-turn evaluation is the weak spot a Databricks FDE loop report names
+  ([agent evaluation](../../wiki/concepts/agent-evaluation.md)).
+- **Judge (amended 2026-11-02).** One LLM judge for narrative faithfulness only:
+  `gpt-6-luna` through the OpenAI API (id confirmed on Ryan's key 2026-11-02), a different vendor
+  from the Claude agent, run as a Strands Evals `OutputEvaluator`. Its prompt is versioned in the
+  repo and its rationale stored on every row. Luna is also the agent's outage fallback, so a run
+  whose `provider_served` is not `anthropic` has its narrative verdict flagged
+  `judge_same_family`, and `04-results.md` reports how many.
 
 **Out of scope.** The agent, its prompt, and its tools (spec 05); AgentCore, the dashboard, and
-the scheduled job (spec 06); MLflow (day-five stretch, unchanged); any question written by a
-model; any question about an agency other than DHS.
+the scheduled job (spec 06); MLflow (day-five stretch, unchanged); any question from a simulated
+user; any co-written row without a seed and Ryan's approval; any question about an agency other
+than DHS; fixing the agent's false data limits (spec 05; the eval measures them).
 
 **Implements.** Evaluation (2026-10-30, amended 2026-11-01), Agent topology (2026-10-30), Genie
 measured (2026-10-31) in `DECISIONS.md`; the trace requirements in
@@ -73,13 +95,19 @@ user would, and it never sees the truth, the tester labels, or the scorer result
 No tester name or employer anywhere. The forbidden-terms hook applies to every file here.
 
 **Budget.** Under $1 for this spec. Truth SQL runs once per set version on the 2X-Small
-warehouse. The harness runs (three calls per row plus one more per two-turn row, about 100 to
-120 calls per pass with 20 Verified and 10 Genie rows) are costed in specs 05 and 06.
+warehouse. The harness runs (three calls per row plus one more per earlier turn, about 120 to
+150 calls per pass with 12 Verified, 20 Genie, and the Not-available and tester rows) are costed
+in specs 05 and 06, plus the `gpt-6-luna` judge calls on narrative rows. Genie turns took up to
+74 s in the session, so a full pass is about an hour of wall clock: an overnight run, not a live
+one.
 
-**Files.** Exist now: `challenge/eval/questions.yaml` (the set, header only until the session),
+**Files.** Exist now: `challenge/eval/questions.yaml` (the set; 20 co-written rows since
+2026-11-02, truth pending), `challenge/scripts/eval_harness.py` (spec 05; ported to Strands Evals
+in step 6),
 `challenge/eval/sessions/2026-11-01-tester-a-log.csv` (the log template), this spec. Created by
 the steps below: `challenge/scripts/validate_questions.py` (step 4),
-`challenge/notebooks/04_eval.sql` (step 5), `challenge/eval/judge-prompt.md` (step 6),
+`challenge/notebooks/04_eval.sql` (step 5), `challenge/eval/judge-prompt.md` (step 6, written
+2026-11-02),
 `04-results.md`.
 
 ## Step 1: capture the session (2026-11-01, before anything else)
@@ -137,27 +165,44 @@ After the session, each log row becomes a candidate question with a `class` and 
 | `exploratory` | Answerable from the semantic views but outside the eight families | `number`, `list`, or `narrative` | Genie |
 | `narrative` | Asks for an explanation or a draft (the variance paragraph) that rests on Verified numbers | `narrative` | Verified |
 | `context_supplied` | Two turns: the analyst adds a fact, the agent recomputes with a labeled assumption | `number` on the second turn | Verified |
+| `follow_up` (added 2026-11-02) | Makes sense only after earlier turns; `prior_turns` holds them verbatim and the run replays them | `number` or `list` on the last turn | Verified or Genie, by what the last turn needs |
 | `refusal` | Out of scope: an individual, another department, budget, why someone left | `refusal` | Refusal |
 | `data_limit` | In scope, but this data cannot answer it (a twelve-month rate for a month with no start snapshot; a plan quarter before FY2026) | `data_limit` | Refusal |
-| `reading_stated` (was `clarify`; changed 2026-11-01 after the dry run) | Intent is ambiguous; a correct agent answers the most plausible reading for the open cell and ends by stating the reading it took and the nearest alternative, so the analyst can correct it. Clarifying questions are retired: four of eight turns in Ryan's dry run were questions, two of them on supplied context | `number` or `list`, plus the stated reading | Verified |
+| `reading_stated` (was `clarify`, changed 2026-11-01 after the dry run; no `clarify` remains) | Intent is ambiguous; a correct agent answers the most plausible reading for the open cell and ends by stating the reading it took and the nearest alternative, so the analyst can correct it. Clarifying questions are retired: four of eight turns in Ryan's dry run were questions, two of them on supplied context | `number` or `list`, plus the stated reading | Verified |
 
 Rows that are not questions (a comment, a reaction) stay in the log and do not become rows in the
 set. Rows with identical `verbatim` text are merged into the earliest row; its judgment survives
 and the later judgments go in `notes`. Near-duplicates are kept with `paraphrase_of`.
 
-Then Ryan writes his rows, all before any eval run. The spec 05 prototype and its prompt are
-built blind before the session, so the questions never shape the first prompt; any prompt change
-after the rows exist shows as a new `prompt_hash`.
+**Refusal or data limit.** A Not-available answer that ran a tool before declining (A01 called
+`length_of_service_profile`) is a `data_limit` candidate, never `refusal`: the `refusal` scorer
+requires that no tool returned rows. Before any tester row is classed `data_limit`, Ryan checks
+the claimed limit against the `semantic` view columns. A limit that is false makes the row an
+answerable question (A07: `grade` exists; A01: `age_bracket` and `length_of_service_years` exist).
 
-- enough to reach 20 graded Verified-tier questions, `reason: floor`;
-- at least one per family the tester did not touch, `reason: coverage`;
-- ten Genie-tier questions outside the eight families, `reason: genie`, each aimed at one of the
-  five likely Genie errors named in the Genie decision (wrong month column; `pay_redacted IS NULL`
-  read as redacted; imputed location stated as fact; synthetic plan unlabeled; series matched on
-  the first listed code), so the Genie line is a measurement and not two rows.
+**Co-written rows (amended 2026-11-02).** Ryan and Claude draft rows together after the tester
+rows are classified and before any eval run; Ryan approves each one. The spec 05 prototype and
+its prompt were built blind before the session; any prompt change after the rows exist shows as a
+new `prompt_hash`. Each co-written row carries `seed` and a `reason`:
+
+- `genie`: outside the eight families. At least 20 Genie rows in all, covering each of the five
+  likely Genie errors named in the Genie decision at least once (`genie_error`: `month_column`,
+  `pay_redacted`, `imputed_location`, `synthetic_plan`, `series_first_code`).
+- `false_limit`: a question the agent once declared unanswerable on a limit that does not exist.
+  An answer labelled Not available fails it as `false_not_available`.
+- `coverage`: a function family, narrative, context-supplied, follow-up, refusal, or data-limit
+  case the tester rows do not reach.
+- `floor`: anything else needed to reach 12 Verified rows.
+
+Batch one (2026-11-02): 13 Genie, 5 Verified, 2 Not available; after the first smoke C11 moved
+to Verified (12 Genie, 6 Verified), not backfilled, so the `synthetic_plan` Genie error has no row
+until batch two. A follow-up or context-supplied
+row counts toward the family of the function it expects. Batch two fills Verified to 12 (families
+1, 3, 5, 6, 8 have no co-written row yet), Genie to 20, and adds refusals for another
+department and a budget figure.
 
 The coverage report counts paraphrases separately from distinct truths, so a paraphrase cannot
-lift the floor.
+lift a floor.
 
 ## Step 3: author truth, independent of the agent
 
@@ -195,8 +240,11 @@ support (retirement eligibility, why people left, an individual).
 answerable variant a good answer offers.
 
 `refusal` rows carry `must_refuse: true` and `must_offer`: the in-scope alternative a good answer
-names. `clarify` rows carry `acceptable_readings`: the two or more interpretations a clarifying
-question should distinguish.
+names. `must_not_claim` is scored only on narrative rows (by the judge); on a number or list row it
+is advisory and recorded, not graded. `reading_stated` rows carry `acceptable_readings`: the first is the reading truth is
+computed for, the rest are the alternatives the answer may name. `follow_up` rows carry
+`prior_turns`, and truth is for the last turn. `tolerance` may also be `pct:x` (within x percent
+of truth), for approximations such as C18.
 
 `context_supplied` rows carry `turn_1`, `supplied_context`, `turn_2`, and truth for turn 2 under
 the stated assumption, with `assumption_text` that the answer must label. The recompute
@@ -216,38 +264,44 @@ Fields of one entry, all required unless marked:
 
 | Field | Value |
 |---|---|
-| `id` | the log `q_id` for tester rows (`A01`...); `R01`... for Ryan's |
-| `author` | a key of `sources` |
-| `session_log` | path of the log the row came from; null for Ryan's rows |
-| `reason` | Ryan's rows only: `floor` or `coverage` |
+| `id` | the log `q_id` for tester rows (`A01`...); `C01`... for co-written rows; `R01`... for any Ryan-only row |
+| `author` | a key of `sources` (`tester_a`, `ryan_claude`, `ryan`) |
+| `session_log` | path of the log the row came from; null for co-written rows |
+| `seed` | co-written rows: tester `q_id`s, `seeds` header keys, or a transcript timestamp |
+| `reason` | non-tester rows: `genie`, `false_limit`, `coverage`, or `floor` |
+| `genie_error` | Genie rows aimed at one of the five likely Genie errors; optional |
+| `prior_turns` | `follow_up` rows: the earlier user turns, verbatim |
 | `paraphrase_of` | an `id`, or null |
 | `verbatim` | the question text, exactly as asked |
 | `class` | one of the classes in step 2 |
-| `expected_behavior` | `number`, `list`, `narrative`, `refusal`, `clarify` |
-| `tier` | `verified`, `genie`, `refusal`, `clarify` |
-| `expected_tools` | function names the trace must show; `[genie]` for exploratory rows; `[]` for refusal, data-limit, and clarify rows |
-| `truth_sql`, `truth_value`, `truth_computed_at` | step 3; null for refusal, data-limit, and clarify rows |
+| `expected_behavior` | `number`, `list`, `narrative`, `refusal`, `data_limit` |
+| `tier` | `verified`, `genie`, `refusal` (refusal and data-limit rows) |
+| `expected_tools` | function names the trace must show; `[genie]` for exploratory rows; `[]` for refusal and data-limit rows |
+| `truth_sql`, `truth_value`, `truth_computed_at` | step 3; null for refusal and data-limit rows |
 | `requires_imputed_label`, `requires_synthetic_label` | computed in step 3 for every graded row |
-| `tolerance` | `exact`, `abs:0.001`, or `pp:0.1` |
+| `tolerance` | `exact`, `abs:x`, `pp:x`, or `pct:x` |
 | `truth_facts`, `must_not_claim` | narrative rows |
 | `must_offer` | refusal rows |
 | `limit_text`, `nearest` | data-limit rows |
 | `acceptable_readings` | reading-stated rows; the first entry is the reading the truth is computed for |
 | `turn_1`, `supplied_context`, `turn_2`, `assumption_text` | context-supplied rows |
-| `tester_judgment`, `answered_by` | from the log; null for Ryan's rows |
+| `tester_judgment`, `answered_by` | from the log; null for co-written and Ryan's rows |
 | `notes` | optional |
 
-The header carries `opm_through: 2026-08-01` (last OPM month loaded) and `usajobs_pulled:
-2026-10-31` (the postings pull date, which bounds any open-postings truth for a past date).
+The header carries `opm_through: 2026-08-01` (last OPM month loaded), `usajobs_pulled:
+2026-10-31` (the postings pull date, which bounds any open-postings truth for a past date), and
+`seeds`: short keys for the public sources co-written rows cite, each with its URL.
 
-Validation (`challenge/scripts/validate_questions.py`, stdlib only): every `id` unique; every
-`author` in `sources`; every `class` and `expected_behavior` from the tables above; every
-`number`, `list`, and `narrative` row has truth SQL and a truth value; no `truth_sql` or
-`truth_facts` SQL contains the token `semantic` in any case or quoting; `expected_tools` names
-only the eight functions or `genie`; at least ten `reason: genie` rows covering each of the five
-Genie errors at least once; `frozen: true` only when `git tag --points-at HEAD` prints an
-`eval-v*` tag. The script also prints the coverage report: rows per class, per author, per
-family, distinct truths, and the count of Verified-tier graded rows against the floor of 20.
+Validation (`challenge/scripts/validate_questions.py`, PyYAML, which the venv already has):
+every `id` unique; every `author` in `sources`; every co-written row has a `seed` whose entries
+are tester ids, `seeds` keys, or transcript timestamps written `tester_MM_SS`; every `class` and `expected_behavior` from
+the tables above; every `number`, `list`, and `narrative` row has truth SQL and a truth value;
+every `follow_up` row has `prior_turns`; no `truth_sql` or `truth_facts` SQL contains the token
+`semantic` in any case or quoting; `expected_tools` names only the eight functions or `genie`; at
+least 20 Genie rows covering each `genie_error` at least once; at least 12 Verified rows with
+every family present; `frozen: true` only when `git tag --points-at HEAD` prints an `eval-v*` tag.
+The script also prints the coverage report: rows per class, per tier, per author, per family,
+distinct truths, and each floor against its count.
 
 **Freeze procedure.** After acceptance checks 1 to 3 pass and before any eval run, set
 `frozen: true`, commit, and tag that commit `eval-v1`. The tag's commit sha and the agent prompt
@@ -256,6 +310,10 @@ visible as a different hash. Rows with `paraphrase_of` set are held out of promp
 spec 05 may read the originals while writing the prompt and skill files, never the paraphrases.
 
 ## Step 5: tables and views, in the notebook
+
+**Deferred 2026-11-02 (Ryan; DECISIONS, Evaluation).** The record of results is
+`challenge/eval/experiments.jsonl`; this step runs only if spec 06 keeps the AI/BI dashboard, and
+then as one bulk load of that file. The harness writes the tables only with `--delta`.
 
 `challenge/notebooks/04_eval.sql`, run once as a job on the warehouse, idempotent:
 
@@ -270,34 +328,64 @@ spec 05 may read the originals while writing the prompt and skill files, never t
   (the one number or the key-value list the agent asserts as its answer, structured),
   `cited_tools` (the functions or queries the answer cites, structured), `tool_calls` (array of
   struct: `name`, `params`, `result_rows`, `imputed_rows`, `synthetic_rows`, `duration_ms`),
-  `genie_sql`, `genie_statement_id`, `latency_ms` and `cost_usd` (summed over turns),
+  `genie_sql`, `genie_statement_id`, `label` (the answer's label line), `tool_call_count`,
+  `judge_same_family`, `latency_ms` and `cost_usd` (summed over turns),
   `input_tokens`, `output_tokens`, `error`, one column per scorer below, `pass`, and
   `failure_category`.
+- `challenge/eval/experiments.jsonl` (added 2026-11-02): the harness appends every row it writes,
+  with an `experiment_id` (UTC start time plus prompt hash; `session-<dir>` for a tester session),
+  before the insert, so hill-climbing analysis needs no warehouse. Stub and dry runs are not logged.
 - `eval.judge`: one row per narrative run: `judge_model`, `judge_prompt_version`, `verdict`,
   `rationale`.
 - `eval.summary` (view): per `set_version`: pass^1 and pass^3 for the Verified tier, the Genie
-  tier, refusal and data-limit rows, and clarify rows, each on its own row; mean latency and cost;
-  provider mix.
+  tier, and the Not-available rows (refusal plus data-limit), each on its own row and also split
+  by `author`; the in-scope share of tester rows; mean latency, cost, and tool calls per answer;
+  provider mix; the `judge_same_family` count.
 - `eval.heatmap` (view): `(id, run_index, pass, failure_category)` for the dashboard grid.
 - `eval.calibration` (view): `run_index = 0` rows where `answered_by = 'live_agent'` and a
   `tester_judgment` exists: agreement rate between `tester_judgment = 'right'` and `pass` on the
   same answer, and the disagreements listed. Static-page judgments never enter this view; they
-  stay on the questions row as evidence about the brief's content.
+  stay on the questions row as evidence about the brief's content. For v1 it holds two rows and
+  is reported as too small to measure.
 
 ## Step 6: scorers and the pass rule
 
 Applied per run row by the harness, in the order of this table. Every scorer except
-`faithfulness` is a code rule over the structured fields `answer_value`, `cited_tools`,
+`faithfulness` is a code rule over the structured fields `label`, `answer_value`, `cited_tools`,
 `tool_calls`, and `answer_text`; nothing is extracted from prose by a model. A run with a
 non-null `error` fails with `failure_category = error` and is never retried.
 
+**Harness (amended 2026-11-02): Strands Evals scores; the harness runs the agent.** For each run,
+the harness builds a fresh agent per question, replays `prior_turns` or the supplied context, and
+assembles the row. Each row then becomes a Strands `Case` whose task returns the built row, so runs
+1 to 3 and the tester session (run 0) go through one scoring path. Each code scorer is an `Evaluator` subclass; `faithfulness` is an
+`OutputEvaluator` given `model=OpenAIResponsesModel(model_id="gpt-6-luna")` explicitly (its default is
+Bedrock). Built 2026-11-02 in `challenge/scripts/eval_harness.py`: the Responses model, not
+`OpenAIModel`, because Luna refuses function tools on chat completions while reasoning is on, and
+Strands Evals needs them for structured output. The judge sees the answer text, the question, and
+`truth_facts` plus `must_not_claim` as JSON, never the row; its rubric is
+`challenge/eval/judge-prompt.md`. An evaluator that raises (a judge outage, a failed query) makes
+the row an `error`, not a failed verdict.
+`ActorSimulator` is not used, and no `evaluation_data_store` is passed, because results must never
+be cached across runs. Parallel since 2026-11-02 (Ryan): the harness runs every (question, run)
+pair on 16 worker threads (`--workers`), each with its own fresh agent, and one `Experiment`
+scores all of them with `max_workers=16`. pass^3 and the first-failing-scorer `failure_category`
+are computed outside Strands, which does not order evaluators, and the rows go to `eval.runs` in
+order after scoring. Genie questions pass a process-wide limiter in `agent.py` at 5 per rolling
+minute, the Conversation API free tier's best-effort workspace limit, because a throttled call
+reaches the model as a tool error and would score as a false Not available. Genie therefore sets
+the floor on a pass's wall clock (13 Genie rows x 3 runs is at least 8 minutes), and the queue
+wait counts in a Genie turn's latency, so latency is comparable only between passes with the same
+worker count.
+
 | Scorer | Applies to | Passes when |
 |---|---|---|
-| `numeric_match` | `number` | `answer_value` equals truth under `tolerance`: counts exact; rates and shares within 0.001 absolute; percentages within 0.1 point |
+| `label_match` (added 2026-11-02; the label is the answer's first line) | all rows | the label line is `Verified` for Verified rows, `Exploratory` for Genie rows, `Not available` for refusal and data-limit rows. A row with truth answered `Not available` fails as `false_not_available` |
+| `numeric_match` | `number` | `answer_value` equals truth under `tolerance`: counts exact; rates and shares within 0.001 absolute; percentages within 0.1 point; `pct:x` within x percent |
 | `list_match` | `list` | `answer_value` keys match truth and each value passes `tolerance`; order matters only when the question asks for a ranking |
 | `labels_present` | every graded row (Verified and Genie, all behaviors) | `answer_text` contains one of the words estimated, imputed, or approximate when `requires_imputed_label`. The synthetic-plan disclosure moved out of the answer on 2026-11-01 (Ryan: the tester is briefed and the pages say it); `requires_synthetic_label` is still computed and stored, but it is a surface property checked once per page in spec 06's UI review, not a per-answer scorer |
 | `tool_use` | Verified rows | every function in `expected_tools` appears in `tool_calls`, and no SQL-writing tool does. Genie rows are covered by `genie_sql_stored` instead |
-| `provenance` | all rows | every entry in `cited_tools` matches a `tool_calls` name or the `genie_sql`; nothing cited that did not run |
+| `provenance` | all rows | every entry in `cited_tools` matches a `tool_calls` name or the `genie_sql` from any turn of this run; nothing cited that did not run in this run. For `run_index = 0`, the run is the whole tester session |
 | `genie_sql_stored` | Genie rows | `genie_sql` and `genie_statement_id` are non-null and the statement appears in `system.query.history`; fallback if the MCP tool returns no statement id: `genie_sql` non-null and the Genie message id stored |
 | `refusal` | `refusal` | no tool call returned rows, `answer_value` is null, and `answer_text` contains a `must_offer` phrase |
 | `data_limit` | `data_limit` | `answer_value` is null, `answer_text` contains the `limit_text` key phrase and names `nearest` |
@@ -305,27 +393,34 @@ non-null `error` fails with `failure_category = error` and is never retried.
 | `faithfulness` | `narrative` | the judge finds every `truth_facts` number stated correctly and nothing from `must_not_claim` asserted; the judge's rationale is stored |
 | `assumption_labeled` | `context_supplied` | the second answer's `answer_text` contains the `assumption_text` key phrase and its `answer_value` matches turn-2 truth |
 
+Tool-call count and latency are reported per row and summarized, not gated. Gating would have
+failed A02, nine calls in 69 s and the answer the tester praised; the count makes fan-out visible
+without punishing a good answer.
+
 A run passes a question only when every applicable scorer passes. `failure_category` is the
 first failing scorer in table order. pass^1 is the mean per-run pass rate across the three runs
 (the tau-bench single-trial rate); pass^3 is the share of questions that pass all three runs.
 A fresh run means a new agent instance with an empty conversation, a new `session_id`, and the
-tool-result cache disabled; the system prompt may be cached by the provider. Two-turn rows call
-`invoke` twice with the same `session_id` within one run and are graded on the second answer.
+tool-result cache disabled; the system prompt may be cached by the provider. Context-supplied and
+follow-up rows call `invoke` once per turn with the same `session_id` within one run and are
+graded on the last answer.
 
-Resolution: with 20 Verified rows, one question is five points of pass^3, and the 95% interval
-on 16 of 20 runs from roughly 58% to 92%. The heatmap and the explained failures are the
+Resolution: with the Verified floor of 12, one question is about eight points of pass^3, and 10
+of 12 has a 95% interval of roughly 55% to 95%; with 20 Genie rows one question is five points. The heatmap and the explained failures are the
 argument; the point estimate is not. Narrative rows are inside the Verified headline and are the
 only rows graded by a model; the summary view says so in a footnote column.
 
 ## Step 7: acceptance for this spec
 
-1. `validate_questions.py` passes on the frozen `eval-v1` file and reports at least 20
-   Verified-tier graded rows, at least one row per family, and the author split.
+1. `validate_questions.py` passes on the frozen `eval-v1` file and reports at least 20 Genie
+   rows covering all five Genie errors, at least 12 Verified rows with every family, and the
+   author split.
 2. Every `truth_sql` runs on the warehouse and reproduces its stored `truth_value`.
 3. The validator's `semantic` check passes: no truth SQL on any row contains the token in any
    case or quoting.
-4. `eval.questions`, `eval.runs`, `eval.judge` exist and the three views compile against empty
-   tables. The dry run with a stub agent moves to spec 05 acceptance, where the harness exists.
+4. Deferred with step 5: `eval.questions`, `eval.runs`, `eval.judge` exist and the three views
+   compile against empty tables. Until then, a run appends every scored row to
+   `challenge/eval/experiments.jsonl`. The dry run with a stub agent moves to spec 05 acceptance, where the harness exists.
 5. The session log for 2026-11-01 is committed, every free-text column anonymized, the tester's
    name and employer present in the local `.forbidden-terms`, and the forbidden-terms grep is
    clean.
@@ -341,8 +436,11 @@ Spec 05 is constrained by this list. For every agent turn, in a JSONL trace and 
 - `agent_git_sha`, `prompt_hash` (SHA-256 of the system prompt and skill files), `model_id`,
   `provider_served`.
 - `question_text` verbatim, and for two-turn cases both turns and the supplied context.
-- `tool_calls` in order: `name`, `params`, `result_rows` (the rows or their count plus the
-  imputed and synthetic flags they carried), `duration_ms`.
+- `tool_calls` in order: `name`, `params`, `result_rows` (the count, plus the imputed and
+  synthetic flags the rows carried), `duration_ms`, and, added 2026-11-02, `result_values` (the
+  rows themselves when there are 50 or fewer), so an answer given from memory can be checked
+  against what the tool actually returned. A06 quoted three control numbers the trace cannot
+  confirm.
 - `genie_sql` and `genie_statement_id` when Genie answered.
 - `answer_text`, and two structured fields the agent fills itself at the end of every answer:
   `answer_value` (the one number, or the key-value list, it asserts as the answer; null for a
@@ -356,7 +454,9 @@ Spec 05 is constrained by this list. For every agent turn, in a JSONL trace and 
 The harness interface both spec 05 (local) and spec 06 (AgentCore) implement:
 `invoke(question, session_id, context=None) -> {answer_text, answer_value, cited_tools,
 tool_calls, genie_sql, genie_statement_id, model_id, provider_served, latency_ms, input_tokens,
-output_tokens, error}`. Spec 05 ships `challenge/scripts/eval_harness.py` with this interface
+output_tokens, error}`; the harness derives `label` from the first line of `answer_text`. A
+follow-up row calls it once per `prior_turns` entry, then once for the
+graded turn, with one `session_id`. Spec 05 ships `challenge/scripts/eval_harness.py` with this interface
 and a stub `invoke` for the dry run, and writes rows through the Statement Execution API; spec 06
 writes from the notebook.
 
@@ -390,8 +490,9 @@ Nothing to tear down beyond the spec 01 teardown; `eval` is dropped with the cat
 
 ## Not verified before writing
 
-- How many questions one 45-minute session yields; the floor of 20 may need several of Ryan's
-  rows.
+- How many questions one 45-minute session yields. Answered 2026-11-01: eight typed turns and
+  about six spoken questions in 80 minutes, most outside the functions; the co-written rows fill
+  the floors.
 - Whether a live agent exists by the session; if not, every `answered_by` is `static_page` and
   the calibration view is empty for v1 by construction.
 - Which span attributes Strands populates for the Anthropic provider; spec 05 checks.
@@ -403,3 +504,6 @@ Nothing to tear down beyond the spec 01 teardown; `eval` is dropped with the cat
 - Whether the agent fills `answer_value` and `cited_tools` reliably enough that scorer failures
   are answer failures and not formatting failures; spec 05 measures the formatting miss rate
   separately.
+- Added 2026-11-02: whether FEMA has plan cells in every FY2026 quarter (C03); the retirement
+  convention and bracket widths behind C18; whether the data holds DHS components beyond the six in
+  the codes skill; the speaker of the 12:24 retirement question (tester or facilitator).

@@ -117,6 +117,31 @@ Revisit:   what evidence would change this
   lines. SQL truth grades; the tester's judgment is a second column that calibrates the judge.
   Specs renumbered: 04 eval set, 05 prototype agent, 06 AgentCore and dashboard
   ([spec 04](challenge/specs/04-eval-set.md)).
+- **Amended 2026-11-02 (spec 04, Ryan, after the Tester A session):** five changes.
+  (1) Co-written questions replace Ryan-only fill: Ryan and Claude draft each row together from a
+  cited seed (a tester question or a public source such as GAO or congressional testimony), and
+  Ryan approves each row before it enters the file. Reason: the tester's questions were far better
+  than the ones Ryan would write alone, and the seeds keep the set anchored to real askers.
+  Tester A's verbatim rows stay as their own rows; a simulated user stays rejected. Rejected:
+  Ryan-only rows (weaker questions); model-generated rows without a seed and approval (the panel
+  question "did a model write your test?" has no answer). (2) The set leans Genie: the first batch
+  is 13 Genie, 5 Verified, 2 Not available, because six of the tester's eight questions fell
+  outside the eight functions. Floors swap to Genie 20 and Verified 12; the bars stay 80% and 70%.
+  (3) Not-available answers get their own pass^3 line beside the Verified headline, never merged,
+  scored by the label line plus the stated limit and the nearest answerable question.
+  (4) Follow-up rows replay verbatim prior turns in one run and grade the last answer.
+  (5) The harness moves to Strands Evals, with `gpt-6-luna` as the narrative judge
+  ([tester findings](wiki/analyses/tester-a-session-findings.md), [spec 04](challenge/specs/04-eval-set.md)).
+  Revisit: if the co-written rows score far above the tester rows, the drafting has leaked the
+  agent's habits into the questions.
+- **Amended 2026-11-02 (Ryan): Delta results and the AI/BI eval dashboard are deferred.** The
+  record of results is `challenge/eval/experiments.jsonl`, one line per scored row, written by the
+  harness; `--delta` still writes `eval.runs` and `eval.judge` once `04_eval.sql` exists. Reason:
+  the build week's effort goes to the agent and its eval (AI engineering), not to tables and
+  dashboards (data engineering). Rejected: writing `04_eval.sql` before the first live smoke
+  (blocks the smoke on plumbing that grades nothing). Gives up, for now, "the eval results are
+  governed in Unity Catalog" in the platform story. Revisit: if spec 06 keeps the AI/BI
+  dashboard, bulk-load the JSONL with one `COPY INTO` rather than per-row inserts.
 
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
@@ -348,6 +373,20 @@ Revisit:   what evidence would change this
   answer); AgentCore alone (loses the Databricks tracing story).
 - **Revisit:** if the two disagree materially, say so on the dashboard and explain which scorer
   is wrong and why.
+- **Amended 2026-11-02 (Ryan):** the harness is Strands Evals (`strands-agents-evals`), not
+  MLflow: each question is a `Case`, the code scorers are `Evaluator` subclasses, and the narrative
+  judge is an `OutputEvaluator` on `OpenAIResponsesModel` with `gpt-6-luna` (API id confirmed on
+  Ryan's key 2026-11-02; chat completions refuse Luna's function tools, so the Responses API).
+  Built and smoke-tested 2026-11-02: it passed a faithful paragraph and failed one with two wrong
+  figures and an unsupported "because". It stays in the agent's own SDK family and adds two packages,
+  `strands-agents-evals` and the `openai` extra, lifting spec 05's "install nothing new".
+  Not used: `ActorSimulator` (a simulated user) and the result-cache store (every run is fresh).
+  pass^3 and the first-failing-scorer category are computed outside Strands from three
+  `Experiment` runs; rows still land in `eval.runs` for the dashboard. Luna is also the agent's
+  outage fallback, so a run served by OpenAI has its narrative verdict flagged
+  `judge_same_family` and counted in the results. Rejected: Claude Sonnet as judge (spec 04's
+  earlier choice; same vendor as the agent); MLflow (unchanged reasoning above); AgentCore
+  Evaluations stays a day-five stretch.
 
 ## 2026-10-30  Home agency: Department of Homeland Security
 
@@ -524,6 +563,9 @@ functions, Agent Bricks.
   nondeterministic path into the number the demo leads with).
 - **Revisit:** if Genie pass^3 lands under 70%, remove the Genie tool from the agent and keep the
   space for human analysts; if it passes, keep it and show the row.
+- **Amended 2026-11-02 (spec 04):** Genie is now the larger tier, with a floor of 20 rows, because
+  real questions mostly fall outside the functions. The removal rule stands, and its consequence is
+  now stated: under 70%, most of what Tester A asked becomes Not available.
 
 ## Build-week items, not decisions
 
@@ -531,7 +573,7 @@ functions, Agent Bricks.
   rehearsal. No interview date yet; the recruiter is notified on completion.
 - Write the 20 to 30 golden questions first, then derive the Unity Catalog function list from
   them. Every graded number needs a function behind it.
-- Confirm the `gpt-6-luna` API id and the OMB Table 16.1 crosswalk for DHS.
+- ~~Confirm the `gpt-6-luna` API id~~ (confirmed 2026-11-02) and the OMB Table 16.1 crosswalk for DHS.
 - Day one: enable the Managed MCP Servers workspace preview; confirm which SKU the MCP functions
   server bills to (function tools run on serverless generic compute); measure Genie Agent MCP
   latency under the service principal.

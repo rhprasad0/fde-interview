@@ -1,5 +1,8 @@
-# Spec 05: pinned at the versions installed in challenge/.venv; install nothing new.
-strands-agents==1.63.0
+# Spec 05: pinned at the versions installed in challenge/.venv. Spec 04 (2026-11-02) added Strands Evals and the
+# OpenAI extra for the gpt-6-luna judge: uv pip install --python .venv/bin/python -r prototype/requirements.txt
+strands-agents[openai]==1.63.0
+strands-agents-evals==1.8.0
+openai==3.42.1
 mcp==2.3.0
 httpx2==2.16.0
 httpx==0.28.1

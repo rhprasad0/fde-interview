@@ -313,3 +313,36 @@ still to file; session log CSV still to fill.
 ## [2026-11-02] query | Tester A session findings
 Summary, ranked criticism, and eval-seed questions from the transcript filed as
 `wiki/analyses/tester-a-session-findings.md`; synthesis gains a first-user-evidence section.
+
+## [2026-11-02] query | Eval design after Tester A
+Trajectory section added to `analyses/tester-a-session-findings.md` (false data limits in A01 and
+A07, answers from memory, A02 fan-out). Spec 04 amended: co-written seeded rows, Genie-weighted
+floors, Not-available line, follow-up rows, Strands Evals with a `gpt-6-luna` judge. First 20
+co-written rows in `challenge/eval/questions.yaml`; seeds from GAO-26-108427, TSA testimony
+2026-03-25, GAO-24-107029, and OPM workforce-analysis pages found through Exa.
+
+## [2026-11-02] build | Eval harness ported to Strands Evals
+`challenge/scripts/eval_harness.py` scores through a Strands Evals `Experiment` per run: code
+scorers as `Evaluator`s (`label_match` first, `reading_stated` replaces `clarify`), the narrative
+judge as an `OutputEvaluator` on `gpt-6-luna` via the Responses API, `false_not_available`, follow-up
+replay, `result_values` in the trace, every row appended to `challenge/eval/experiments.jsonl`.
+Checks: stub run over 20 rows x 3, A05 passes and A07 is `false_not_available` on the real tester
+trace, judge passes a faithful paragraph and fails an unfaithful one.
+
+## [2026-11-02] build | Eval harness runs in parallel
+16 workers (`--workers`) for agent runs and Strands scoring; a shared Genie limiter in `agent.py`
+holds questions to 5 per minute (free-tier API limit, best effort) so throttling cannot score as a
+false Not available. Stub check: 60 runs in 1.1 s against ~12.6 s serial.
+
+## [2026-11-02] build | First live eval smoke
+Experiment `20261102T175849Z-4f3bf1e2`: 20 questions x 3 runs on 16 workers, about 6.5 minutes,
+$0.11, zero agent errors. The false-limit failure from the tester session reproduced: C10 (city),
+C16 (senior executives), and C18 (age) answered Not available with no tool call in 8 of 9 runs,
+each claiming a field the views have. C11 was answered from the functions (21 calls), so it is not
+a Genie row. C19's limit phrases missed a correct answer. Judge now errors on a narrative row with
+no `truth_facts` instead of passing it.
+
+## [2026-11-02] query | Set edits after the first smoke
+C11 moved to Verified (family 7), not backfilled. C19 `limit_text` widened after a correct answer
+missed its phrases. Ryan is checking the data behind the C10, C16, C18 false limits before any
+prompt change.

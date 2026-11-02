@@ -65,4 +65,7 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
 One session with a retired federal HR director ([findings](analyses/tester-a-session-findings.md)).
 The tool's strongest value was surfacing the questions to ask and saying plainly what it cannot
 answer; its gap is the why behind the numbers. The buyer who would pay sits at the component, not
-at OPM, and wants to plug in their own data. Navigation and HR vocabulary need work before a second test.
+at OPM, and wants to plug in their own data. Navigation and HR vocabulary need work before a second test. The trace adds a sharper point: two of the four
+Not-available answers stated data limits that do not exist (grade, age), so the answer type the
+tester trusted most is the one the eval must check hardest. Spec 04 now leans Genie and grades
+false limits ([findings](analyses/tester-a-session-findings.md)).

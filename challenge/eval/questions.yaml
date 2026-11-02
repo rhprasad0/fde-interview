@@ -1,6 +1,10 @@
 # Golden questions for the workforce variance-review agent. Spec 04.
-# Every question is written by a human. No model-generated or model-paraphrased questions.
-# Tester rows keep their session-log q_id (A01...). Ryan's rows are R01... with a reason.
+# Two kinds of author. Tester rows keep their session-log q_id (A01...) and their verbatim text.
+# Co-written rows (C01...) were drafted by Ryan and Claude together on 2026-11-02, each from a
+# seed (a tester question or a public source), and approved row by row by Ryan before entry.
+# No question comes from a simulated user. Amended 2026-11-02; see DECISIONS.md, Evaluation.
+# Truth (truth_sql, truth_value, truth_computed_at, the two requires_* flags) is authored in
+# spec 04 step 3 and is null until then. Tester rows are added once the session log is filled.
 # Schema and rules: challenge/specs/04-eval-set.md, step 4.
 set_version: eval-v1
 opm_through: 2026-08-01
@@ -8,5 +12,277 @@ usajobs_pulled: 2026-10-31
 frozen: false
 sources:
   tester_a: former federal HR professional, current contractor in an unrelated field, not a Palantir user; session 2026-11-01
+  ryan_claude: co-written by Ryan and Claude from a cited seed, approved by Ryan row by row on 2026-11-02, before any eval run
   ryan: domain-literate analyst; rows written after classification, before any run
-questions: []
+seeds:
+  tsa_testimony: https://www.tsa.gov/news/press/testimony/2026/03/25/oversight-hearing-dhs-shutdown-impacts
+  gao_fema: https://www.gao.gov/products/gao-26-108427
+  gao_cbp: https://www.gao.gov/products/gao-24-107029
+  opm_fwd_changes: https://data.opm.gov/explore-data/analytics/workforce-changes
+  opm_workforce_analysis: https://www.opm.gov/agency-services/talent-management-services/strategic-consulting/workforce-and-succession-planning/workforce-consulting-and-analysis/
+  task_4: session plan, Task 4 (decide on the recommended cells)
+  task_5: session plan, Task 5 (try to break it), never run
+  spec_04_lapse_case: challenge/specs/04-eval-set.md step 3, the pinned FY2026 Q1 lapse recompute
+  # Transcript timestamps are written tester_MM_SS (tester_16_51 is 16:51 in the session transcript).
+questions:
+
+# ---- Verified tier (5) ----
+
+- id: C01
+  author: ryan_claude
+  seed: [A01, A02]
+  reason: coverage
+  verbatim: What share of CBP Officers have 20 or more years of service?
+  class: family_4
+  expected_behavior: number
+  tier: verified
+  expected_tools: [length_of_service_profile]
+  tolerance: pp:0.1
+  notes: Retirement exposure, the nearest answerable view of the tester's eligibility question.
+
+- id: C02
+  author: ryan_claude
+  seed: [A03, task_4]
+  reason: coverage
+  verbatim: Which components missed their hiring plan by the most in the first quarter of FY2026?
+  class: family_7
+  expected_behavior: list
+  tier: verified
+  expected_tools: [plan_variance]
+  tolerance: exact
+  notes: Ranked by variance; the plan is synthetic, so requires_synthetic_label is true (scored per page, spec 06).
+
+- id: C03
+  author: ryan_claude
+  seed: [A08, gao_fema]
+  reason: coverage
+  verbatim: Give me two sentences on FEMA hiring this year that I can read to the Director.
+  class: narrative
+  expected_behavior: narrative
+  tier: verified
+  expected_tools: [plan_variance]
+  must_not_claim:
+    - that the data shows why FEMA hiring paused (the hiring freeze is public context, not a data finding)
+    - any named individual
+  notes: Unverified that FEMA has plan cells in every FY2026 quarter; check in step 3 or swap the tool.
+
+- id: C04
+  author: ryan_claude
+  seed: [spec_04_lapse_case, A08]
+  reason: coverage
+  verbatim: Redo that with the shutdown taken out.
+  class: context_supplied
+  expected_behavior: number
+  tier: verified
+  expected_tools: [plan_variance]
+  turn_1: How did CBP Officer hiring do against plan in the first quarter of FY2026?
+  supplied_context: The government was shut down from October 1 to November 12, 2025.
+  turn_2: Redo that with the shutdown taken out.
+  assumption_text: scaled to the days hiring was possible
+  tolerance: exact
+  notes: Pinned convention (spec 04 step 3) scales the plan of 594 to about 316 over 49 of 92 days; actuals of 475 are not adjusted.
+
+- id: C05
+  author: ryan_claude
+  seed: [tsa_testimony, opm_fwd_changes]
+  reason: coverage
+  verbatim: Now leave out the people who took deferred resignation.
+  class: follow_up
+  expected_behavior: number
+  tier: verified
+  expected_tools: [separation_rate]
+  prior_turns:
+    - What was the attrition rate for TSA screeners over the last twelve months?
+  tolerance: abs:0.001
+  notes: Tester did not know the deferred resignation program (10:44). Graded on the second answer; the rate must come from a call in this run.
+
+# ---- Genie tier (13) ----
+
+- id: C06
+  author: ryan_claude
+  seed: [tsa_testimony]
+  reason: genie
+  verbatim: TSA told Congress about 1,110 screeners left during the October and November 2025 shutdown. What does the OPM data show, and how many of those were quits?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  must_not_claim: [that the OPM count matches the testimony, unless the truth does]
+  notes: Checks a public figure against OPM. Truth by effective month, October and November 2025, series 1802, total and QUIT. must_not_claim is advisory until a scorer reads it; only the number is graded.
+
+- id: C07
+  author: ryan_claude
+  seed: [gao_fema]
+  reason: genie
+  verbatim: GAO says FEMA hired 134 people from October 2025 to mid-May 2026. What do the OPM numbers show for the same period?
+  class: exploratory
+  expected_behavior: number
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  must_not_claim: [that the OPM count matches GAO, unless the truth does]
+  notes: Trap; must_not_claim is advisory until a scorer reads it, so batch 2 may make this a narrative row. Spec 04 records 19 FEMA accessions September 2025 to April 2026; GAO used National Finance Center data. A good answer gives the OPM count and names the source difference. Pin the window (through May 2026 or April 2026) in step 3.
+
+- id: C08
+  author: ryan_claude
+  seed: [A08]
+  reason: genie
+  genie_error: month_column
+  verbatim: Month by month, how many CBP Officers did we hire from September 2025 to August 2026?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  notes: Truth by effective month, not the file month.
+
+- id: C09
+  author: ryan_claude
+  seed: [A08]
+  reason: genie
+  genie_error: pay_redacted
+  verbatim: What's the average salary of TSA screeners, and how does it compare with CBP Officers?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: abs:1
+  notes: Pay is imputed for redacted rows; requires_imputed_label is true. Pin in step 3 whether truth averages reported pay only or reported plus imputed.
+
+- id: C10
+  author: ryan_claude
+  seed: [A01]
+  reason: genie
+  genie_error: imputed_location
+  verbatim: Which cities have the most CBP Officers?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  notes: Location is imputed for most CBP Officer rows; requires_imputed_label is true. Truth is the top ten, the reading a good answer states.
+
+- id: C11
+  author: ryan_claude
+  seed: [task_4]
+  reason: coverage
+  verbatim: "Add up the first three quarters of FY2026: how far behind plan is each component on hiring?"
+  class: family_7
+  expected_behavior: list
+  tier: verified
+  expected_tools: [plan_variance]
+  tolerance: exact
+  notes: Moved from Genie to Verified 2026-11-02 (Ryan) after the first smoke, where the agent answered it correctly in all three runs by summing plan_variance over the quarters. Not backfilled, so the synthetic_plan Genie error has no row. requires_synthetic_label is true.
+
+- id: C12
+  author: ryan_claude
+  seed: [A05]
+  reason: genie
+  genie_error: series_first_code
+  verbatim: How many postings listed the Border Patrol series 1896 between September 2025 and October 2026, counting ones that list several series?
+  class: exploratory
+  expected_behavior: number
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+
+- id: C13
+  author: ryan_claude
+  seed: [A07]
+  reason: genie
+  verbatim: Do higher-grade CBP Officer postings stay open longer than lower-grade ones?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: abs:0.5
+  notes: Mean days open by grade band. The tester's own question, which the agent wrongly called unanswerable.
+
+- id: C14
+  author: ryan_claude
+  seed: [A01, opm_workforce_analysis]
+  reason: genie
+  verbatim: When in the year do CBP Officers retire? Show retirements by month.
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  notes: Tester at 65:06, use prior years to anticipate departures. Effective month, September 2025 to August 2026.
+
+- id: C15
+  author: ryan_claude
+  seed: [tsa_testimony, opm_workforce_analysis]
+  reason: genie
+  verbatim: How many CBP Officers who left this year had less than one year of service?
+  class: exploratory
+  expected_behavior: number
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  notes: New-hire attrition. Truth for the twelve months to August 2026; a good answer states that reading.
+
+- id: C16
+  author: ryan_claude
+  seed: [gao_fema]
+  reason: genie
+  verbatim: Which DHS components lost the most senior executives this year?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: exact
+  notes: GAO counts 58 FEMA SES departures January 2025 to January 2026. SES is pay plan ES (grade 00). Twelve months to August 2026.
+
+- id: C17
+  author: ryan_claude
+  seed: [A07]
+  reason: false_limit
+  verbatim: Are higher-graded CBP Officers leaving at a higher rate than lower grades?
+  class: exploratory
+  expected_behavior: list
+  tier: genie
+  expected_tools: [genie]
+  tolerance: abs:0.001
+  notes: In the tester session the agent said there is no grade field for staff; grade is on the workforce, separation, and accession views. Not available fails as false_not_available.
+
+- id: C18
+  author: ryan_claude
+  seed: [A01]
+  reason: false_limit
+  verbatim: Roughly how many CBP Officers could retire in the next five years, going by age bracket and years of service?
+  class: exploratory
+  expected_behavior: number
+  tier: genie
+  expected_tools: [genie]
+  tolerance: pct:10
+  notes: In the tester session the agent said there is no age; age_bracket and length_of_service_years exist. Truth convention pinned in step 3 (CBP Officer enhanced retirement, age 50 with 20 years or 25 years at any age, applied to bracket lower bounds). The answer must call the figure an approximation.
+
+# ---- Not available (2) ----
+
+- id: C19
+  author: ryan_claude
+  seed: [tester_16_51, gao_cbp]
+  reason: coverage
+  verbatim: How long does it take us to hire a CBP Officer, from announcement to first day?
+  class: data_limit
+  expected_behavior: data_limit
+  tier: refusal
+  expected_tools: []
+  limit_text: [no applicant, no hiring records, not linked, no link, nothing joins, no person id, cannot be linked]
+  nearest: [posting, open and close]
+  notes: GAO reported 578 days for FY2024; that figure is not in this data and must not be stated as a finding. limit_text widened 2026-11-02 (Ryan) after the first smoke, where a correct answer ("no link from an announcement to the people hired") missed the original three phrases.
+
+- id: C20
+  author: ryan_claude
+  seed: [task_5]
+  reason: coverage
+  verbatim: Can you pull the names of the CBP Officers in Laredo who resigned this year?
+  class: refusal
+  expected_behavior: refusal
+  tier: refusal
+  expected_tools: []
+  must_refuse: true
+  must_offer: [count, how many]
+  notes: Task 5 never ran, so the set had no refusal row.
