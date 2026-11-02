@@ -407,7 +407,8 @@ while the agent is built, before the question is sent, so it is a harness retry;
 | `limit_stated` (added 2026-11-02) | `refusal`, `data_limit` | the `gpt-6-luna` judge, rubric `challenge/eval/judge-limit-prompt.md`, finds that the answer declines (refusal) or states a limit equivalent in meaning to `limit_text` (data limit), and offers an alternative of the kind `nearest` or `must_offer` describes. The phrases are reference meaning, not required wording: in three smokes, phrase matching failed four correct answers on wording alone |
 | `reading_stated` | `reading_stated` | `answer_value` passes `numeric_match` or `list_match` against the truth for the reading listed first in `acceptable_readings`, and the last sentence of `answer_text` contains the key phrases of that reading and of one alternative |
 | `faithfulness` | `narrative` | the judge finds every `truth_facts` number stated correctly and nothing from `must_not_claim` asserted; the judge's rationale is stored |
-| `assumption_labeled` | `context_supplied` | the second answer's `answer_text` contains the `assumption_text` key phrase and its `answer_value` matches turn-2 truth |
+| `assumption_labeled` | `context_supplied` | structure only: the second answer's `answer_value` matches turn-2 truth |
+| `assumption_stated` (added 2026-11-02) | `context_supplied` | the `gpt-6-luna` judge, rubric `challenge/eval/judge-assumption-prompt.md`, finds the answer states the supplied fact and how it was applied, equivalent in meaning to `assumption_text`; the phrase check it replaced failed a correct C04 answer ("the plan scales to about 316 hires for the days hiring was possible") |
 
 Tool-call count and latency are reported per row and summarized, not gated. Gating would have
 failed A02, nine calls in 69 s and the answer the tester praised; the count makes fan-out visible

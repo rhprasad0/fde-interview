@@ -139,6 +139,8 @@ Revisit:   what evidence would change this
   number asserted, no rows retrieved for a refusal). Reason: in three smokes, key-phrase matching
   failed four answers a human would pass. Rejected: ever-wider phrase lists (each smoke found new
   correct wordings). Cost: that line is now model-graded, and the summary says so.
+  Extended the same day to the context-supplied assumption check (`assumption_stated`) after it
+  failed a correct C04 answer on wording; code still checks the recomputed number.
 - **Amended 2026-11-02 (Ryan): Delta results and the AI/BI eval dashboard are deferred.** The
   record of results is `challenge/eval/experiments.jsonl`, one line per scored row, written by the
   harness; `--delta` still writes `eval.runs` and `eval.judge` once `04_eval.sql` exists. Reason:

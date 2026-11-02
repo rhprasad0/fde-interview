@@ -364,3 +364,9 @@ Baseline `20261102T193041Z-4f3bf1e2` (prompt 4f3bf1e2): pass^3 Verified 2/6, Gen
 available 2/2; pass^1 36/60. Failed runs: false Not available 8, six-component codes gap 6, Genie
 definition or partial answers 6, wrong scope 2, ambiguous question 2 (C03, now two acceptable
 readings). C13 became a narrative row graded on the direction of the answer.
+
+## [2026-11-02] build | Second baseline; C04 assumption check to the judge
+Baseline two `20261102T200924Z-4f3bf1e2`, same prompt: pass^3 Verified 2/6, Genie 5/12, Not
+available 2/2; pass^1 35/60. Six rows flipped with nothing changed (noise floor about one question
+per line); six rows failed every run in both (C02, C06, C10, C11, C16, C18). C04's assumption check
+moved to a `gpt-6-luna` rubric after phrase matching failed a correct answer.
