@@ -10,6 +10,7 @@ and reads it first on every query.
 ## Sources
 
 - [Build challenge email](sources/build-challenge-email.md): the 2026-10-29 email issuing the one-week agentic build challenge, its complexity examples, interview format, and 2026-11-05 deadline.
+- [Tester A session transcript](sources/2026-11-01-tester-a-session-transcript.md): redacted, speaker-labelled transcript of the 2026-11-01 user test of the spec 05 prototype (80 min, retired federal HR director); task boundaries and transcription caveats in the header.
 
 ## Entities
 

@@ -301,3 +301,11 @@ space id. Tester briefing written as a one-page document with four screenshots r
 concept pages, and a three-minute video generated from them
 (`challenge/eval/sessions/2026-11-01-tester-briefing.md`, <https://youtu.be/5UgPAHnXmUE>).
 Spec 04 step 1 now records that the screens are shown in advance by choice.
+
+## [2026-11-02] ingest | Tester A session transcript
+Transcribed `raw/2026-11-01-tester-a-session.wav` (80 min, webcam mic). Local faster-whisper
+large-v3 looped and fabricated text on two noisy stretches; OpenAI `gpt-4o-transcribe-diarize`
+with speaker reference clips resolved both and labelled speakers. Redacted names and employers
+to roles and filed as `wiki/sources/2026-11-01-tester-a-session-transcript.md`. Hooks now match
+forbidden terms as whole words so short names can be listed. Summary and criticism analysis
+still to file; session log CSV still to fill.
