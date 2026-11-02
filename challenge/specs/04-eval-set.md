@@ -376,7 +376,10 @@ minute, the Conversation API free tier's best-effort workspace limit, because a 
 reaches the model as a tool error and would score as a false Not available. Genie therefore sets
 the floor on a pass's wall clock (13 Genie rows x 3 runs is at least 8 minutes), and the queue
 wait counts in a Genie turn's latency, so latency is comparable only between passes with the same
-worker count.
+worker count. Agent startup retries up to three times with backoff when the functions MCP server fails
+`initialize` under a burst of connects (24 of 60 runs in the second smoke). The failure is raised
+while the agent is built, before the question is sent, so it is a harness retry; the row records
+`startup_retries`. Any other error is never retried.
 
 | Scorer | Applies to | Passes when |
 |---|---|---|
@@ -386,9 +389,10 @@ worker count.
 | `labels_present` | every graded row (Verified and Genie, all behaviors) | `answer_text` contains one of the words estimated, imputed, or approximate when `requires_imputed_label`. The synthetic-plan disclosure moved out of the answer on 2026-11-01 (Ryan: the tester is briefed and the pages say it); `requires_synthetic_label` is still computed and stored, but it is a surface property checked once per page in spec 06's UI review, not a per-answer scorer |
 | `tool_use` | Verified rows | every function in `expected_tools` appears in `tool_calls`, and no SQL-writing tool does. Genie rows are covered by `genie_sql_stored` instead |
 | `provenance` | all rows | every entry in `cited_tools` matches a `tool_calls` name or the `genie_sql` from any turn of this run; nothing cited that did not run in this run. For `run_index = 0`, the run is the whole tester session |
-| `genie_sql_stored` | Genie rows | `genie_sql` and `genie_statement_id` are non-null and the statement appears in `system.query.history`; fallback if the MCP tool returns no statement id: `genie_sql` non-null and the Genie message id stored |
-| `refusal` | `refusal` | no tool call returned rows, `answer_value` is null, and `answer_text` contains a `must_offer` phrase |
-| `data_limit` | `data_limit` | `answer_value` is null, `answer_text` contains the `limit_text` key phrase and names `nearest` |
+| `genie_sql_stored` | Genie rows | `genie_sql` and `genie_statement_id` are non-null. That the statement ran is confirmed later by `eval_harness.py verify-genie`, which checks the experiment's ids against `system.query.history` and appends to `challenge/eval/genie-verified.jsonl`; the table lags about 30 minutes, so an inline check failed every Genie row (2026-11-02) |
+| `refusal` | `refusal` | structure only: no tool call returned rows and `answer_value` is null |
+| `data_limit` | `data_limit` | structure only: `answer_value` is null |
+| `limit_stated` (added 2026-11-02) | `refusal`, `data_limit` | the `gpt-6-luna` judge, rubric `challenge/eval/judge-limit-prompt.md`, finds that the answer declines (refusal) or states a limit equivalent in meaning to `limit_text` (data limit), and offers an alternative of the kind `nearest` or `must_offer` describes. The phrases are reference meaning, not required wording: in three smokes, phrase matching failed four correct answers on wording alone |
 | `reading_stated` | `reading_stated` | `answer_value` passes `numeric_match` or `list_match` against the truth for the reading listed first in `acceptable_readings`, and the last sentence of `answer_text` contains the key phrases of that reading and of one alternative |
 | `faithfulness` | `narrative` | the judge finds every `truth_facts` number stated correctly and nothing from `must_not_claim` asserted; the judge's rationale is stored |
 | `assumption_labeled` | `context_supplied` | the second answer's `answer_text` contains the `assumption_text` key phrase and its `answer_value` matches turn-2 truth |
@@ -407,8 +411,9 @@ graded on the last answer.
 
 Resolution: with the Verified floor of 12, one question is about eight points of pass^3, and 10
 of 12 has a 95% interval of roughly 55% to 95%; with 20 Genie rows one question is five points. The heatmap and the explained failures are the
-argument; the point estimate is not. Narrative rows are inside the Verified headline and are the
-only rows graded by a model; the summary view says so in a footnote column.
+argument; the point estimate is not. Narrative rows are inside the Verified headline and are its only
+model-graded rows; since 2026-11-02 the Not-available line's content is model-graded too
+(`limit_stated`). The summary says both.
 
 ## Step 7: acceptance for this spec
 

@@ -346,3 +346,13 @@ no `truth_facts` instead of passing it.
 C11 moved to Verified (family 7), not backfilled. C19 `limit_text` widened after a correct answer
 missed its phrases. Ryan is checking the data behind the C10, C16, C18 false limits before any
 prompt change.
+
+## [2026-11-02] build | Smokes two and three, harness fixes
+Smoke two lost 24 of 60 runs to MCP `initialize` errors (-32603) under a 16-connection burst; the
+harness now retries agent startup (before the question is sent). `genie_sql_stored` failed every
+Genie row because `system.query.history` lags about 30 minutes; it now checks capture only, and
+`verify-genie` confirms later (26 of 26 for smoke one). Smoke three ran clean. Refusal and
+data-limit content moved from phrase lists to a `gpt-6-luna` judge (`limit_stated`) after phrase
+matching failed four correct answers. Genie review: five Genie calls timed out because the rate-limit
+wait ate the poll budget (fixed); the agent skipped Genie in 9 of 36 Genie-tier runs (C10, C16,
+C18, C13). No prompt change yet: a clean baseline first.

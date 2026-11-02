@@ -134,6 +134,11 @@ Revisit:   what evidence would change this
   ([tester findings](wiki/analyses/tester-a-session-findings.md), [spec 04](challenge/specs/04-eval-set.md)).
   Revisit: if the co-written rows score far above the tester rows, the drafting has leaked the
   agent's habits into the questions.
+- **Amended 2026-11-02 (Ryan): the Not-available line's content is judged by `gpt-6-luna`**
+  (`limit_stated`, rubric `challenge/eval/judge-limit-prompt.md`); code keeps the structure (no
+  number asserted, no rows retrieved for a refusal). Reason: in three smokes, key-phrase matching
+  failed four answers a human would pass. Rejected: ever-wider phrase lists (each smoke found new
+  correct wordings). Cost: that line is now model-graded, and the summary says so.
 - **Amended 2026-11-02 (Ryan): Delta results and the AI/BI eval dashboard are deferred.** The
   record of results is `challenge/eval/experiments.jsonl`, one line per scored row, written by the
   harness; `--delta` still writes `eval.runs` and `eval.judge` once `04_eval.sql` exists. Reason:

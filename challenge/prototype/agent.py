@@ -130,13 +130,16 @@ def _genie_slot() -> None:
 
 def _genie(question: str) -> dict:
     """Query-then-poll on the Genie space; a fresh MCP session per call (ids are Genie-side, not session-side)."""
+    # Wait for a rate slot before the session opens and the poll clock starts: waiting inside the 120 s budget left
+    # queued questions no time to poll (5 calls ended ASKING_AI in the 2026-11-02 smoke).
+    # shortcut: the wait still counts in the tool's duration and the turn's latency; subtract it to compare worker counts
+    _genie_slot()
     with MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/genie/{SPACE}")) as c:
         names = [t.tool_name for t in c.list_tools_sync()]
         ask = next(n for n in names if n.startswith("query_space_"))
         poll = next(n for n in names if n.startswith("poll_response_"))
         wait = timedelta(seconds=120)
         deadline = time.monotonic() + 120
-        _genie_slot()  # shortcut: the wait counts in the tool's duration and the turn's latency; subtract it if latency is compared across worker counts
         r = _structured(c.call_tool_sync("ask", ask, {"query": question}, read_timeout_seconds=wait))
         while r["status"] in _GENIE_PENDING and time.monotonic() < deadline:
             time.sleep(2)

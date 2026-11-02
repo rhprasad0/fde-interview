@@ -2,6 +2,7 @@
 
   eval_harness.py [--stub] [--runs 3] [--workers 16] [--delta [--dry-run]]   run the questions file
   eval_harness.py load-session <trace.jsonl> [--delta [--dry-run]]           tester session as run_index = 0 rows
+  eval_harness.py verify-genie [experiment_id]   later pass: Genie statement ids against system.query.history
 
 Every row is appended to challenge/eval/experiments.jsonl, the record of results. --delta also writes
 workforce.eval.runs and eval.judge as Ryan's user through the Statement Execution API (deferred 2026-11-02:
@@ -14,6 +15,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import random
 import re
 import subprocess
 import sys
@@ -36,9 +38,11 @@ import agent as A  # noqa: E402
 
 QUESTIONS = A.REPO / "challenge/eval/questions.yaml"
 JUDGE_PROMPT = A.REPO / "challenge/eval/judge-prompt.md"
+LIMIT_PROMPT = A.REPO / "challenge/eval/judge-limit-prompt.md"
 JUDGE_MODEL = "gpt-6-luna"  # a different vendor from the Claude agent; also the agent's fallback (judge_same_family)
 EXPERIMENTS = A.REPO / "challenge/eval/experiments.jsonl"  # every row written, for hill-climbing analysis
 EXPERIMENT_ID = None
+GENIE_VERIFIED = A.REPO / "challenge/eval/genie-verified.jsonl"  # one line per verify-genie pass
 STUB, DRY, DELTA = False, False, False
 WORKERS = 16  # agent runs and scoring in parallel; Genie questions are rate-limited in agent.py
 _agents = {}
@@ -127,22 +131,19 @@ def provenance(q, row):
 
 
 def genie_sql_stored(q, row):
-    sid = row["genie_statement_id"]
-    if not (row["genie_sql"] and sid):
-        return False
-    if not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", sid):
-        return True  # spec 04 fallback: no statement id, the Genie message id is stored
-    res = _sql("SELECT count(*) FROM system.query.history WHERE statement_id = :sid", [{"name": "sid", "value": sid}])
-    return bool(res) and int(res["result"]["data_array"][0][0]) > 0
+    """The SQL and its id were captured. That the statement really ran is checked later by verify-genie, because
+    system.query.history lags about 30 minutes (2026-11-02: 0 of 21 found at scoring time, 26 of 26 an hour on)."""
+    return bool(row["genie_sql"] and row["genie_statement_id"])
 
 
 def refusal(q, row):
-    return (not any(c["result_rows"] for c in row["tool_calls"]) and row["answer_value"] is None
-            and _has(row["answer_text"], q.get("must_offer")))
+    """Structure only: nothing retrieved, nothing asserted. Whether it declines and what it offers is limit_stated's."""
+    return not any(c["result_rows"] for c in row["tool_calls"]) and row["answer_value"] is None
 
 
 def data_limit(q, row):
-    return row["answer_value"] is None and _has(row["answer_text"], q.get("limit_text")) and _has(row["answer_text"], q.get("nearest"))
+    """Structure only: no number asserted. Whether the stated limit and nearest question are right is limit_stated's."""
+    return row["answer_value"] is None
 
 
 def reading_stated(q, row):
@@ -155,7 +156,12 @@ def reading_stated(q, row):
 
 
 def faithfulness(q, row):
-    """Placeholder for the table slot; the Judge evaluator below is what scores it."""
+    """Placeholder for the table slot; a Judge evaluator below is what scores it."""
+    raise NotImplementedError
+
+
+def limit_stated(q, row):
+    """Placeholder for the table slot; a Judge evaluator below is what scores it."""
     raise NotImplementedError
 
 
@@ -174,6 +180,7 @@ SCORERS = [  # table order: failure_category is the first that fails
     (genie_sql_stored, lambda q: q["tier"] == "genie"),
     (refusal, lambda q: q["class"] == "refusal"),
     (data_limit, lambda q: q["class"] == "data_limit"),
+    (limit_stated, lambda q: q["class"] in ("refusal", "data_limit")),
     (reading_stated, lambda q: q["class"] == "reading_stated"),
     (faithfulness, lambda q: q["expected_behavior"] == "narrative"),
     (assumption_labeled, lambda q: q["class"] == "context_supplied"),
@@ -199,12 +206,30 @@ class Rule(Evaluator):
         return _verdict(bool(self.fn(q, data.actual_output))) if self.applies(q) else NA
 
 
-class Judge(OutputEvaluator):
-    """Narrative faithfulness on gpt-6-luna. The judge sees the answer text and the truth facts, not the row."""
+def _faithfulness_ref(q):
+    if not q.get("truth_facts"):  # nothing to be faithful to; raising makes the row an error, like a missing truth_value
+        raise ValueError("no truth_facts on this narrative row (spec 04 step 3)")
+    return {"truth_facts": q["truth_facts"], "must_not_claim": q.get("must_not_claim")}
 
-    def __init__(self, applies):
+
+def _limit_ref(q):
+    ref = q.get("limit_text") if q["class"] == "data_limit" else q.get("must_offer")
+    if not ref:
+        raise ValueError(f"no {'limit_text' if q['class'] == 'data_limit' else 'must_offer'} on this {q['class']} row")
+    return {"kind": q["class"], "limit": q.get("limit_text"), "nearest": q.get("nearest") or q.get("must_offer"),
+            "must_not_claim": q.get("must_not_claim"), "notes": q.get("notes")}
+
+
+JUDGES = {faithfulness: (JUDGE_PROMPT, _faithfulness_ref), limit_stated: (LIMIT_PROMPT, _limit_ref)}
+
+
+class Judge(OutputEvaluator):
+    """A gpt-6-luna rubric. The judge sees the question, the answer text, and the row's reference fields, not the row."""
+
+    def __init__(self, fn, applies):
         model = None if STUB else OpenAIResponsesModel(client_args={"api_key": A.ENV["OPENAI_API_KEY"]}, model_id=JUDGE_MODEL)
-        super().__init__(rubric=JUDGE_PROMPT.read_text() if JUDGE_PROMPT.exists() else "", model=model, name="faithfulness")
+        self.prompt, self.reference = JUDGES[fn]
+        super().__init__(rubric=self.prompt.read_text() if self.prompt.exists() else "", model=model, name=fn.__name__)
         self.applies = applies
 
     def _prep(self, data):
@@ -214,14 +239,10 @@ class Judge(OutputEvaluator):
             return NA, None
         if STUB:
             return _verdict(False, reason="stub run: judge not called"), None
-        if not JUDGE_PROMPT.exists():
-            return _verdict(False, reason="no judge prompt: challenge/eval/judge-prompt.md is missing"), None
-        if not q.get("truth_facts"):  # nothing to be faithful to; raising makes the row an error, like a missing truth_value
-            raise ValueError("no truth_facts on this narrative row (spec 04 step 3)")
+        if not self.prompt.exists():
+            return _verdict(False, reason=f"no judge prompt: {self.prompt.name} is missing"), None
         return None, EvaluationData(input=q.get("turn_2") or q["verbatim"], actual_output=row["answer_text"] or "",
-                                    expected_output=json.dumps({"truth_facts": q.get("truth_facts"),
-                                                                "must_not_claim": q.get("must_not_claim")}),
-                                    name=data.name, metadata=data.metadata)
+                                    expected_output=json.dumps(self.reference(q)), name=data.name, metadata=data.metadata)
 
     def evaluate(self, data):
         early, judged = self._prep(data)
@@ -233,7 +254,7 @@ class Judge(OutputEvaluator):
 
 
 def _evaluators():
-    return [Judge(applies) if f is faithfulness else Rule(f, applies) for f, applies in SCORERS]
+    return [Judge(f, applies) if f in JUDGES else Rule(f, applies) for f, applies in SCORERS]
 
 
 # ---- rows ----
@@ -263,8 +284,8 @@ def build_row(q, run_index, lines):
     row["error"] = last.get("error") or next((x["error"] for x in lines[:-1] if x.get("error") not in (None, "format")), None)
     row["label"] = _label(row.get("answer_text"))
     row["tool_call_count"] = len(row["tool_calls"])
-    narrative = q["expected_behavior"] == "narrative"
-    row["judge_same_family"] = (row.get("provider_served") not in (None, "anthropic")) if narrative else None
+    judged = q["expected_behavior"] == "narrative" or q["class"] in ("refusal", "data_limit")
+    row["judge_same_family"] = (row.get("provider_served") not in (None, "anthropic")) if judged else None
     return row
 
 
@@ -288,8 +309,9 @@ def score(pairs):
             row[f.__name__] = bool(ok) and bool(outs)
             if not outs:  # the evaluator itself raised (a judge outage, a failed query): an error, not a verdict
                 row["error"] = row["error"] or f"{f.__name__}: {A.redact(str(why))[:300]}"
-            if f is faithfulness:
+            if f in JUDGES:  # a row has at most one judged scorer: narrative, or refusal / data limit
                 row["_verdict"], row["_rationale"] = ("pass" if row[f.__name__] else "fail"), (outs[0].reason if outs else why)
+                row["_judge_prompt"] = JUDGES[f][0].name
             if row[f.__name__] is False and failed is None:
                 failed = f.__name__
         if failed == "label_match" and row["label"] == "Not available" and q["expected_behavior"] in ("number", "list", "narrative"):
@@ -359,7 +381,8 @@ def write_row(row):
         params.append(_param(c, v, TYPES.get(c, "STRING")))
     _sql(f"INSERT INTO workforce.eval.runs (`{'`, `'.join(COLS)}`) VALUES ({', '.join(exprs)})", params)
     if "_verdict" in row:
-        jp = hashlib.sha256(JUDGE_PROMPT.read_bytes()).hexdigest()[:12] if JUDGE_PROMPT.exists() else None
+        prompt = A.REPO / "challenge/eval" / row.get("_judge_prompt", JUDGE_PROMPT.name)
+        jp = hashlib.sha256(prompt.read_bytes()).hexdigest()[:12] if prompt.exists() else None
         vals = {"set_version": row["set_version"], "id": row["id"], "run_index": row["run_index"], "judge_model": JUDGE_MODEL,
                 "judge_prompt_version": jp, "verdict": row["_verdict"], "rationale": row["_rationale"]}
         _sql(f"INSERT INTO workforce.eval.judge ({', '.join(vals)}) VALUES ({', '.join(':' + k for k in vals)})",
@@ -390,19 +413,30 @@ def run(set_version, runs=3):
         runs = 1
     print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, experiment {EXPERIMENT_ID}")
 
+    def build(sid, r):
+        """The functions MCP server can fail `initialize` (-32603) under a burst of connects. That happens inside
+        Agent(), before the question is sent, so retrying is a harness retry, not a second try at an answer."""
+        for attempt in range(4):
+            try:
+                return A.build_agent(sid, run_index=r), attempt
+            except ValueError as e:
+                if "Failed to load tool" not in str(e) or attempt == 3:
+                    raise
+                time.sleep(2 ** attempt + random.random() * 2)
+
     def one(job):  # one fresh agent per (question, run); nothing cached across runs
         q, r = job
-        sid = f"{q['id']}-r{r}-{uuid.uuid4().hex[:6]}"
+        sid, retries = f"{q['id']}-r{r}-{uuid.uuid4().hex[:6]}", 0
         try:
             if not STUB:
-                _agents[sid] = A.build_agent(sid, run_index=r)
+                _agents[sid], retries = build(sid, r)
             lines = _turns(q, sid)
         except Exception as e:  # noqa: BLE001  (a crashed turn is an error row, never a retry)
             lines = [{"tool_calls": [], "error": f"{type(e).__name__}: {A.redact(str(e))[:300]}", "session_id": sid}]
         finally:
             if sid in _agents:
                 _agents.pop(sid).cleanup()
-        return q, build_row(q, r, lines)
+        return q, {**build_row(q, r, lines), "startup_retries": retries}
 
     jobs = [(q, r) for r in range(1, runs + 1) for q in qs.values()]
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -444,10 +478,25 @@ def load_session(trace_path):
     httpx.put(url, headers={"Authorization": f"Bearer {tok}"}, content=path.read_bytes(), timeout=60).raise_for_status()
 
 
+def verify_genie(experiment_id=None):
+    """Confirm each Genie statement id of one experiment (default: the latest) appears in system.query.history."""
+    rows = [json.loads(x) for x in EXPERIMENTS.read_text().splitlines()]
+    exp = experiment_id or rows[-1]["experiment_id"]
+    ids = sorted({r["genie_statement_id"] for r in rows if r["experiment_id"] == exp and r.get("genie_statement_id")})
+    res = _sql("SELECT collect_set(statement_id) FROM system.query.history WHERE array_contains(split(:ids, ','), statement_id)",
+               [{"name": "ids", "value": ",".join(ids)}])
+    found = set(json.loads(res["result"]["data_array"][0][0] or "[]")) if res else set()
+    rec = {"experiment_id": exp, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           "found": len(found), "total": len(ids), "missing": sorted(set(ids) - found)}
+    with GENIE_VERIFIED.open("a") as f:
+        f.write(json.dumps(rec) + "\n")
+    print(f"{exp}: {rec['found']} of {rec['total']} Genie statements in system.query.history; missing {len(rec['missing'])}")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", nargs="?", choices=["run", "load-session"], default="run")
-    ap.add_argument("trace", nargs="?")
+    ap.add_argument("cmd", nargs="?", choices=["run", "load-session", "verify-genie"], default="run")
+    ap.add_argument("trace", nargs="?", help="load-session: the trace file; verify-genie: an experiment id (default latest)")
     ap.add_argument("--stub", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--delta", action="store_true", help="also write eval.runs and eval.judge (needs 04_eval.sql)")
@@ -458,5 +507,7 @@ if __name__ == "__main__":
     STUB, DRY, WORKERS, DELTA = a.stub, a.dry_run, a.workers, a.delta
     if a.cmd == "load-session":
         load_session(a.trace)
+    elif a.cmd == "verify-genie":
+        verify_genie(a.trace)
     else:
         run(a.set_version, a.runs)
