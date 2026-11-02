@@ -81,6 +81,25 @@ different product, a component-level diagnostic fed with their own data, more th
 Task 2 picks, spoken: CBP, USCIS, TSA ([29:29](../sources/2026-11-01-tester-a-session-transcript.md)). No written feedback or paragraph submitted in
 the app; both are on the recording.
 
+## What the trace shows
+
+Source: `challenge/eval/sessions/2026-11-01-tester-a/` (trace, decisions, spans). Eight assistant
+turns over 42 minutes, total model cost about $0.03, median latency 25 s, worst 74 s.
+
+- **Labels:** 2 Verified (A03 paragraph draft, A05 announcement count), 2 Exploratory (A02
+  cross-component comparison, A08 grade mix over time, both via Genie and the two slowest turns),
+  4 Not available (A01 retirement eligibility, A04 why recruitment is thin, A06 what "Many"
+  means, A07 which grades applicants skip). Half the answers were refusals, which is the trace-side
+  view of criticism 1.
+- **The praised answer was volunteered.** A01 refused eligibility but offered a comparison; the
+  tester took it (A02, "now that you asked") and called the result "great data" ([21:45](../sources/2026-11-01-tester-a-session-transcript.md)).
+- **Tool use:** A02 called `length_of_service_profile` eight times, once per component. A04 to
+  A07 called no tools and answered from context in 5 to 9 s.
+- **Decisions:** three Task 4 recommendations, three accepts within 24 s (00:24:22 to 00:24:46
+  UTC), no reject or flag, no paragraph or written feedback submitted in the app. The trace alone
+  would read as a clean session; the criticism lives only in the recording.
+- No errors, no refusals of out-of-scope requests, because Task 5 ("try to break it") was never run.
+
 ## Caveats
 
 One tester, not the exact target user, webcam audio with two voices in one room. Speaker labels
