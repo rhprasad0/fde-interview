@@ -5,7 +5,7 @@ SQL that never touches the agent's own functions, a deterministic scorer set, a 
 tables and views the harness writes to. The questions do not exist until the prototype session on
 2026-11-01, so this is a process spec: it defines how the session is captured, how questions are
 classified, how truth is authored, how the set is frozen, and what the prototype (spec 05) must
-emit so every row can be scored. Its own acceptance is structural. The agent's pass^3 is measured
+emit so every row can be scored. Its own acceptance is structural. The agent's pass^5 is measured
 in specs 05 and 06, not here.
 
 **Amended 2026-11-02, after the Tester A session** ([findings](../../wiki/analyses/tester-a-session-findings.md)).
@@ -13,7 +13,7 @@ Six of the tester's eight questions fell outside the eight functions, half the a
 available, two of those rested on data limits that do not exist, and three questions only made
 sense after the turn before. Ryan's decisions, applied in place below: questions are co-written by
 Ryan and Claude from cited seeds and approved row by row; the set leans Genie (floors Genie 20,
-Verified 12); Not-available answers get their own pass^3 line; follow-up rows replay prior turns;
+Verified 12); Not-available answers get their own pass^5 line; follow-up rows replay prior turns;
 the harness is Strands Evals with `gpt-6-luna` as judge; and the leftovers of the `clarify` class
 are gone. The first batch of 20 co-written rows is in `challenge/eval/questions.yaml`.
 
@@ -55,7 +55,7 @@ the defaults stated rather than asked:
 - **Freeze.** A set version is a git tag (`eval-v1`, `eval-v2`). After the tag, rows never change;
   corrections create the next version. Every results row carries `set_version`. This answers "did
   you tune the questions after seeing failures."
-- **Headline scope (amended 2026-11-02).** Two pass^3 lines side by side, never merged. Verified:
+- **Headline scope (amended 2026-11-02).** Two pass^5 lines side by side, never merged. Verified:
   80% over Verified-tier graded rows (number, list, narrative, context-supplied, follow-up,
   reading-stated); narrative rows are its only model-judged rows, and the summary says so. Not
   available: refusal and data-limit rows, scored on the label line, the stated limit, and the
@@ -349,7 +349,7 @@ then as one bulk load of that file. The harness writes the tables only with `--d
   before the insert, so hill-climbing analysis needs no warehouse. Stub and dry runs are not logged.
 - `eval.judge`: one row per narrative run: `judge_model`, `judge_prompt_version`, `verdict`,
   `rationale`.
-- `eval.summary` (view): per `set_version`: pass^1 and pass^3 for the Verified tier, the Genie
+- `eval.summary` (view): per `set_version`: pass^1 and pass^5 for the Verified tier, the Genie
   tier, and the Not-available rows (refusal plus data-limit), each on its own row and also split
   by `author`; the in-scope share of tester rows; mean latency, cost, and tool calls per answer;
   provider mix; the `judge_same_family` count.
@@ -381,7 +381,7 @@ the row an `error`, not a failed verdict.
 `ActorSimulator` is not used, and no `evaluation_data_store` is passed, because results must never
 be cached across runs. Parallel since 2026-11-02 (Ryan): the harness runs every (question, run)
 pair on 16 worker threads (`--workers`), each with its own fresh agent, and one `Experiment`
-scores all of them with `max_workers=16`. pass^3 and the first-failing-scorer `failure_category`
+scores all of them with `max_workers=16`. pass^5 and the first-failing-scorer `failure_category`
 are computed outside Strands, which does not order evaluators, and the rows go to `eval.runs` in
 order after scoring. Genie questions pass a process-wide limiter in `agent.py` at 5 per rolling
 minute, the Conversation API free tier's best-effort workspace limit, because a throttled call
@@ -415,14 +415,22 @@ failed A02, nine calls in 69 s and the answer the tester praised; the count make
 without punishing a good answer.
 
 A run passes a question only when every applicable scorer passes. `failure_category` is the
-first failing scorer in table order. pass^1 is the mean per-run pass rate across the three runs
-(the tau-bench single-trial rate); pass^3 is the share of questions that pass all three runs.
+first failing scorer in table order. pass^1 is the mean per-run pass rate across the five runs
+(the tau-bench single-trial rate); pass^5 is the share of questions that pass all five runs.
+
+**pass^5 and the comparison rule (Ryan, 2026-11-02).** Runs per question went from three to five
+after three baselines of the unchanged prompt put Genie pass^3 anywhere from 3 to 6 of 12. A
+change is judged on **pooled pass^1** per line over at least two experiments, against the pooled
+baseline, and on the rows that failed every baseline run; one experiment's pass^5 is reported, not
+compared. `eval_harness.py pool <experiments> --vs <baseline experiments>` prints both. The
+pass^3 baselines (`20261102T193041Z`, `20261102T200924Z`, `20261102T202445Z`) pool to Verified
+29/54, Genie 58/108, Not available 18/18; C02, C06, C10, C11, C16, and C18 failed all nine runs.
 A fresh run means a new agent instance with an empty conversation, a new `session_id`, and the
 tool-result cache disabled; the system prompt may be cached by the provider. Context-supplied and
 follow-up rows call `invoke` once per turn with the same `session_id` within one run and are
 graded on the last answer.
 
-Resolution: with the Verified floor of 12, one question is about eight points of pass^3, and 10
+Resolution: with the Verified floor of 12, one question is about eight points of pass^5, and 10
 of 12 has a 95% interval of roughly 55% to 95%; with 20 Genie rows one question is five points. The heatmap and the explained failures are the
 argument; the point estimate is not. Narrative rows are inside the Verified headline and are its only
 model-graded rows; since 2026-11-02 the Not-available line's content is model-graded too

@@ -141,6 +141,12 @@ Revisit:   what evidence would change this
   correct wordings). Cost: that line is now model-graded, and the summary says so.
   Extended the same day to the context-supplied assumption check (`assumption_stated`) after it
   failed a correct C04 answer on wording; code still checks the recomputed number.
+- **Amended 2026-11-02 (Ryan): pass^5, judged on pooled pass^1.** Five runs per question replace
+  three; the bars stay 80% Verified and 70% Genie, now on pass^5, which is stricter. A change is
+  compared on pooled pass^1 per line over two or more experiments and on the always-fail rows.
+  Reason: three unchanged-prompt baselines put Genie pass^3 between 3 and 6 of 12. Rejected:
+  comparing single-experiment pass^k (noise larger than the effects being measured). Cost: a pass
+  is 100 runs, about 15 minutes bound by Genie's 5 questions a minute, about $0.17.
 - **Amended 2026-11-02 (Ryan): Delta results and the AI/BI eval dashboard are deferred.** The
   record of results is `challenge/eval/experiments.jsonl`, one line per scored row, written by the
   harness; `--delta` still writes `eval.runs` and `eval.judge` once `04_eval.sql` exists. Reason:

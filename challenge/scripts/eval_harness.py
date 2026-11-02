@@ -1,9 +1,10 @@
 """Spec 05 step 4, ported to Strands Evals by spec 04 (2026-11-02): the eval harness, local and direct-MCP.
 
-  eval_harness.py [--stub] [--runs 3] [--workers 16] [--delta [--dry-run]]   run the questions file
+  eval_harness.py [--stub] [--runs 5] [--workers 16] [--delta [--dry-run]]   run the questions file
   eval_harness.py load-session <trace.jsonl> [--delta [--dry-run]]           tester session as run_index = 0 rows
   eval_harness.py verify-genie [experiment_id]   later pass: Genie statement ids against system.query.history
   eval_harness.py truth [--check]   run every truth_sql, write challenge/eval/truth.json (--check: must reproduce it)
+  eval_harness.py pool <exp,exp,...> [--vs <exp,exp,...>]   pooled pass^1 per line and per-row passes, for hill climbing
 
 Every row is appended to challenge/eval/experiments.jsonl, the record of results. --delta also writes
 workforce.eval.runs and eval.judge as Ryan's user through the Statement Execution API (deferred 2026-11-02:
@@ -365,7 +366,8 @@ def summary(rows, qs):
         by.setdefault(qs[r["id"]]["tier"], {}).setdefault(r["id"], []).append(r["pass"])
     for tier, per_q in sorted(by.items()):
         runs = [p for ps in per_q.values() for p in ps]
-        print(f"{tier}: pass^1 {sum(runs)}/{len(runs)}  pass^k {sum(all(ps) for ps in per_q.values())}/{len(per_q)} questions")
+        k = max(len(ps) for ps in per_q.values())
+        print(f"{tier}: pass^1 {sum(runs)}/{len(runs)}  pass^{k} {sum(all(ps) for ps in per_q.values())}/{len(per_q)} questions")
 
 
 def _sql(statement, params):
@@ -490,7 +492,7 @@ def _turns(q, sid):
     return [invoke(t, sid, q_id=q["id"]) for t in [*(q.get("prior_turns") or []), q["verbatim"]]]
 
 
-def run(set_version, runs=3):
+def run(set_version, runs=5):
     global EXPERIMENT_ID
     EXPERIMENT_ID = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{A.PROMPT_HASH[:8]}"
     y, qs = _questions()
@@ -582,15 +584,35 @@ def verify_genie(experiment_id=None):
     print(f"{exp}: {rec['found']} of {rec['total']} Genie statements in system.query.history; missing {len(rec['missing'])}")
 
 
+def pool(exps, vs=None):
+    """The hill-climbing comparison (spec 04 step 6): pooled pass^1 per line over one or more experiments, against a
+    baseline pool, and each row's passes; a single experiment's pass^k is too noisy to compare on this set."""
+    _, qs = _questions()
+    rows = [json.loads(x) for x in EXPERIMENTS.read_text().splitlines()]
+    def tally(ids):
+        rs = [r for r in rows if r["experiment_id"] in ids and r["id"] in qs]
+        line, per = {}, {}
+        for r in rs:
+            t = line.setdefault(qs[r["id"]]["tier"], [0, 0]); t[0] += bool(r["pass"]); t[1] += 1
+            c = per.setdefault(r["id"], [0, 0]); c[0] += bool(r["pass"]); c[1] += 1
+        return line, per
+    (line, per), (bline, bper) = tally(exps), tally(vs or [])
+    for tier in sorted(line):
+        print(f"{tier}: pooled pass^1 {line[tier][0]}/{line[tier][1]}" + (f"  vs baseline {bline[tier][0]}/{bline[tier][1]}" if tier in bline else ""))
+    for qid in sorted(per):
+        print(f"  {qid} {per[qid][0]}/{per[qid][1]}" + (f"  (baseline {bper[qid][0]}/{bper[qid][1]})" if qid in bper else ""))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", nargs="?", choices=["run", "load-session", "verify-genie", "truth"], default="run")
+    ap.add_argument("cmd", nargs="?", choices=["run", "load-session", "verify-genie", "truth", "pool"], default="run")
+    ap.add_argument("--vs", help="pool: comma-separated baseline experiment ids")
     ap.add_argument("--check", action="store_true", help="truth: verify truth.json reproduces instead of writing it")
     ap.add_argument("trace", nargs="?", help="load-session: the trace file; verify-genie: an experiment id (default latest)")
     ap.add_argument("--stub", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--delta", action="store_true", help="also write eval.runs and eval.judge (needs 04_eval.sql)")
-    ap.add_argument("--runs", type=int, default=3)
+    ap.add_argument("--runs", type=int, default=5)
     ap.add_argument("--workers", type=int, default=WORKERS)
     ap.add_argument("--set-version", default=A.SET_VERSION)
     a = ap.parse_args()
@@ -601,5 +623,7 @@ if __name__ == "__main__":
         verify_genie(a.trace)
     elif a.cmd == "truth":
         truth(a.check)
+    elif a.cmd == "pool":
+        pool(a.trace.split(","), a.vs.split(",") if a.vs else None)
     else:
         run(a.set_version, a.runs)
