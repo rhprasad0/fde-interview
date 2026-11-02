@@ -1,0 +1,468 @@
+<title>Lantern Workshop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: enterprise-app chrome; a fluid canvas of charts on the left, the agent pinned in a right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1;
+  --accent:#2a78d6; --accent-ink:#ffffff; --dip:#eb6834; --grid:#e6e9ee;
+  --seq-1:#dbe9fb; --seq-2:#a9c9f0; --seq-3:#6ea3e3; --seq-4:#2a78d6; --seq-5:#1a4f94; --na:#d9dde3;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --warn-bg:#fff1c2; --warn-ink:#5c3d00; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942;
+  --accent:#3987e5; --dip:#d95926; --grid:#2b3038;
+  --seq-1:#243246; --seq-2:#2b4a73; --seq-3:#2f68a8; --seq-4:#3987e5; --seq-5:#8fc0ff; --na:#2b3038;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --warn-bg:#3e2f08; --warn-ink:#ffd978; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942;
+  --accent:#3987e5; --dip:#d95926; --grid:#2b3038;
+  --seq-1:#243246; --seq-2:#2b4a73; --seq-3:#2f68a8; --seq-4:#3987e5; --seq-5:#8fc0ff; --na:#2b3038;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --warn-bg:#3e2f08; --warn-ink:#ffd978; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.mono{font-family:var(--mono)}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px}
+@media (max-width:1000px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:70ch}
+
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .note{fill:var(--dip);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:260px;z-index:20;font-family:var(--sans)}
+.tip b{display:block}
+
+.actions{display:flex;flex-direction:column;gap:10px}
+.action{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.action p{margin:0;flex:1 1 360px;font-size:14px}
+.btns{display:flex;gap:6px}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+aside.agent{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1000px){aside.agent{position:static;max-height:none}}
+.agent-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.agent-head b{font-size:14px}
+.agent-head small{font-size:12px;color:var(--ink-3)}
+.agent-head .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2e8540;margin-right:6px;vertical-align:0}
+.thread{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.msg{display:flex;flex-direction:column;gap:6px}
+.msg.user{align-items:flex-end}
+.msg.user .bub{background:var(--accent);color:var(--accent-ink);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:85%}
+.msg .who{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.msg.bot .bub{background:var(--bg);border-radius:12px 12px 12px 2px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.msg.bot p{margin:0}
+.msg.bot ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:2px}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px;align-self:flex-start}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink)}
+.msg .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.ask{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.ask form{display:flex;gap:6px}
+.ask input{flex:1;min-width:0;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);font:inherit;font-size:13.5px}
+.ask .hint{font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2)}
+
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:no-preference){.card svg rect.bar{transition:opacity .15s}}
+</style>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg>
+      <span>Lantern Workshop</span>
+      <small>SEEING-STONE ADJACENT · v0.0.1-demo</small>
+    </div>
+    <nav class="tabs" aria-label="Ontology">
+      <a href="#objects" aria-current="page">Objects</a>
+      <a href="#links">Links</a>
+      <a href="#actions">Actions</a>
+      <a href="#vibes" class="off" aria-disabled="true" title="Not in scope">Vibes</a>
+    </nav>
+    <div class="status">
+      <span>Session cost <b class="num">$0.04</b></span>
+      <span>Budget <b class="num">$50.00</b></span>
+      <span>Data through <b>Aug 2026</b></span>
+      <span>Sept file lands <b>Nov 4</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // STAFFING PLAN IS SYNTHETIC (THE AGENT WILL REMIND YOU)</div>
+
+<div class="shell gutter">
+<main id="objects">
+  <div class="crumb">
+    <span>Object type: <b>Occupation cell</b></span><span>/</span>
+    <span>Component: <b>Customs and Border Protection</b></span><span>/</span>
+    <span>Occupation: <b>CBP Officer (1895)</b></span><span>/</span>
+    <span>Period: <b>FY2026 Q1 (Oct to Dec 2025)</b></span><span>/</span>
+    <span>27,650 instances · 1 ontology · 0 rings of power</span>
+  </div>
+
+  <div>
+    <h1>CBP Officer hiring landed 20% under plan. One month did most of it.</h1>
+    <p class="lede">475 officers came on board against a plan of 594. October was the gap. Attrition is low, mostly retirements, and two in three officers have more than ten years of service.</p>
+  </div>
+
+  <section class="tiles" aria-label="Key figures">
+    <div class="tile"><span>Planned hires, Q1</span><strong class="num">594</strong><em>From the plan. It is synthetic. We know.</em></div>
+    <div class="tile"><span>Onboarded, Oct to Dec 2025</span><strong class="num">475</strong><em>Later OPM files can add to this.</em></div>
+    <div class="tile"><span>Variance to plan</span><strong class="num">&minus;119 <small style="font-size:14px;color:var(--ink-3)">(&minus;20%)</small></strong><em>Or +50% if you believe the sidebar.</em></div>
+  </section>
+
+  <section class="card">
+    <h2>Accessions by month: October is the whole story</h2>
+    <p class="sub">CBP Officer accessions by effective month. The dashed line is the plan spread evenly across the quarter, which is what a plan does when nobody tells it about a shutdown.</p>
+    <div id="dip"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Accessions</span><span><i style="background:var(--dip)"></i>Lapse in appropriations, Oct 1 to Nov 12</span><span><i style="background:transparent;border-top:2px dashed var(--ink-3);height:0;vertical-align:3px"></i>Plan ÷ 3</span></div>
+    <p class="src">Source: OPM accessions, effective month, HSBD × 1895. Verified.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>FEMA's plan is wrong, not its hiring</h2>
+      <p class="sub">The agent raised this one on its own. Eight months of almost nothing, then hiring restarts in May 2026. A plan built from last year's departures assumed replacements that never came.</p>
+      <div id="fema"></div>
+      <p class="src">Source: OPM accessions, all FEMA occupations. Sep 2025 to Apr 2026 is one total; no February file.</p>
+    </section>
+
+    <section class="card">
+      <h2>Two in three officers have served ten years or more</h2>
+      <p class="sub">The retirement cliff is not a metaphor here. It is a bar.</p>
+      <div id="yos"></div>
+      <p class="src">Source: OPM employment, August 2026 snapshot. 27,650 officers with a service band.</p>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Where the officers are (OPM will not say, so we guessed from job ads)</h2>
+      <p class="sub">Estimated from where CBP advertises positions. Six states carry an estimate. The other 45 are grey because the data is honest even when the app is not.</p>
+      <div id="map"></div>
+      <div class="legend" id="maplegend"></div>
+      <p class="src">Estimated. location_imputed = true on every one of these rows. Hover Maine.</p>
+    </section>
+
+    <section class="card">
+      <h2>954 separations in twelve months, and most of them had a cake</h2>
+      <p class="sub">Separation categories, twelve months to August 2026. The data has categories, not reasons. The agent will tell you so if you ask why anyone left.</p>
+      <div id="sep"></div>
+      <p class="src">Source: OPM separations, HSBD × 1895, Sep 2025 to Aug 2026. Verified.</p>
+    </section>
+  </div>
+
+  <section class="card" id="actions">
+    <h2>Recommended for the review</h2>
+    <p class="sub">Drafted from the figures above. Nothing happens until a human clicks. That is the feature, not a limitation.</p>
+    <div class="actions">
+      <div class="action"><p>Put CBP Officer on the Strategic Hiring Committee agenda to settle whether the Q1 shortfall is a planning assumption or a hiring problem.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action"><p>Request retirement eligibility projections for the 8,732 officers with 20 or more years before FY2027 targets are set.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action"><p>Ask CBP how many openings "Many" means on its three "Many" announcements. The agent has asked twice. It is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+    </div>
+  </section>
+</main>
+
+<aside class="agent" aria-label="Variance review assistant">
+  <div class="agent-head">
+    <b><span class="dot" aria-hidden="true"></span>Variance review assistant</b>
+    <small>Eight standard calculations, one one-off query, no opinions about budgets.</small>
+  </div>
+  <div class="thread">
+
+    <div class="msg bot">
+      <span class="who">assistant · 06:12, after the August run</span>
+      <div class="bub">
+        <span class="chip warn">Exploratory</span>
+        <p>Three FEMA cells show zero accessions against hundreds planned. The monthly series explains it: FEMA recorded 19 accessions from September 2025 to April 2026 and resumed in May (76, 63, 217, 125 through August). The plan assumes replacement hiring that was not happening. Revise the FEMA plan cells before the review rather than reading them as a 100% shortfall.</p>
+<pre>SELECT date_trunc('month', effective_month) AS month,
+       count(*) AS accessions
+FROM workforce.semantic.accession
+WHERE component = 'HSCB'
+GROUP BY 1 ORDER BY 1</pre>
+        <span class="meta">standard calculation: plan_variance · one-off query · 11 rows</span>
+      </div>
+    </div>
+
+    <div class="msg user">
+      <span class="who">analyst · 09:31</span>
+      <div class="bub">the shutdown ran October 1 to November 12</div>
+    </div>
+
+    <div class="msg bot">
+      <span class="who">assistant</span>
+      <div class="bub">
+        <span class="chip ok">Verified</span>
+        <p>Assuming, as you state, that no one could be onboarded from October 1 to November 12, 2025, the plan scaled to the days hiring was possible is about 316 hires, and the 475 actual accessions land +159 (+50%) against it, compared with &minus;119 (&minus;20%) against the full plan of 594.</p>
+        <ul class="num">
+          <li>Days in the quarter: 31 + 30 + 31 = 92</li>
+          <li>Days hiring could not happen: 31 + 12 = 43</li>
+          <li>Days hiring was possible: 92 &minus; 43 = 49</li>
+          <li>Scaled plan: 594 × 49 / 92 ≈ 316</li>
+          <li>Variance: 475 &minus; 316 = +159, or +50%</li>
+        </ul>
+        <p>This is recorded with the brief as your assumption, not as something the data shows. Accessions by month are the better test; a one-off query can give them.</p>
+        <span class="meta">standard calculation: plan_variance · assumption saved to brief</span>
+      </div>
+    </div>
+
+    <div class="msg user">
+      <span class="who">analyst</span>
+      <div class="bub">ok show me by month</div>
+    </div>
+
+    <div class="msg bot">
+      <span class="who">assistant</span>
+      <div class="bub">
+        <span class="chip warn">Exploratory</span>
+        <p>80 accessions in October against 224, 236, 159 and 232 in the months around it. The dip is one month wide, not six weeks: November recovered because CBP was excepted from the lapse.</p>
+<pre>SELECT date_trunc('month', effective_month) AS month,
+       count(*) AS accessions
+FROM workforce.semantic.accession
+WHERE component = 'HSBD' AND series = '1895'
+  AND effective_month BETWEEN '2025-09-01'
+                          AND '2026-01-31'
+GROUP BY 1 ORDER BY 1</pre>
+        <span class="meta">one-off query · 5 rows · 1.8 s</span>
+      </div>
+    </div>
+
+    <div class="msg user">
+      <span class="who">analyst</span>
+      <div class="bub">why did Dave quit</div>
+    </div>
+
+    <div class="msg bot">
+      <span class="who">assistant</span>
+      <div class="bub">
+        <span class="chip no">Not available</span>
+        <p>I do not report on individual employees, and the data holds separation categories, not reasons, so it could not say why Dave left even if it knew who Dave is. The nearest answer is the separation categories for CBP Officers in the twelve months to August 2026: 586 retirements, 185 resignations, 183 transfers and other.</p>
+        <span class="meta">standard calculation: separation_rate · refusal rule 4</span>
+      </div>
+    </div>
+
+    <div class="msg user">
+      <span class="who">analyst</span>
+      <div class="bub">how many officers in Maine</div>
+    </div>
+
+    <div class="msg bot">
+      <span class="who">assistant</span>
+      <div class="bub">
+        <span class="chip ok">Verified</span>
+        <p>About 1,726 CBP Officers are estimated to be in Maine as of August 2026. That figure is imputed: OPM does not publish CBP duty stations, so locations were filled in from where CBP advertises positions, and Maine advertises a lot relative to its size. Treat it as a share of postings, not a headcount.</p>
+        <span class="meta">standard calculations: headcount, imputation_quality · headcount_location_imputed = 1,726</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="ask">
+    <div class="sugg" aria-label="Suggested questions">
+      <button type="button">How does this compare with Q2?</button>
+      <button type="button">What was advertised in Texas?</button>
+      <button type="button">What is the budget for</button>
+    </div>
+    <form id="askform">
+      <label for="q" class="sr">Ask about this cell</label>
+      <input id="q" type="text" placeholder="Ask about this cell. It will not ask you a clarifying question.">
+      <button class="btn primary" type="submit">Ask</button>
+    </form>
+    <span class="hint">Every answer opens with Verified, Exploratory, or Not available. There is no fourth label.</span>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">Built on eight standard calculations, one one-off query, and an agent that refuses budget questions on principle. Headcount, separations and postings are real OPM and USAJOBS data. The plan is not. Locations are estimated. This page cost $0.00 to serve.</footer>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+// Tiny SVG chart helpers. Every mark is placed from one scale; no library needed.
+const NS = 'http://www.w3.org/2000/svg';
+const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('mousemove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 280) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  node.addEventListener('mouseleave', () => { tip.hidden = true; });
+}
+const fmt = n => n.toLocaleString('en-US');
+
+// Vertical bar chart: data = [{label, value, color?, tip?, wide?}], ref = optional dashed reference line.
+function bars(id, data, opts = {}) {
+  const W = 640, H = opts.h || 230, P = { t: 26, r: 10, b: 30, l: 40 };
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opts.aria || '' });
+  const max = Math.max(...data.map(d => d.value), opts.ref || 0) * 1.1;
+  const y = v => P.t + (H - P.t - P.b) * (1 - v / max);
+  const units = data.reduce((s, d) => s + (d.wide || 1), 0);
+  const uw = (W - P.l - P.r) / units;
+  const step = opts.ticks || 100;
+  for (let v = 0; v <= max; v += step) {
+    svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), class: v ? 'gridline' : 'axis' }));
+    svg.append(el('text', { x: P.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, fmt(v)));
+  }
+  let x = P.l;
+  data.forEach(d => {
+    const w = uw * (d.wide || 1), bw = w - 4;
+    const r = el('rect', { class: 'bar', x: x + 2, y: y(d.value), width: bw, height: y(0) - y(d.value), rx: 3, fill: d.color || 'var(--accent)' });
+    hover(r, `<b>${d.label}</b>${d.tip || fmt(d.value)}`);
+    svg.append(r);
+    svg.append(el('text', { x: x + w / 2, y: H - 10, 'text-anchor': 'middle' }, d.label));
+    if (d.note) svg.append(el('text', { x: x + w / 2, y: y(d.value) - 8, 'text-anchor': 'middle', class: 'note' }, d.note));
+    if (d.show) svg.append(el('text', { x: x + w / 2, y: y(d.value) - 8, 'text-anchor': 'middle', class: 'lbl' }, fmt(d.value)));
+    x += w;
+  });
+  if (opts.ref) {
+    svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(opts.ref), y2: y(opts.ref), stroke: 'var(--ink-3)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4' }));
+    svg.append(el('text', { x: W - P.r, y: y(opts.ref) - 6, 'text-anchor': 'end' }, opts.refLabel));
+  }
+  document.getElementById(id).append(svg);
+}
+
+bars('dip', [
+  { label: 'Sep 2025', value: 224 },
+  { label: 'Oct 2025', value: 80, color: 'var(--dip)', note: 'shutdown', tip: '80 accessions. Appropriations lapsed Oct 1 to Nov 12; the hiring freeze ran to Oct 15.' },
+  { label: 'Nov 2025', value: 236, tip: '236 accessions. CBP was excepted from the lapse, so November recovered.' },
+  { label: 'Dec 2025', value: 159 },
+  { label: 'Jan 2026', value: 232 },
+], { ref: 198, refLabel: 'plan ÷ 3 = 198 a month', aria: 'CBP Officer accessions by month, September 2025 to January 2026', ticks: 50 });
+
+bars('fema', [
+  { label: 'Sep 2025 to Apr 2026', value: 19, wide: 3, show: true, tip: '19 accessions across eight months. One total, no monthly split; February has no file.' },
+  { label: 'May', value: 76, show: true },
+  { label: 'Jun', value: 63, show: true },
+  { label: 'Jul', value: 217, show: true },
+  { label: 'Aug', value: 125, show: true },
+], { aria: 'FEMA accessions, all occupations, September 2025 to August 2026', ticks: 50, h: 220 });
+
+// Horizontal bars for years of service.
+(function () {
+  const data = [['Under 1', 1850], ['1 to 3', 1943], ['3 to 5', 1563], ['5 to 10', 4789], ['10 to 20', 8773], ['20 or more', 8732]];
+  const total = data.reduce((s, d) => s + d[1], 0);
+  const W = 640, rowH = 30, P = { l: 90, r: 60 }, H = rowH * data.length + 4;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'CBP Officers by years of service, August 2026' });
+  const max = 9000, x = v => P.l + (W - P.l - P.r) * v / max;
+  data.forEach(([lab, v], i) => {
+    const yy = i * rowH + 2, long = v > 8000;
+    svg.append(el('text', { x: P.l - 8, y: yy + 19, 'text-anchor': 'end', class: long ? 'lbl' : '' }, lab));
+    const r = el('rect', { class: 'bar', x: P.l, y: yy + 4, width: x(v) - P.l, height: rowH - 8, rx: 3, fill: long ? 'var(--seq-5)' : 'var(--seq-3)' });
+    hover(r, `<b>${lab} years</b>${fmt(v)} officers, ${(100 * v / total).toFixed(1)}%`);
+    svg.append(r);
+    svg.append(el('text', { x: x(v) + 6, y: yy + 19, class: long ? 'lbl' : '' }, (100 * v / total).toFixed(0) + '%'));
+  });
+  document.getElementById('yos').append(svg);
+})();
+
+// One stacked bar for separation categories.
+(function () {
+  const data = [['Retired', 586, 'var(--seq-5)'], ['Quit', 185, 'var(--seq-3)'], ['Transferred or other', 183, 'var(--seq-2)']];
+  const total = 954, W = 640, H = 90;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'CBP Officer separations by category, twelve months to August 2026' });
+  let x = 0;
+  data.forEach(([lab, v, c], i) => {
+    const w = W * v / total - (i ? 2 : 0);
+    const r = el('rect', { class: 'bar', x: x + (i ? 2 : 0), y: 10, width: w, height: 44, rx: 3, fill: c });
+    hover(r, `<b>${lab}</b>${fmt(v)} of ${fmt(total)}, ${(100 * v / total).toFixed(0)}%`);
+    svg.append(r);
+    svg.append(el('text', { x: x + (i ? 2 : 0) + 8, y: 38, fill: i ? 'var(--ink)' : '#ffffff', class: i ? '' : 'lbl', style: i ? '' : 'fill:#fff' }, `${lab} ${(100 * v / total).toFixed(0)}%`));
+    svg.append(el('text', { x: x + (i ? 2 : 0), y: 78 }, i === 0 ? 'Retirements are six in ten. Nobody rage-quit a cake.' : ''));
+    x += W * v / total;
+  });
+  document.getElementById('sep').append(svg);
+})();
+
+// Tile-grid cartogram. Only six states carry an estimate; the rest are deliberately grey.
+(function () {
+  const grid = {
+    ME: [11, 0], AK: [0, 1], WI: [6, 1], VT: [10, 1], NH: [11, 1],
+    WA: [1, 2], ID: [2, 2], MT: [3, 2], ND: [4, 2], MN: [5, 2], IL: [6, 2], MI: [7, 2], NY: [9, 2], MA: [10, 2],
+    OR: [1, 3], NV: [2, 3], WY: [3, 3], SD: [4, 3], IA: [5, 3], IN: [6, 3], OH: [7, 3], PA: [8, 3], NJ: [9, 3], CT: [10, 3], RI: [11, 3],
+    CA: [1, 4], UT: [2, 4], CO: [3, 4], NE: [4, 4], MO: [5, 4], KY: [6, 4], WV: [7, 4], VA: [8, 4], MD: [9, 4], DE: [10, 4], DC: [11, 4],
+    AZ: [2, 5], NM: [3, 5], KS: [4, 5], AR: [5, 5], TN: [6, 5], NC: [7, 5], SC: [8, 5],
+    OK: [4, 6], LA: [5, 6], MS: [6, 6], AL: [7, 6], GA: [8, 6],
+    HI: [0, 7], TX: [4, 7], FL: [9, 7],
+  };
+  const est = { TX: 2821, CA: 2129, VA: 1929, DC: 1920, NY: 1872, ME: 1726 };
+  const steps = ['var(--seq-2)', 'var(--seq-3)', 'var(--seq-4)', 'var(--seq-5)'];
+  const bins = [1800, 1950, 2500, Infinity]; // 1,726 | 1,872 1,929 1,920 | 2,129 | 2,821
+  const S = 44, G = 4, svg = el('svg', { viewBox: `0 0 ${12 * S + 12 * G} ${8 * S + 8 * G}`, role: 'img', 'aria-label': 'Estimated CBP Officers by state, tile map' });
+  for (const [st, [c, r]] of Object.entries(grid)) {
+    const v = est[st];
+    const bin = v ? bins.findIndex(b => v < b) : -1;
+    const fill = v ? steps[bin] : 'var(--na)';
+    const g = el('g', {});
+    const rect = el('rect', { x: c * (S + G), y: r * (S + G), width: S, height: S, rx: 4, fill, class: 'bar' });
+    // The two lightest bins cannot carry white text; ink labels keep every tile legible.
+    const label = el('text', { x: c * (S + G) + S / 2, y: r * (S + G) + S / 2 + 4, 'text-anchor': 'middle', style: bin >= 2 ? 'fill:#fff;font-weight:600' : v ? 'fill:var(--ink);font-weight:600' : '' }, st);
+    g.append(rect, label);
+    const text = st === 'ME'
+      ? '1,726 officers estimated in Maine. Probably not. Maine posts a lot of CBP jobs for its size, and the imputation follows the postings. The agent says "estimated" every single time; so should you.'
+      : v ? `${fmt(v)} officers, estimated from postings. location_imputed = true.`
+      : 'No estimate. OPM does not publish CBP duty stations and no posting pointed here.';
+    hover(g, `<b>${st}</b>${text}`);
+    svg.append(g);
+  }
+  document.getElementById('map').append(svg);
+  document.getElementById('maplegend').innerHTML =
+    ['1,700 to 1,799', '1,800 to 1,949', '1,950 to 2,499', '2,500 and up'].map((l, i) => `<span><i style="background:${steps[i]}"></i>${l}</span>`).join('') +
+    `<span><i style="background:var(--na)"></i>No estimate</span>`;
+})();
+
+document.getElementById('askform').addEventListener('submit', e => { e.preventDefault(); });
+
+// Self-check: the prorated plan arithmetic shown in the sidebar.
+console.assert(Math.round(594 * 49 / 92) === 316 && 475 - 316 === 159 && Math.round(100 * 159 / 316) === 50, 'prorate arithmetic drifted');
+</script>

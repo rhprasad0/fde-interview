@@ -370,3 +370,6 @@ Baseline two `20261102T200924Z-4f3bf1e2`, same prompt: pass^3 Verified 2/6, Geni
 available 2/2; pass^1 35/60. Six rows flipped with nothing changed (noise floor about one question
 per line); six rows failed every run in both (C02, C06, C10, C11, C16, C18). C04's assumption check
 moved to a `gpt-6-luna` rubric after phrase matching failed a correct answer.
+
+## [2026-11-02] build | Concept page v2: parody workshop, charts over numbers
+Static single-page concept at `challenge/prototype/screens/concept-v2.html` (published as the Lantern Workshop artifact). Replaces the Nov 1 canvas's number tiles with four charts (October dip with the prorated plan, FEMA's eight-month pause, years of service, separation categories) and a tile-grid state map with Maine flagged as imputed. The agent sits in a sidebar; its transcript follows the prototype prompt rules (label line, standard calculations, one-off query SQL shown, refusal on an individual). Humor aimed at enterprise chrome, the synthetic plan, and the agent's caution, not at the mission.
