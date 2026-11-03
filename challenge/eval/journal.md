@@ -244,3 +244,57 @@ follow the question: one number for a one-number question.
 **Change.** `prompt.md` rule 8, on iteration 4's prompt: a question that asks for one number gets
 that number even when the prose adds a breakdown; a breakdown or several named figures get the
 list.
+
+**Result.** `20261102T233710Z`, `20261102T235010Z`, against iteration 4.
+
+| Line | Pooled pass^1 | Iteration 4 | Change |
+|---|---|---|---|
+| Verified | 58/60 (97%) | 60/60 | -3 (noise) |
+| Genie | 109/120 (91%) | 100/120 (83%) | +7.5 (at the edge, under the 8-point bar) |
+| Not available | 20/20 | 20/20 | 0 |
+
+All rows 187/200, the best of the climb; rows passing every run 17/20 and 16/20; zero errors. The
+targets moved: C07 8/10 to 10/10, C12 9/10 to 10/10, C06 and C13 to 10/10, C15 6/10 to 9/10.
+
+**Decision.** Not kept under the rule set before the climb: +7.5 is inside the noise bar, so this
+is the second change in a row that did not clearly beat noise. The working prompt stays at
+iteration 4. Iteration 6 is the candidate to adopt (a mechanism-backed fix, its target rows all
+moved, nothing fell beyond noise); adopting it is Ryan's call, ideally after one confirming run.
+
+## Plateau, and where the climb ended
+
+The climb stopped at the plateau rule: iterations 5 and 6 both failed to clear the noise bar.
+
+| Prompt | Verified | Genie | Not available | Rows passing every run |
+|---|---|---|---|---|
+| Baseline `4f3bf1e2` (four experiments) | 47/84 (56%) | 91/168 (54%) | 28/28 | 3/20 to 9/20 |
+| Iteration 1 `4c87b672` | 39/60 (65%) | 73/120 (61%) | 20/20 | 9/20, 9/20 |
+| Iteration 2 `f947333c` | 46/60 (77%) | 93/120 (78%) | 20/20 | 12/20, 15/20 |
+| Iteration 3 `6c5b037a` | 50/60 (83%) | 104/120 (87%) | 19/20 | 16/20, 14/20 |
+| **Iteration 4 `b06cf68a` (kept)** | **60/60 (100%)** | **100/120 (83%)** | **20/20** | **17/20, 14/20** |
+| Iteration 5 `c0924a3a` (reverted) | 57/60 | 103/120 | 18/20 | 13/20, 14/20 |
+| Iteration 6 `8c1cc317` (candidate) | 58/60 | 109/120 (91%) | 20/20 | 17/20, 16/20 |
+
+Iteration 4's 120 Genie statements are all in `system.query.history` (`verify-genie`, 60 of 60
+for each experiment). The climb cost about $2.70 across 1,200 agent runs.
+
+**What moved the agent, in order of effect.**
+1. Knowledge of the data, not reasoning: all twelve components, the fields the records hold, and
+   "only listed limits are limits" (iteration 1) ended the false Not available answers.
+2. Exact vocabulary: spelling the separation categories as the records do (iteration 2). A skill
+   that names a subset steers Genie to that subset.
+3. Precise requests to Genie: naming the period and population (iteration 3) ended the
+   wrong-month queries.
+4. Respecting the tools' limits: batching calls at twelve (iteration 4) ended the MCP errors.
+
+**For Ryan.**
+- **C18** (0/10 in five of six iterations) and **C15** are ambiguity in the questions, not agent
+  errors. C18 asks for "roughly" how many could retire without a convention; the agent answers a
+  floor (age 50 with 20 years) and names a ceiling of about 11,400, which matches truth (11,387);
+  truth also counts 25 years at any age. C15 reads "this year" as calendar 2026 in some runs.
+  Accepting both readings, as C03 does, or rewording, would make both measurable.
+- **Iteration 6** is ready to adopt.
+- **Caveat on the numbers.** Twenty questions, written with the agent's builder, tuned against for
+  six iterations. The prompt changes are general rules and facts, never answers, but a set this
+  small cannot rule out overfitting. Tester A's own questions, held out of every iteration, are
+  the next honest test.

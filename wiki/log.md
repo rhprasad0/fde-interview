@@ -376,3 +376,9 @@ Static single-page concept at `challenge/prototype/screens/concept-v2.html` (pub
 
 ## [2026-11-02] build | Concept page: eval dashboard, parody of an evals metrics dashboard
 Static page at `challenge/prototype/screens/concept-evals.html` (published as the Lantern Evals artifact). Real numbers from experiment 20261102T204103Z (pass^1 61 of 100, pass^5 8 of 20) and the three pass^3 baselines: the 20 x 5 heatmap colored by first failing scorer, pass^1 by tier across four baselines of the unchanged prompt, failing runs by category, latency strip plot by tier, and a test-case debug view walking C16 run 2 (the one-off query's grade 00 filter). Chrome parodies the evaluation-suite vocabulary (test cases, evaluators, target functions, metric objectives unsupported); the "Analyze with AI FDE" control becomes "Analyze with human FDE".
+
+## [2026-11-02] build | Hill climb to a plateau
+Six iterations on the agent prompt and skills, two five-run experiments each, judged on pooled
+pass^1 (`challenge/eval/journal.md`). Kept iteration 4 (`b06cf68a`): Verified 56% to 100%, Genie
+54% to 83%, Not available 100%, zero errors. Iterations 5 and 6 did not clear the noise bar; 6
+(Genie 91%) is held as a candidate. C15 and C18 remaining failures are ambiguity in the questions.

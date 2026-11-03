@@ -593,3 +593,19 @@ functions, Agent Bricks.
 - Write the model fallback as a small Strands `Model` wrapper that delegates to Anthropic and
   retries once on OpenAI for connection errors, 5xx, and overloaded responses, tagging the trace
   with the provider. Test it by pointing the Anthropic base URL at a dead port.
+
+## 2026-11-02  Agent prompt after the first hill climb: iteration 4 (`b06cf68a`)
+
+- **Context:** four baselines of the original prompt (`4f3bf1e2`) pooled to Verified 56%, Genie
+  54%, Not available 100% per attempt; six rows failed every run, all on what the agent believed
+  about the data. Ryan asked for a climb to a plateau, with no spend cap.
+- **Chosen:** iteration 4: all twelve components in the codes skill; a data-fields skill; only
+  listed limits are limits; exact separation categories; one-off queries name their period and
+  population; plan variance in hires; breakdown calls batched at twelve. Pooled Verified 100%,
+  Genie 83%, Not available 100%, zero errors. Journal: `challenge/eval/journal.md`.
+- **Rejected:** iteration 5 (one-off queries as specifications; no line beat noise); iteration 6
+  (answer shape follows the question; Genie +7.5, under the 8-point bar), held as a candidate.
+- **Revisit:** adopt iteration 6 after a confirming run; rerun the climb's comparison when Tester
+  A's questions join the set as unseen rows, since twenty tuned-against questions cannot rule out
+  overfitting.
+
