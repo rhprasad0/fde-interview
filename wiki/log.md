@@ -427,3 +427,6 @@ Exa agent run plus Husain/Shankar, Anthropic, tau-bench, Spider 2.0, BIRD, BEAVE
 ## [2026-11-03] build | eval-v1 tagged; held-out line run (Tester A, 8 rows)
 Tagged `eval-v1` (0cdfa7d) before adding A01 to A08 verbatim with pinned truth; two five-run experiments on `b44a9181`, no prompt change. Dev 197/200 against held-out 23/80 (pass^10 1/8). Run-by-run sort in the journal: about 49 of 57 failures are rows expecting one reading of a two-reading question, 5 the agent (token-limit runaways, causal overclaims), 2 or 3 the judge. Corrections proposed for Ryan, to rerun beside, not instead of, this result. As-run state tagged `eval-v1-heldout`.
 
+## [2026-11-03] build | Held-out rows corrected (Ryan) and rerun beside the first run
+Six row corrections and two scorer changes (any-of tool lists, accepted labels), all in the set-change table; dev rows and prompt untouched. Rerun 65/80 (pass^10 3/8, Wilson 14% to 69%) beside 23/80 as written and 197/200 dev. The 15 misses: 11 agent (runaways on whole-component questions, lost or wrong label lines, causal overclaim in the OPM paragraph, one exploratory query on a Verified row), 4 judge (rank tolerance ignored, readings rubric misread). Journal "Held-out rerun".
+

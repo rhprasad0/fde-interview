@@ -732,3 +732,54 @@ cause ("attrition is the main driver") in some runs; the dev narrative rows neve
 (3) A07's false limit is fixed. (4) Multi-turn replay works: A02, A05, A06, A08 replayed their
 prior turns in a fresh session and the last answer used them.
 
+## Held-out rerun after the row corrections (2026-11-03)
+
+Ryan approved the corrections table above; applied in commit `held-out row corrections` (every edit
+in the set-change table), dev rows and prompt untouched. `20261103T172209Z`, `20261103T172735Z`,
+prompt `b44a9181`, five runs each. Reported beside the first run, not instead of it.
+
+| Line | Dev (20 q) | Held-out as written (8 q) | Held-out corrected (8 q) |
+|---|---|---|---|
+| Verified | 60/60, pass^10 6/6 | 6/20, 0/2 | 16/20, 0/2 |
+| Exploratory | 117/120, 9/12 | 7/30, 0/3 | 19/30, 0/3 |
+| Not available | 20/20, 2/2 | 10/30, 1/3 | 30/30, 3/3 |
+| All | 197/200, 17/20 (Wilson 64% to 95%) | 23/80, 1/8 (2% to 47%) | 65/80, 3/8 (Wilson 14% to 69%) |
+
+pass^5 per experiment 3/8 and 5/8. Two errors (`max_tokens`), $0.56.
+
+**Per row.** A04 10/10, A06 10/10, A07 10/10, A05 9/10, A08 9/10, A03 7/10, A01 5/10, A02 5/10.
+
+**The 15 failures left, read run by run.** Eleven are the agent, four are the judge; none is the
+row.
+
+| Row | Misses | What |
+|---|---|---|
+| A01 | 5 | one `max_tokens` (25k output tokens); three answers with no label line at all (the answer opens on a table); one Exploratory answer labelled Verified after one-off queries. The eligibility figures were right in every run that finished (8,025 / 9,001 / 11,387, one run 9,505 for a four-year horizon). |
+| A02 | 5 | one `max_tokens` (38k output tokens); one Verified label on exploratory work; three judge misses: the answer ranked CBP second on eligible-now share, truth is third with tolerance 2, and the judge applied no tolerance to a rank. |
+| A03 | 3 | "Two findings explain the gap" with separations and tenure: the causal overclaim, failed correctly under the narrowed rule. |
+| A05 | 1 | a one-off query on a Verified row (`tool_use`), the right rule. |
+| A08 | 1 | judge: the workforce reading was stated correctly (27,650 and 26,644) and the judge also wanted the postings readings; one reading is enough by the rubric. |
+
+**Agent findings, now with the row noise gone.**
+1. **Whole-component questions run away.** A01 and A02 median 300 s and 15k to 38k output tokens
+   even when they pass, 7 to 12 queries a run, three `max_tokens` in the first run and two here.
+   Every A01 and A02 run would be unusable live. The prompt has no rule on breadth; the dev set
+   has no question wide enough to trigger it.
+2. **The label line fails under length.** Three of ten A01 answers open on a table with no label,
+   and two long exploratory answers (A01, A02) carry the Verified label. On the dev set the label
+   never failed in 200 runs.
+3. **The OPM paragraph asserts a cause** in three of ten runs ("two findings explain the gap").
+   The briefing skill asks for findings that "bear on" the gap; the model upgrades that to
+   explanation. A one-line rule in skill 05 is the fix, and it needs its own experiment.
+4. **The judge needs two fixes**: apply the fact's tolerance to ranks and ordinal values, and state
+   in the prompt that one correct reading satisfies a readings fact (it does say so; the A08 miss
+   shows it is not always read).
+
+**What the three numbers mean together.** 98% on the rows the prompt was tuned against; 29% on the
+tester's questions as first written against them; 81% once the rows admitted every defensible
+reading, with the remaining misses all the agent's or the judge's. The honest headline is the
+middle column's lesson and the right column's number: real questions have more than one reading,
+and once the eval admits them, the agent passes four of five runs and three of eight questions
+every time. The corrected rows were edited after seeing failures, by the builder, with Ryan's
+approval, and that is logged; the as-written result stays on the page for that reason.
+

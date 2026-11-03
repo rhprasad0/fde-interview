@@ -153,14 +153,14 @@ eight questions added verbatim with truth pinned, two five-run experiments on th
 no prompt change. Full detail and the run-by-run sort in the
 [eval journal](../../challenge/eval/journal.md), "Held-out line".
 
-| | Development set (tuned against) | Held-out (Tester A, verbatim) |
-|---|---|---|
-| Questions | 20 | 8 |
-| Pooled pass^1 over runs | 197/200 (98%) | 23/80 (29%) |
-| pass^5 per experiment | 18/20, 19/20 | 2/8, 1/8 |
-| pass^10 | 17/20, Wilson 64% to 95% | 1/8, Wilson 2% to 47% |
+| | Development set (tuned against) | Held-out, rows as first written | Held-out, rows corrected (Ryan, same day) |
+|---|---|---|---|
+| Questions | 20 | 8 | 8 |
+| Pooled pass^1 over runs | 197/200 (98%) | 23/80 (29%) | 65/80 (81%) |
+| pass^5 per experiment | 18/20, 19/20 | 2/8, 1/8 | 3/8, 5/8 |
+| pass^10 | 17/20, Wilson 64% to 95% | 1/8, Wilson 2% to 47% | 3/8, Wilson 14% to 69% |
 
-The gap is the number the panel should see first. Sorting the 57 held-out failures run by run:
+All three columns go on the page. The middle one is the lesson, the right one is the number. Sorting the 57 as-written failures run by run:
 about 49 are the row expecting one reading of a question that admits two (A02 compared on
 eligibility share rather than length-of-service share; A04 and A06 answered with the figure and
 the limit under a Verified or Exploratory label rather than Not available; A05 used a sibling
@@ -168,9 +168,12 @@ function; A08 read "grade mix" as the workforce rather than postings), 5 are the
 hit the output-token limit building whole-component tables; two OPM paragraphs asserted a cause
 the data cannot support), and 2 or 3 are the judge. The spec failures are the gap's mechanism, not
 an excuse for it: the twenty dev rows were written to have one reading each, and the prompt learned
-to find it. The corrected number does not exist and is not estimated; proposed row corrections are
-in the journal for Ryan's decision, to be rerun as a new experiment reported beside this one, with
-the as-run rows tagged `eval-v1-heldout`. The sort is the builder's reading of the builder's own
+to find it. Ryan approved the corrections the same day (logged in the set-change table, as-run rows
+tagged `eval-v1-heldout`) and the rerun beside it came to 65/80. Its 15 misses are 11 agent and 4
+judge, none the row: whole-component questions run to 300 s and 15k to 38k output tokens with two
+hitting the limit, five long answers lose or mislabel the label line, the OPM paragraph asserts a
+cause in three runs, and the judge ignores a rank tolerance three times. Those are the misses to
+spend the demo's time on. The sort is the builder's reading of the builder's own
 rows. A04 and A06 are the two to check first: if the Not available label binds the agent on a
 "why" question, as the prompt's own rule says, those twenty runs move from the spec bucket to the
 agent bucket and the agent count becomes 25, not 5.
@@ -179,8 +182,9 @@ agent bucket and the agent count becomes 25, not 5.
 
 - "These twenty are the development set. I tuned against them for eight iterations and the
   reference moved seven times; here is the table. The held-out line is the tester's eight questions,
-  run once after the climb: 98% became 29%. Most of that is the questions having more than one
-  reading, which is the point; the rest is three runaway answers and two overclaims."
+  run once after the climb: 98% became 29% as written and 81% once the rows admitted every
+  defensible reading. The first drop is the questions having more than one reading, which is the
+  point; what is left is runaway answers on wide questions, lost labels, and a causal overclaim."
 - "Per question, not per run: 17 of 20 pass all ten runs, interval 64 to 95%; 18 or 19 of 20
   pass all five within one experiment. Pooled over runs it is 98%; that number is in the journal
   and it is the one I would not lead with."
