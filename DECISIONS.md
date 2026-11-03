@@ -193,6 +193,9 @@ Revisit:   what evidence would change this
   cap with its own `high` baseline. Rejected: a judge-effort flag (xhigh is the setting, not an
   experiment); keeping the 16000 rows as the comparison (they measure truncation). Cost: about
   $0.30 per experiment at `high`, more with thinking.
+  **Outcome (the same night):** at 64000, `xhigh` scored 67/80 against `high` 69/80 and dropped the
+  Verified line to 4/10 twice; `max` 43/80 with 23 runs cut. Effort stays `high`, so the exception
+  was not exercised (journal, "Agent effort sweep").
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real

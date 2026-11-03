@@ -8,4 +8,4 @@ targetRules = ["generic-api-key"]
 condition = "AND"  # path AND pattern; the default OR would allow the whole file
 paths = ['''challenge/eval/experiments\.jsonl$''']
 regexTarget = "match"
-regexes = ['''key": "[a-z]+(_[A-Za-z0-9-]+)+"''']
+regexes = ['''key": "[a-z]+(_[A-Za-z0-9-]+)+"''', '''^[a-z]+(_[A-Za-z0-9-]+)+", "[a-z]+(_[A-Za-z0-9-]+)+"$''']  # second: two adjacent SQL column names such as "accessions_...", "planned_hires_fy2026"

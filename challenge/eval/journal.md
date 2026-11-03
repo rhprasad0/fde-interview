@@ -820,3 +820,74 @@ carries that hash. What changed after the held-out runs is the measurement only:
 (set-change table), two scorer forms (`accept_labels`, any-of `expected_tools`), the `--ids` flag,
 and this truth fact. The four agent fixes the misses point at are not made (`DECISIONS.md`,
 2026-11-03).
+
+
+## Agent effort sweep on the held-out rows, judge at xhigh (2026-11-03, night)
+
+**Result: keep effort `high`. No effort was selected, so the named exception in `DECISIONS.md`
+was never exercised.** Ryan asked whether more model reasoning lifts the held-out line, and moved
+the gpt-6-luna judges to reasoning effort `xhigh` at the same time (recorded per row as
+`judge_effort`). The agent's effort is Haiku 5.5 `output_config.effort`, `high` since the climb,
+set per run with the harness `--effort` flag and recorded per row as `effort`. Prompt and skills
+are unchanged: every row carries hash `b44a9181`.
+
+**First sweep at `max_tokens` 16000, stopped.** Three experiments ran before Ryan stopped it:
+`high` 34/40 (`20261103T190755Z`) and 37/40 (`20261103T191253Z`), `xhigh` 22/40
+(`20261103T191926Z`) with 12 of 40 runs cut at the cap, every A01 and A02 run. A fourth,
+`xhigh` 23/40 (`20261103T192638Z`), finished before the stop. The cap, not the reasoning, was
+being measured, so `max_tokens` went to 64000 (`agent.py`, recorded per row) and the sweep reran
+with its own `high` baseline. The 16000 rows stay in `experiments.jsonl` as the truncation
+measurement: `high` 71/80 with one cut, `xhigh` 45/80 with 24 cut. One single-run smoke row,
+`20261103T190731Z` (A04 only), is also in the file and is excluded from every figure here.
+
+**Second sweep at 64000, two five-run experiments per arm, A01 to A08.**
+
+| Arm (agent effort) | Experiments | pass^5 per experiment (headline) | pass^10, Wilson 95% | Pooled pass^1 | Verified line | Exploratory line | Not available line | Runs cut at the cap | Median s, A01/A02 | Cost |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `high` (baseline) | `20261103T193405Z`, `20261103T193928Z` | 4/8 and 6/8 | 3/8, 14% to 69% | 69/80 | 8/10, 7/10 | 13/15, 13/15 | 13/15, 15/15 | 0 | 169 | $0.56 |
+| `xhigh` | `20261103T194449Z`, `20261103T195233Z` | 6/8 and 5/8 | 5/8, 31% to 86% | 67/80 | 4/10, 4/10 | 15/15, 14/15 | 15/15, 15/15 | 0 | 285 | $1.16 |
+| `max` | `20261103T195932Z`, `20261103T202031Z` | 2/8 and 4/8 | 2/8, 7% to 59% | 43/80 | 2/10, 5/10 | 2/15, 5/15 | 14/15, 15/15 | 23 | 646 | $3.59 |
+
+Per row, passes of ten with the first failing scorer:
+
+| Row | `high` | `xhigh` | `max` |
+|---|---|---|---|
+| A01 (Exploratory, wide) | 8 (label 1, faithfulness 1) | 10 | 1 (cap 9) |
+| A02 (Exploratory, wide) | 8 (faithfulness 1, label 1) | 9 (faithfulness 1) | 0 (cap 10) |
+| A03 (Verified, OPM paragraph) | 6 (faithfulness 4) | 3 (faithfulness 7) | 2 (faithfulness 8) |
+| A04 (Not available, data limit) | 8 (faithfulness 2) | 10 | 9 (faithfulness 1) |
+| A05 (Verified, announcements) | 9 (label 1) | 5 (tool_use 3, label 1, reading 1) | 5 (label 3, numeric 2) |
+| A06, A07 | 10, 10 | 10, 10 | 10, 10 |
+| A08 (Exploratory) | 10 | 10 | 6 (cap 4) |
+
+**Reading it by line, which is the 11-02 rule.** `xhigh` lifts the two wide exploratory rows and
+A04 to ten of ten and drops the Verified line from 8/10 and 7/10 to 4/10 and 4/10, against the
+spec's 80% bar. On the headline it is a wash (4/8 and 6/8 against 6/8 and 5/8); pass^10 reads
+5/8 against 3/8, but different questions pass and the intervals overlap almost entirely, and the
+gain on wide questions is bought with the Verified line. `max` is worse everywhere it completes
+and is cap-bound again: 23 of 80 runs stopped at 64000, with per-run output (summed over the
+agent's tool-loop calls) up to 230k tokens, at six times the cost. No third cap raise is proposed.
+
+**What effort changes is behaviour, not only length.**
+
+- A03's causal overclaim rises with effort: faithfulness misses 4, 7, 8 of 10. The judge's reason
+  is the same each time (planned 594, accessions 475, variance -119 all correct; "two findings
+  explain the gap" asserted). More reasoning means more explanation. This is the skill-05 rule that
+  waits for the fresh blind set; skill 05 is not touched.
+- A05 at `xhigh` is a new failure shape: after the verified function returns 11, the agent runs an
+  extra exploratory query on a Verified row and trips `tool_use` three times. At `max` it reports
+  387 and 350 from that path under an Exploratory label, where the function says 11.
+- The cap was not binding at `high`: 71/80 at 16000 (one cut) against 69/80 at 64000 (none),
+  the same prompt and judge, so those two are one baseline of 140/160 under the new judge.
+
+**Baseline shift.** The new judge's `high` baseline is 140/160 across both caps, against 65/80
+under the old judge on the corrected rows. Columns graded before this evening (the dev 18/20 and
+19/20, the held-out 65/80) are on the old judge and are not compared to an arm here. The
+dashboard's latest-experiment grid now shows the second `max` experiment, since it reads the last
+experiment in the file; it does not mark held-out or sweep experiments. That is open.
+
+**Has the agent been tuned on the held-out set?** The prompt and skills, no: hash `b44a9181` on
+every row, and the four fixes the misses point at are still not made. `agent.py` has changed since
+`eval-v1` in two settings only, both ordered by Ryan for this sweep and neither aimed at a held-out
+miss: `max_tokens` 16000 to 64000, and effort made settable (default still `high`). The cap's
+effect on the kept configuration is one run: at `high`, 16000 cut one A02 run and 64000 cut none.

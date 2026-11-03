@@ -178,8 +178,13 @@ rows. A04 and A06 are the two to check first: if the Not available label binds t
 "why" question, as the prompt's own rule says, those twenty runs move from the spec bucket to the
 agent bucket and the agent count becomes 25, not 5. A04's figure has since been judge-graded
 against an independent truth: 9/10 on the same prompt, the miss a Not available answer that described
-the ratio without stating it (journal, "A04 figure judge-graded"). No agent change has been made
-since the tag; the prompt hash on every held-out run is the live one.
+the ratio without stating it (journal, "A04 figure judge-graded"). The prompt and skills are unchanged
+since the tag; the prompt hash on every held-out run is the live one. The agent's output cap
+went from 16000 to 64000 and its effort became settable (still `high`) for an effort sweep Ryan
+ordered the same night: `xhigh` and `max` did not beat `high` by line (journal, "Agent effort
+sweep"), so nothing was selected on the held-out rows. The judges now run at reasoning effort
+`xhigh`; the three columns above are on the old judge, and `high` under the new one scored 69/80
+and 71/80.
 
 ## What to be able to say
 
@@ -204,6 +209,8 @@ since the tag; the prompt hash on every held-out run is the live one.
   A02.
 - Does the held-out gap exceed the baseline spread the climb used as its noise floor? If it
   does, the climb's kept iterations need a second look.
+- The dashboard's grid reads the last experiment in `experiments.jsonl`, which is now a sweep arm
+  (`max`, 43/80). It needs to mark held-out and sweep experiments, or pick its grid by tag.
 - Should A03 (draft the paragraph) and A08 (grade mix over time) be graded by the judge or by a
   list match, given the judge has no calibration yet?
 - Is a clarifying answer a pass or a fail on a row written as ambiguous? Spec 04 removed the

@@ -438,3 +438,8 @@ and A02 tolerance kept; A04 figure grading still under review (two routes, 7/10 
 ## [2026-11-03] build | A04 figure judge-graded: 9/10 on b44a9181, no agent change since eval-v1
 Truth fact 0.0084 from synthetic separations and silver postings; two five-run experiments on A04
 alone, reported beside the corrected column. `git diff eval-v1..HEAD -- challenge/prototype` is empty.
+
+## [2026-11-03] build | Effort sweep on the held-out rows: keep high; judge now xhigh
+Agent effort `high`/`xhigh`/`max` at a 64000 cap, two five-run experiments each on A01 to A08:
+69, 67, 43 of 80; `xhigh` trades the Verified line (4/10 twice) for the wide rows; `max` cap-bound.
+No effort selected. First sweep at 16000 kept as the truncation measurement. Journal, "Agent effort sweep".
