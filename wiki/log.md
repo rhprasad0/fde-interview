@@ -398,3 +398,9 @@ Exa research on AgentCore Memory, Strands session managers, file-based memory pa
 Eleven Genie-tier eval rows pushed to the space as benchmarks; `genie_bench.py` runs them through
 the Beta eval-run API and grades Genie's rows with the agent eval's scorers. Genie direct 8/22
 pooled (5/11, 3/11) against 83% through the agent; Genie's own grader 3/22.
+
+## [2026-11-02] query | Where the $400 of trial credits went
+Billing and audit system tables: the climb's ~5,000 UC function calls through the managed MCP
+functions server billed as all-purpose serverless compute ($160+), Genie $35 for 1,113 questions;
+C11 fans out ~30 `plan_variance` calls per run and is two thirds of it. Filed with the credits-
+exhausted email as the wiki's first image; cost-estimate page marked superseded on that row.
