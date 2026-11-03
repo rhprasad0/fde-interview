@@ -625,3 +625,26 @@ view's `agency_subelement_code` in the data fields skill (it was missing, and on
 postings carry no component; the truth SQL filters on it). Targets: C18 (computed truth 10/10 on
 iteration 4, failed on shape), the single shape misses, and C03's two extra queries on iteration
 4 (does that recur?).
+
+**Result.** `20261103T155440Z`, `20261103T155658Z`, against iteration 2.
+
+| Line | Pooled pass^1 | Iteration 2 | |
+|---|---|---|---|
+| Verified | **60/60** | 59/60 | +1 |
+| Exploratory | **117/120** (107/110 without C13) | 106/120 (97/110) | **+11 (+9 points without C13)** |
+| Not available | **20/20** | 20/20 | 0 |
+
+pass^5 per experiment: 18/20 and 19/20 (exploratory 10/12 and 11/12). Zero errors, median 11.8 s,
+$0.41.
+
+**C18 1/10 to 9/10**: the retirement fact computes truth and the shape rule reports it. C03 stays
+10/10, so iteration 4's two extra queries did not recur. C07, C11, C15, C17 each 10/10. The three
+misses left: C18 once (the bracket list again), C06 once (702 quits alone where the question asks
+for the total and the quits: the shape rule's one-number reading, the cost side of it), and C10
+once (`provenance`, a single run).
+
+**Decision.** Kept as the working prompt: beyond the baseline spread on exploratory, and beyond
+the old 8-point bar as well, with no line falling. Three single misses in 200 runs are left, each
+one run in ten, so no further prompt change on this set can be told from noise: the climb on this
+set is done. The next test of the prompt is questions it was not tuned on (Tester A's verbatim
+set, related but not identical; see the caveat above).
