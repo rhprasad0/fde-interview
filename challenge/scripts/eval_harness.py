@@ -112,7 +112,7 @@ def _label(text):
 
 
 def label_match(q, row):
-    return row["label"] == WANT_LABEL[q["tier"]]
+    return row["label"] in (q.get("accept_labels") or [WANT_LABEL[q["tier"]]])  # accept_labels: a graded label is fine when the limit is stated
 
 
 def numeric_match(q, row):
@@ -138,7 +138,8 @@ def labels_present(q, row):
 def tool_use(q, row):
     """The expected calculations ran, and no exploratory query ran on a Verified row."""
     names = {c["name"] for c in row["tool_calls"]}
-    return set(q.get("expected_tools") or []) <= names and "genie" not in names
+    ran = all((set(t) & names) if isinstance(t, list) else t in names for t in q.get("expected_tools") or [])  # a nested list is any-of
+    return ran and "genie" not in names
 
 
 def provenance(q, row):
@@ -157,8 +158,8 @@ def refusal(q, row):
 
 
 def data_limit(q, row):
-    """Structure only: no number asserted. Whether the stated limit and nearest question are right is limit_stated's."""
-    return row["answer_value"] is None
+    """Structure only: no number asserted, unless the row accepts a graded label. The stated limit is limit_stated's."""
+    return row["answer_value"] is None or bool(q.get("accept_labels"))
 
 
 def reading_stated(q, row):

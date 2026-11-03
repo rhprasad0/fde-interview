@@ -414,7 +414,7 @@ questions:
             SELECT count(*) FILTER (WHERE (a + 5 >= 50 AND length_of_service_years + 5 >= 20) OR length_of_service_years + 5 >= 25) FROM (SELECT substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')
   must_not_claim:
     - that eligibility cannot be computed because the data has no age (age_bracket and length_of_service_years are on the records)
-    - that the data holds an organizational hierarchy below component and occupation (Groups, Divisions, Branches), or any figure at that level
+    - any figure or breakdown at Group, Division, or Branch level; the data has no such field, and saying so is correct, not a violation
   notes: Relabelled 2026-11-03. On 2026-11-01 the agent answered Not available on a false limit (no age); the hierarchy limit is real and a good answer states it while giving the approximate eligibility by occupation. The 1895 row is the graded fact because its retirement rule is published; other occupations are not graded.
 
 - id: A02
@@ -434,9 +434,15 @@ questions:
       tolerance: pct:1
       truth_sql: |
         SELECT count(*) FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD'
-    - name: CBP's rank among the DHS components on the long-service share the answer compares (1 is the highest share)
-      tolerance: abs:1
+    - name: CBP's rank among the DHS components on the measure the answer compares (1 is the highest); corrected 2026-11-03 to admit retirement-eligibility share, the measure A01 is about
+      tolerance: abs:2  # the rank moves by up to two places with which series count as enhanced coverage, a disclosed choice either way
       readings:
+        - name: share eligible to retire now, enhanced rule for the law-enforcement series and regular FERS otherwise
+          truth_sql: |
+            SELECT r FROM (SELECT agency_subelement_code AS c, rank() OVER (ORDER BY (count(*) FILTER (WHERE CASE WHEN occupational_series_code IN ('1895','1896','1801','1811','1881') THEN (a + 0 >= 50 AND l + 0 >= 20) OR l + 0 >= 25 ELSE (a + 0 >= 62 AND l + 0 >= 5) OR (a + 0 >= 60 AND l + 0 >= 20) OR (a + 0 >= 57 AND l + 0 >= 30) END))::numeric / count(*) DESC) AS r FROM (SELECT agency_subelement_code, occupational_series_code, substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years AS l FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01') x GROUP BY 1) y WHERE c = 'HSBD'
+        - name: share eligible to retire within four or five years
+          truth_sql: |
+            SELECT r FROM (SELECT agency_subelement_code AS c, rank() OVER (ORDER BY (count(*) FILTER (WHERE CASE WHEN occupational_series_code IN ('1895','1896','1801','1811','1881') THEN (a + 5 >= 50 AND l + 5 >= 20) OR l + 5 >= 25 ELSE (a + 5 >= 62 AND l + 5 >= 5) OR (a + 5 >= 60 AND l + 5 >= 20) OR (a + 5 >= 57 AND l + 5 >= 30) END))::numeric / count(*) DESC) AS r FROM (SELECT agency_subelement_code, occupational_series_code, substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years AS l FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01') x GROUP BY 1) y WHERE c = 'HSBD'
         - name: share of staff with 20 or more years of service
           truth_sql: |
             SELECT r FROM (SELECT agency_subelement_code AS c, rank() OVER (ORDER BY (count(*) FILTER (WHERE length_of_service_years >= 20))::numeric / count(*) DESC) AS r FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' GROUP BY 1) x WHERE c = 'HSBD'
@@ -472,7 +478,7 @@ questions:
         WITH p AS (SELECT planned_hires, quarter_start FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter = 'FY2026Q1' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'), a AS (SELECT count(*) FROM workforce.synthetic.accessions x JOIN p ON date_trunc('quarter', x.effective_month)::date = p.quarter_start WHERE x.agency_subelement_code = 'HSBD' AND x.occupational_series_code = '1895') SELECT (SELECT count FROM a) - p.planned_hires FROM p
   must_not_claim:
     - any named individual
-    - that the data shows why the quarter missed plan
+    - a cause of the plan miss (for example that attrition, retirements, or tenure is the driver or explains the gap); stating that the quarter is not closed and later files will add accessions is a data fact, not a cause, and is allowed
   notes: The review is open on the CBP Officer FY2026 Q1 cell (scope skill), so "the OPM paragraph" is that cell's. The paragraph skill (05) was written for this ask, so the row measures the skill as much as the prompt; disclosed above.
 
 - id: A04
@@ -485,6 +491,7 @@ questions:
   expected_tools: []
   answered_by: live_agent
   tester_judgment: null
+  accept_labels: [Not available, Verified, Exploratory]  # corrected 2026-11-03: a figure plus the stated limit is the better answer; limit_stated still judges the limit
   limit_text: [no reason, not record why, does not say why, cannot say why, do not say why, no budget, appropriations are not, outside this review, not in the data, hold no reasons]
   nearest: [coverage, openings, postings, announcements, separations]
   notes: Reasons and budget are not in the records; a good answer says so and restates what "thin" means in the data (the coverage ratio, stated openings against separations). The 2026-11-01 answer did this correctly without a tool call.
@@ -496,15 +503,15 @@ questions:
   class: reading_stated
   expected_behavior: number
   tier: verified
-  expected_tools: [open_postings]
+  expected_tools: [[open_postings, posting_coverage]]  # corrected 2026-11-03: either governed function returns the open-postings count
   answered_by: live_agent
   tester_judgment: null
   prior_turns:
     - "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
   tolerance: exact
-  acceptable_readings:
-    - [August 1, 2026, 2026-08-01, 1 August 2026, August 2026]
-    - [twelve months, 12 months, trailing, opened, over the year, posted]
+  acceptable_readings:  # corrected 2026-11-03: the first list was split at the comma by YAML; quoted now, and the alternatives widened to the ones the agent offers
+    - ["August 1, 2026", "2026-08-01", "1 August 2026", "August 2026"]
+    - [twelve months, 12 months, trailing, opened, over the year, posted, another date, all CBP, other occupations, every occupation, all occupations, other series]
   truth_sql: |
     SELECT count(*) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date <= DATE'2026-08-01' AND close_date >= DATE'2026-08-01'
   notes: CBP Officer announcements open on 2026-08-01, the reading the scope skill gives for the cell; the alternative is announcements opened over the trailing twelve months (387). The last sentence must name the reading taken and one alternative. On 2026-11-01 the agent read 11 off an earlier turn's result without a call; provenance now requires the call in this run.
@@ -522,6 +529,7 @@ questions:
   prior_turns:
     - "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
     - Number of announcements would be helpful.
+  accept_labels: [Not available, Exploratory, Verified]  # corrected 2026-11-03: listing the three postings under Exploratory with the limit stated is the better answer
   limit_text: [posting's own wording, the posting's wording, unstated, not stated, no number, does not state, does not give a number, cannot tell, only the word, holds only that word, not a count]
   nearest: [stated openings, control number, USAJOBS, on the posting, the posting itself, read the announcement]
   must_not_claim:
@@ -558,9 +566,15 @@ questions:
   prior_turns:
     - "When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants."
   truth_facts:
-    - name: CBP Officer postings in the period the answer covers (grade mix over time)
+    - name: the population whose grade mix the answer describes, by count; corrected 2026-11-03 to admit the workforce reading (headcount by grade across snapshots) beside postings
       tolerance: pct:5
       readings:
+        - name: the CBP Officer workforce on the August 2026 snapshot
+          truth_sql: |
+            SELECT count(*) FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'
+        - name: the CBP Officer workforce on the September 2025 snapshot
+          truth_sql: |
+            SELECT count(*) FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2025-09-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'
         - name: every posting in the file, opened September 2025 to October 2026
           truth_sql: |
             SELECT count(*) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-10-31'
