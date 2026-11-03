@@ -6,7 +6,9 @@ Reads challenge/.env itself; never prints or writes a host, id, secret, or token
 
 import hashlib
 import json
+import os
 import re
+import shutil
 import subprocess
 import threading
 import time
@@ -30,10 +32,11 @@ from strands.types.exceptions import ContextWindowOverflowException, MaxTokensRe
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-RAW = REPO / "raw"
+RAW = Path(os.environ.get("RAW_DIR", REPO / "raw"))  # Lambda writes only under /tmp; a worktree points at the main raw/
 
-ENV = {}
-for _line in (REPO / "challenge/.env").read_text().splitlines():
+ENV = dict(os.environ)  # the file overrides the environment locally; on Lambda there is no file
+_envf = REPO / "challenge/.env"
+for _line in _envf.read_text().splitlines() if _envf.exists() else []:
     _k, _sep, _v = _line.split("#", 1)[0].partition("=")
     if _sep:
         ENV[_k.strip()] = _v.strip().strip("'\"")
@@ -61,8 +64,9 @@ _files = [HERE / "prompt.md", *sorted((HERE / "skills").glob("*.md"))]
 SYSTEM = "\n\n".join(f.read_text() for f in _files)
 PROMPT_HASH = hashlib.sha256(b"".join(f.read_bytes() for f in _files)).hexdigest()
 SET_VERSION = yaml.safe_load((REPO / "challenge/eval/questions.yaml").read_text())["set_version"]
-GIT_SHA = subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-GIT_DIRTY = bool(subprocess.run(["git", "-C", str(REPO), "status", "--porcelain"], capture_output=True, text=True).stdout.strip())
+_git = lambda *a: subprocess.run(["git", "-C", str(REPO), *a], capture_output=True, text=True).stdout.strip() if shutil.which("git") else ""  # noqa: E731
+GIT_SHA = _git("rev-parse", "HEAD") or ENV.get("AGENT_GIT_SHA", "")  # a deployment package carries the sha in its env
+GIT_DIRTY = bool(_git("status", "--porcelain"))
 
 
 def _token() -> str:
@@ -196,7 +200,9 @@ class _RedactedFile:
 _spans, _spans_lock = None, threading.Lock()
 
 
-def build_agent(session_id: str, run_index: int = 0) -> Agent:
+def build_agent(session_id: str, run_index: int = 0, messages: list | None = None, callback_handler=None) -> Agent:
+    """messages preloads prior turns (a stateless caller replays the transcript); callback_handler receives every
+    streamed event (Strands routes the blocking call through it too), so run_turn stays the one trace writer."""
     global _spans
     RAW.mkdir(exist_ok=True)
     day = datetime.now(timezone.utc).date().isoformat()
@@ -208,7 +214,8 @@ def build_agent(session_id: str, run_index: int = 0) -> Agent:
                            cache_config=CacheConfig(strategy="anthropic"),
                            params={"output_config": {"effort": "high"}})  # Haiku 5.5 defaults to medium
     functions = MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/functions/workforce/semantic"))
-    agent = Agent(model=model, tools=[functions, one_off_query], system_prompt=SYSTEM, callback_handler=None)
+    agent = Agent(model=model, tools=[functions, one_off_query], system_prompt=SYSTEM, callback_handler=callback_handler,
+                  messages=messages)
     durations = {}
     agent.add_hook(lambda e: durations.__setitem__(e.tool_use["toolUseId"], e.duration), AfterToolCallEvent)
     agent.add_hook(_null_args, BeforeToolCallEvent)

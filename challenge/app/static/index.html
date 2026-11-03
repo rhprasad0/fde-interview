@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: enterprise-app chrome; a fluid canvas of charts on the left, the agent pinned in a right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1;
+  --accent:#2a78d6; --accent-ink:#ffffff; --dip:#eb6834; --grid:#e6e9ee;
+  --seq-1:#dbe9fb; --seq-2:#a9c9f0; --seq-3:#6ea3e3; --seq-4:#2a78d6; --seq-5:#1a4f94; --na:#d9dde3;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --warn-bg:#fff1c2; --warn-ink:#5c3d00; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942;
+  --accent:#3987e5; --dip:#d95926; --grid:#2b3038;
+  --seq-1:#243246; --seq-2:#2b4a73; --seq-3:#2f68a8; --seq-4:#3987e5; --seq-5:#8fc0ff; --na:#2b3038;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --warn-bg:#3e2f08; --warn-ink:#ffd978; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px}
+@media (max-width:1000px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:70ch}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .note{fill:var(--dip);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:260px;z-index:20;font-family:var(--sans)}
+.tip b{display:block}
+.actions{display:flex;flex-direction:column;gap:10px}
+.action{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.action p{margin:0;flex:1 1 360px;font-size:14px}
+.btns{display:flex;gap:6px}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+aside.agent{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1000px){aside.agent{position:static;max-height:none}}
+.agent-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.agent-head b{font-size:14px}
+.agent-head small{font-size:12px;color:var(--ink-3)}
+.agent-head .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2e8540;margin-right:6px;vertical-align:0}
+.thread{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.msg{display:flex;flex-direction:column;gap:6px}
+.msg.user{align-items:flex-end}
+.msg.user .bub{background:var(--accent);color:var(--accent-ink);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:85%}
+.msg .who{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.msg.bot .bub{background:var(--bg);border-radius:12px 12px 12px 2px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.msg.bot p{margin:0}
+.msg.bot .live{white-space:pre-wrap;margin:0}
+.msg.bot table{border-collapse:collapse;width:100%;font-size:12.5px}
+.msg.bot th,.msg.bot td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px;align-self:flex-start}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink)}
+.msg.bot pre{background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)}  /* render() inlines light-theme colors */
+.msg .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.ask{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.ask form{display:flex;gap:6px}
+.ask input[type=text]{flex:1;min-width:0;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);font:inherit;font-size:13.5px}
+.ask .hint{font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.ask label.ctx{font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg>
+      <span>Lantern Workshop</span>
+      <small>SEEING-STONE ADJACENT · v0.1-local</small>
+    </div>
+    <nav class="tabs" aria-label="Ontology">
+      <a href="/" aria-current="page">Objects</a>
+      <a href="/evals">Evals</a>
+      <a href="#actions">Actions</a>
+      <a href="#vibes" class="off" aria-disabled="true" title="Not in scope">Vibes</a>
+    </nav>
+    <div class="status">
+      <span>Budget <b class="num">$50.00</b></span>
+      <span>Snapshot refreshed <b id="refreshed">…</b></span>
+      <span>Agent <b id="agentstate">idle</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // STAFFING PLAN IS SYNTHETIC (THE AGENT WILL REMIND YOU)</div>
+
+<div class="shell gutter">
+<main id="objects">
+  <div class="crumb">
+    <span>Object type: <b>Occupation cell</b></span><span>/</span>
+    <span>Component: <b>Customs and Border Protection</b></span><span>/</span>
+    <span>Occupation: <b>CBP Officer (1895)</b></span><span>/</span>
+    <span>Period: <b>FY2026 Q1 (Oct to Dec 2025)</b></span><span>/</span>
+    <span><span id="instances">…</span> instances · 1 ontology · 0 rings of power</span>
+  </div>
+
+  <div>
+    <h1>CBP Officer hiring landed <span id="h-pct">…</span> under plan. One month did most of it.</h1>
+    <p class="lede"><span id="h-actual">…</span> officers came on board against a plan of <span id="h-plan">…</span>. October was the gap. Attrition is low, mostly retirements, and two in three officers have more than ten years of service.</p>
+  </div>
+
+  <section class="tiles" aria-label="Key figures">
+    <div class="tile"><span>Planned hires, Q1</span><strong class="num" id="t-plan">…</strong><em>From the plan. It is synthetic. We know.</em></div>
+    <div class="tile"><span>Onboarded, Oct to Dec 2025</span><strong class="num" id="t-actual">…</strong><em>Later OPM files can add to this.</em></div>
+    <div class="tile"><span>Variance to plan</span><strong class="num" id="t-var">…</strong><em>Or better, if you tell the sidebar about the shutdown.</em></div>
+  </section>
+
+  <section class="card">
+    <h2>Accessions by month: October is the whole story</h2>
+    <p class="sub">CBP Officer accessions by effective month. The dashed line is the plan spread evenly across the quarter, which is what a plan does when nobody tells it about a shutdown.</p>
+    <div id="dip"></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Accessions</span><span><i style="background:var(--dip)"></i>Lapse in appropriations, Oct 1 to Nov 12</span><span><i style="background:transparent;border-top:2px dashed var(--ink-3);height:0;vertical-align:3px"></i>Plan ÷ 3</span></div>
+    <p class="src">Source: OPM accessions, effective month, HSBD × 1895. Verified.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>FEMA's plan is wrong, not its hiring</h2>
+      <p class="sub">Months of almost nothing, then hiring restarts in May 2026. A plan built from last year's departures assumed replacements that never came. Ask the sidebar about FEMA and it will say so.</p>
+      <div id="fema"></div>
+      <p class="src">Source: OPM accessions, all FEMA occupations. The first bar folds the quiet months; a month with no file is a month with no bar.</p>
+    </section>
+
+    <section class="card">
+      <h2>Two in three officers have served ten years or more</h2>
+      <p class="sub">The retirement cliff is not a metaphor here. It is a bar.</p>
+      <div id="yos"></div>
+      <p class="src">Source: length_of_service_profile, August 2026 snapshot.</p>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Where the officers are (OPM will not say, so we guessed from job ads)</h2>
+      <p class="sub">Estimated from where CBP advertises positions. Every one of these tiles is imputed, which is why the agent says "estimated" whenever you ask about a state.</p>
+      <div id="map"></div>
+      <div class="legend" id="maplegend"></div>
+      <p class="src">Source: headcount, August 2026. <span id="map-imputed">…</span> Hover Maine.</p>
+    </section>
+
+    <section class="card">
+      <h2><span id="sep-total">…</span> separations in twelve months, and most of them had a cake</h2>
+      <p class="sub">Separation categories, twelve months to August 2026. The data has categories, not reasons. The agent will tell you so if you ask why anyone left.</p>
+      <div id="sep"></div>
+      <p class="src">Source: OPM separations, HSBD × 1895, Sep 2025 to Aug 2026. Verified.</p>
+    </section>
+  </div>
+
+  <section class="card" id="actions">
+    <h2>Recommended for the review</h2>
+    <p class="sub">Drafted from the figures above. Nothing happens until a human clicks. That is the feature, not a limitation.</p>
+    <div class="actions">
+      <div class="action"><p>Put CBP Officer on the Strategic Hiring Committee agenda to settle whether the Q1 shortfall is a planning assumption or a hiring problem.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action"><p>Request retirement eligibility projections for the officers with 20 or more years before FY2027 targets are set.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action"><p>Ask CBP how many openings "Many" means on its "Many" announcements. The agent has asked twice. It is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+    </div>
+  </section>
+</main>
+
+<aside class="agent" aria-label="Variance review assistant">
+  <div class="agent-head">
+    <b><span class="dot" aria-hidden="true"></span>Variance review assistant</b>
+    <small>Eight standard calculations, one one-off query, no opinions about budgets.</small>
+  </div>
+  <div class="thread" id="thread">
+    <div class="msg bot">
+      <span class="who">assistant</span>
+      <div class="bub"><p>Open on CBP Officers, FY2026 Q1. Ask about this cell, any other DHS cell, or tell me a fact the data does not have and I will recompute under it.</p></div>
+    </div>
+  </div>
+  <div class="ask">
+    <div class="sugg" aria-label="Suggested questions">
+      <button type="button" data-q="How does this compare with Q2?">How does this compare with Q2?</button>
+      <button type="button" data-q="What was advertised in Texas?">What was advertised in Texas?</button>
+      <button type="button" data-q="The shutdown ran October 1 to November 12." data-ctx="1">The shutdown ran Oct 1 to Nov 12</button>
+      <button type="button" data-q="Why did Dave quit?">Why did Dave quit?</button>
+    </div>
+    <form id="askform">
+      <label for="q" class="sr">Ask about this cell</label>
+      <input id="q" type="text" autocomplete="off" placeholder="Ask about this cell. It will not ask you a clarifying question.">
+      <button class="btn primary" id="askbtn" type="submit">Ask</button>
+    </form>
+    <label class="ctx"><input type="checkbox" id="ctx"> This is a fact the data does not have (an analyst assumption), not a question</label>
+    <span class="hint">Every answer opens with Verified, Exploratory, or Not available. There is no fourth label.</span>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">Built on eight standard calculations, one one-off query, and an agent that refuses budget questions on principle. Headcount, separations and postings are real OPM and USAJOBS data. The plan is not. Locations are estimated.</footer>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+// Tiny SVG chart helpers. Every mark is placed from one scale; no library needed.
+const NS = 'http://www.w3.org/2000/svg';
+const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('mousemove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 280) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  node.addEventListener('mouseleave', () => { tip.hidden = true; });
+}
+const fmt = n => n.toLocaleString('en-US');
+const $ = id => document.getElementById(id);
+const MONTH = m => new Date(m + '-15').toLocaleString('en-US', { month: 'short', year: 'numeric' });
+
+// Vertical bar chart: data = [{label, value, color?, tip?, wide?, note?, show?}], ref = optional dashed reference line.
+function bars(id, data, opts = {}) {
+  const W = 640, H = opts.h || 230, P = { t: 26, r: 10, b: 30, l: 40 };
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opts.aria || '' });
+  const max = Math.max(...data.map(d => d.value), opts.ref || 0) * 1.1;
+  const y = v => P.t + (H - P.t - P.b) * (1 - v / max);
+  const units = data.reduce((s, d) => s + (d.wide || 1), 0);
+  const uw = (W - P.l - P.r) / units;
+  const step = opts.ticks || 100;
+  for (let v = 0; v <= max; v += step) {
+    svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), class: v ? 'gridline' : 'axis' }));
+    svg.append(el('text', { x: P.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, fmt(v)));
+  }
+  let x = P.l;
+  data.forEach(d => {
+    const w = uw * (d.wide || 1), bw = w - 4;
+    const r = el('rect', { class: 'bar', x: x + 2, y: y(d.value), width: bw, height: y(0) - y(d.value), rx: 3, fill: d.color || 'var(--accent)' });
+    hover(r, `<b>${d.label}</b>${d.tip || fmt(d.value)}`);
+    svg.append(r);
+    svg.append(el('text', { x: x + w / 2, y: H - 10, 'text-anchor': 'middle' }, d.label));
+    if (d.note) svg.append(el('text', { x: x + w / 2, y: y(d.value) - 8, 'text-anchor': 'middle', class: 'note' }, d.note));
+    if (d.show) svg.append(el('text', { x: x + w / 2, y: y(d.value) - 8, 'text-anchor': 'middle', class: 'lbl' }, fmt(d.value)));
+    x += w;
+  });
+  if (opts.ref) {
+    svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(opts.ref), y2: y(opts.ref), stroke: 'var(--ink-3)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4' }));
+    svg.append(el('text', { x: W - P.r, y: y(opts.ref) - 6, 'text-anchor': 'end' }, opts.refLabel));
+  }
+  $(id).replaceChildren(svg);
+}
+
+const ABBR = { ALABAMA: 'AL', ALASKA: 'AK', ARIZONA: 'AZ', ARKANSAS: 'AR', CALIFORNIA: 'CA', COLORADO: 'CO', CONNECTICUT: 'CT', DELAWARE: 'DE', 'DISTRICT OF COLUMBIA': 'DC', FLORIDA: 'FL', GEORGIA: 'GA', HAWAII: 'HI', IDAHO: 'ID', ILLINOIS: 'IL', INDIANA: 'IN', IOWA: 'IA', KANSAS: 'KS', KENTUCKY: 'KY', LOUISIANA: 'LA', MAINE: 'ME', MARYLAND: 'MD', MASSACHUSETTS: 'MA', MICHIGAN: 'MI', MINNESOTA: 'MN', MISSISSIPPI: 'MS', MISSOURI: 'MO', MONTANA: 'MT', NEBRASKA: 'NE', NEVADA: 'NV', 'NEW HAMPSHIRE': 'NH', 'NEW JERSEY': 'NJ', 'NEW MEXICO': 'NM', 'NEW YORK': 'NY', 'NORTH CAROLINA': 'NC', 'NORTH DAKOTA': 'ND', OHIO: 'OH', OKLAHOMA: 'OK', OREGON: 'OR', PENNSYLVANIA: 'PA', 'RHODE ISLAND': 'RI', 'SOUTH CAROLINA': 'SC', 'SOUTH DAKOTA': 'SD', TENNESSEE: 'TN', TEXAS: 'TX', UTAH: 'UT', VERMONT: 'VT', VIRGINIA: 'VA', WASHINGTON: 'WA', 'WEST VIRGINIA': 'WV', WISCONSIN: 'WI', WYOMING: 'WY' };
+const GRID = {
+  ME: [11, 0], AK: [0, 1], WI: [6, 1], VT: [10, 1], NH: [11, 1],
+  WA: [1, 2], ID: [2, 2], MT: [3, 2], ND: [4, 2], MN: [5, 2], IL: [6, 2], MI: [7, 2], NY: [9, 2], MA: [10, 2],
+  OR: [1, 3], NV: [2, 3], WY: [3, 3], SD: [4, 3], IA: [5, 3], IN: [6, 3], OH: [7, 3], PA: [8, 3], NJ: [9, 3], CT: [10, 3], RI: [11, 3],
+  CA: [1, 4], UT: [2, 4], CO: [3, 4], NE: [4, 4], MO: [5, 4], KY: [6, 4], WV: [7, 4], VA: [8, 4], MD: [9, 4], DE: [10, 4], DC: [11, 4],
+  AZ: [2, 5], NM: [3, 5], KS: [4, 5], AR: [5, 5], TN: [6, 5], NC: [7, 5], SC: [8, 5],
+  OK: [4, 6], LA: [5, 6], MS: [6, 6], AL: [7, 6], GA: [8, 6],
+  HI: [0, 7], TX: [4, 7], FL: [9, 7],
+};
+
+function draw(d) {
+  $('refreshed').textContent = new Date(d.refreshed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const p = d.plan;
+  $('h-pct').textContent = Math.round(Math.abs(p.variance_pct) * 100) + '%';
+  $('h-actual').textContent = fmt(p.actual_accessions); $('h-plan').textContent = fmt(p.planned_hires);
+  $('t-plan').textContent = fmt(p.planned_hires); $('t-actual').textContent = fmt(p.actual_accessions);
+  $('t-var').innerHTML = `${p.variance > 0 ? '+' : '&minus;'}${fmt(Math.abs(p.variance))} <small style="font-size:14px;color:var(--ink-3)">(${Math.round(p.variance_pct * 100)}%)</small>`;
+
+  bars('dip', d.cbp_months.map(m => ({ label: MONTH(m.month), value: m.n,
+    ...(m.month === '2025-10' ? { color: 'var(--dip)', note: 'shutdown', tip: `${m.n} accessions. Appropriations lapsed Oct 1 to Nov 12; the hiring freeze ran to Oct 15.` } : {}),
+    ...(m.month === '2025-11' ? { tip: `${m.n} accessions. CBP was excepted from the lapse, so November recovered.` } : {}) })),
+    { ref: Math.round(p.planned_hires / 3), refLabel: `plan ÷ 3 = ${Math.round(p.planned_hires / 3)} a month`, aria: 'CBP Officer accessions by month', ticks: 50 });
+
+  const quiet = d.fema_months.filter(m => m.month < '2026-05'), loud = d.fema_months.filter(m => m.month >= '2026-05');
+  const qn = quiet.reduce((s, m) => s + m.n, 0);
+  bars('fema', [{ label: `${MONTH(quiet[0].month)} to ${MONTH(quiet.at(-1).month)}`, value: qn, wide: 3, show: true, tip: `${qn} accessions across ${quiet.length} months with a file. One total; the page folds them.` },
+    ...loud.map(m => ({ label: MONTH(m.month).replace(/ \d+$/, ''), value: m.n, show: true }))], { aria: 'FEMA accessions, all occupations', ticks: 50, h: 220 });
+
+  // Horizontal bars for years of service.
+  (() => {
+    const names = { '<1': 'Under 1', '1-3': '1 to 3', '3-5': '3 to 5', '5-10': '5 to 10', '10-20': '10 to 20', '20+': '20 or more' };
+    const order = Object.keys(names), data = d.yos.slice().sort((a, b) => order.indexOf(a.bucket) - order.indexOf(b.bucket));
+    const total = data.reduce((s, r) => s + r.headcount, 0);
+    $('instances').textContent = fmt(total);
+    const W = 640, rowH = 30, P = { l: 90, r: 60 }, H = rowH * data.length + 4, max = Math.max(...data.map(r => r.headcount)) * 1.05, x = v => P.l + (W - P.l - P.r) * v / max;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'CBP Officers by years of service' });
+    data.forEach((r, i) => {
+      const yy = i * rowH + 2, long = r.bucket === '10-20' || r.bucket === '20+';
+      svg.append(el('text', { x: P.l - 8, y: yy + 19, 'text-anchor': 'end', class: long ? 'lbl' : '' }, names[r.bucket] || r.bucket));
+      const bar = el('rect', { x: P.l, y: yy + 4, width: x(r.headcount) - P.l, height: rowH - 8, rx: 3, fill: long ? 'var(--seq-5)' : 'var(--seq-3)' });
+      hover(bar, `<b>${names[r.bucket] || r.bucket} years</b>${fmt(r.headcount)} officers, ${(100 * r.headcount / total).toFixed(1)}%`);
+      svg.append(bar);
+      svg.append(el('text', { x: x(r.headcount) + 6, y: yy + 19, class: long ? 'lbl' : '' }, Math.round(100 * r.headcount / total) + '%'));
+    });
+    $('yos').replaceChildren(svg);
+  })();
+
+  // One stacked bar for separation categories, folded to three.
+  (() => {
+    const fold = c => /^RETIREMENT/.test(c) ? 'Retired' : c === 'QUIT' ? 'Quit' : 'Transferred or other';
+    const sums = { Retired: 0, Quit: 0, 'Transferred or other': 0 };
+    d.separations.forEach(r => { sums[fold(r.category)] += r.n; });
+    const total = Object.values(sums).reduce((a, b) => a + b, 0);
+    $('sep-total').textContent = fmt(total);
+    const data = [['Retired', sums.Retired, 'var(--seq-5)'], ['Quit', sums.Quit, 'var(--seq-3)'], ['Transferred or other', sums['Transferred or other'], 'var(--seq-2)']];
+    const W = 640, H = 90, svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'CBP Officer separations by category' });
+    let x = 0;
+    data.forEach(([lab, v, c], i) => {
+      const w = W * v / total - (i ? 2 : 0);
+      const r = el('rect', { x: x + (i ? 2 : 0), y: 10, width: w, height: 44, rx: 3, fill: c });
+      hover(r, `<b>${lab}</b>${fmt(v)} of ${fmt(total)}, ${Math.round(100 * v / total)}%<br>${d.separations.filter(s => fold(s.category) === lab).map(s => `${s.category.toLowerCase()} ${s.n}`).join(', ')}`);
+      svg.append(r);
+      svg.append(el('text', { x: x + (i ? 2 : 0) + 8, y: 38, style: i ? '' : 'fill:#fff;font-weight:600' }, `${lab} ${Math.round(100 * v / total)}%`));
+      x += W * v / total;
+    });
+    svg.append(el('text', { x: 0, y: 78 }, `Retirements are ${Math.round(10 * sums.Retired / total)} in ten. Nobody rage-quit a cake.`));
+    $('sep').replaceChildren(svg);
+  })();
+
+  // Tile-grid cartogram, one blue ramp by quartile of the estimates.
+  (() => {
+    const est = {}, imp = {};
+    d.states.forEach(s => { const a = ABBR[s.state]; if (a) { est[a] = s.headcount; imp[a] = s.imputed; } });
+    const vals = Object.values(est).sort((a, b) => a - b), qt = k => vals[Math.floor(vals.length * k)];
+    const bins = [qt(.25), qt(.5), qt(.75), Infinity], steps = ['var(--seq-2)', 'var(--seq-3)', 'var(--seq-4)', 'var(--seq-5)'];
+    const S = 44, G = 4, svg = el('svg', { viewBox: `0 0 ${12 * S + 12 * G} ${8 * S + 8 * G}`, role: 'img', 'aria-label': 'Estimated CBP Officers by state, tile map' });
+    for (const [st, [c, r]] of Object.entries(GRID)) {
+      const v = est[st], bin = v ? bins.findIndex(b => v < b) : -1;
+      const g = el('g', {});
+      g.append(el('rect', { x: c * (S + G), y: r * (S + G), width: S, height: S, rx: 4, fill: v ? steps[bin] : 'var(--na)' }));
+      g.append(el('text', { x: c * (S + G) + S / 2, y: r * (S + G) + S / 2 + 4, 'text-anchor': 'middle', style: bin >= 2 ? 'fill:#fff;font-weight:600' : v ? 'fill:var(--ink);font-weight:600' : '' }, st));
+      const text = st === 'ME' && v ? `${fmt(v)} officers estimated in Maine. Probably not. Maine posts a lot of CBP jobs for its size, and the imputation follows the postings. The agent says "estimated" every single time; so should you.`
+        : v ? `${fmt(v)} officers, estimated from postings; ${fmt(imp[st])} of them imputed.` : 'No estimate: no CBP Officer posting pointed here.';
+      hover(g, `<b>${st}</b>${text}`);
+      svg.append(g);
+    }
+    $('map').replaceChildren(svg);
+    const lab = [`under ${fmt(bins[0])}`, `${fmt(bins[0])} to ${fmt(bins[1] - 1)}`, `${fmt(bins[1])} to ${fmt(bins[2] - 1)}`, `${fmt(bins[2])} and up`];
+    $('maplegend').innerHTML = lab.map((l, i) => `<span><i style="background:${steps[i]}"></i>${l}</span>`).join('') + '<span><i style="background:var(--na)"></i>No estimate</span>';
+    const tot = Object.values(est).reduce((a, b) => a + b, 0), ti = Object.values(imp).reduce((a, b) => a + b, 0);
+    $('map-imputed').textContent = `${fmt(ti)} of ${fmt(tot)} officers have an imputed location.`;
+  })();
+}
+
+fetch('/api/cell').then(r => r.json()).then(draw).catch(e => { $('refreshed').textContent = 'unavailable'; console.error(e); });
+
+// The sidebar. The browser holds the transcript; every ask sends it, and the answer streams back as SSE frames.
+const turns = [], session = 'app-' + Math.random().toString(36).slice(2, 10);
+const thread = $('thread'), form = $('askform'), input = $('q'), ctxBox = $('ctx'), btn = $('askbtn');
+const CHIP = { Verified: 'ok', Exploratory: 'warn', 'Not available': 'no' };
+const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function bubble(cls, who) {
+  const m = document.createElement('div'); m.className = 'msg ' + cls;
+  m.innerHTML = `<span class="who">${who}</span><div class="bub"></div>`;
+  thread.append(m); thread.scrollTop = thread.scrollHeight;
+  return m.querySelector('.bub');
+}
+async function ask(text, isContext) {
+  text = text.trim(); if (!text || btn.disabled) return;
+  btn.disabled = true; input.value = ''; ctxBox.checked = false; $('agentstate').textContent = 'working';
+  const sent = isContext ? `Analyst fact: ${text}` : text;
+  bubble('user', 'analyst').textContent = sent;
+  const bub = bubble('bot', 'assistant');
+  bub.innerHTML = '<span class="chip no">working</span><p class="live"></p><span class="meta"></span>';
+  const live = bub.querySelector('.live'), meta = bub.querySelector('.meta'), tools = [];
+  let done = null;
+  try {
+    const res = await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: isContext ? '' : text, context: isContext ? text : null, turns, session_id: session }) });
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+    while (true) {
+      const { value, done: eof } = await rd.read(); if (eof) break;
+      buf += dec.decode(value, { stream: true });
+      let i; while ((i = buf.indexOf('\n\n')) >= 0) {
+        const frame = buf.slice(0, i).trim(); buf = buf.slice(i + 2);
+        if (!frame.startsWith('data: ')) continue;
+        const ev = JSON.parse(frame.slice(6));
+        if (ev.delta) { live.textContent += ev.delta; thread.scrollTop = thread.scrollHeight; }
+        if (ev.tool) { tools.push(ev.tool); meta.textContent = tools.map(t => t === 'genie' ? 'one-off query' : `standard calculation: ${t}`).join(' · '); }
+        if (ev.done) done = ev.done;
+      }
+    }
+  } catch (e) { done = { error: 'network', error_detail: String(e), body_html: '', label: null }; }
+  const d = done || { error: 'agent', body_html: '', label: null };
+  const chip = d.label ? `<span class="chip ${CHIP[d.label]}">${d.label}</span>` : `<span class="chip no">${d.error ? 'error' : 'unlabeled'}</span>`;
+  const body = d.body_html || (d.error ? `<p>One moment. That did not come back (${esc(d.error_detail || d.error)}). Ask again.</p>` : '');
+  const cited = esc((d.cited_tools || []).map(t => t === 'genie' ? 'one-off query' : String(t)).join(', '));
+  bub.innerHTML = chip + body + `<span class="meta">${cited ? (cited.includes('one-off query') ? cited : 'standard calculations: ' + cited) : 'no tool called'}${d.latency_ms ? ' · ' + Math.round(d.latency_ms / 1000) + ' s' : ''}</span>`;
+  if (!d.error || d.answer_text) { turns.push({ role: 'user', text: d.question_text || text }); turns.push({ role: 'assistant', text: d.answer_text || '' }); }  // question_text is the message as the agent saw it, context wrapper included
+  if (turns.length && !turns.at(-1).text) turns.splice(-2, 2);  // an empty answer cannot be replayed
+  thread.scrollTop = thread.scrollHeight; btn.disabled = false; $('agentstate').textContent = 'idle'; input.focus();
+}
+form.addEventListener('submit', e => { e.preventDefault(); ask(input.value, ctxBox.checked); });
+document.querySelectorAll('.sugg button').forEach(b => b.addEventListener('click', () => ask(b.dataset.q, !!b.dataset.ctx)));
+</script>
+</body>
+</html>

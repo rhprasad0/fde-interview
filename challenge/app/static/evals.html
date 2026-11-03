@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern Evals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: evals-suite chrome; the metrics canvas on the left, the test-case debug view in a right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pass:#2a78d6; --pass-soft:#dbe9fb;
+  --f-list:#eb6834; --f-fna:#1baf7a; --f-other:#6b717c;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --bad-bg:#fde3e1; --bad-ink:#7a1a16; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px}
+@media (max-width:1040px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:72ch}
+.headrow{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn small{font-weight:400;opacity:.85}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .mono{font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.scroll{overflow-x:auto}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:280px;z-index:20}
+.tip b{display:block}
+aside.debug{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1040px){aside.debug{position:static;max-height:none}}
+.dhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dhead b{font-size:14px}
+.dhead small{font-size:12px;color:var(--ink-3)}
+.dbody{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.dsec{display:flex;flex-direction:column;gap:6px}
+.dsec h3{margin:0;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.dsec p{margin:0}
+.q{background:var(--bg);border-radius:6px;padding:8px 12px}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink);white-space:pre-wrap}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg>
+      <span>Lantern Evals</span>
+      <small>HOW DO YOU KNOW IT WORKS · v0.1-local</small>
+    </div>
+    <nav class="tabs" aria-label="Evaluation suite">
+      <a href="/">Workshop</a>
+      <a href="#tests">View tests</a>
+      <a href="/evals" aria-current="page">Metrics dashboard</a>
+      <a href="#objectives" class="off" title="Not supported in the dashboard view. We checked the original. Same.">Metric objectives</a>
+    </nav>
+    <div class="status">
+      <span>Suite <b>dhs-variance-review · eval-v1</b></span>
+      <span>Target functions <b>1</b></span>
+      <span>Eval spend to date <b class="num" id="spend">…</b></span>
+      <span>Budget <b class="num">$50.00</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter" id="banner">LOADING EXPERIMENTS // THE POINT ESTIMATE IS NOT THE ARGUMENT, THE HEATMAP IS</div>
+
+<div class="shell gutter">
+<main id="metrics">
+  <div class="crumb">
+    <span>Evaluation suite: <b>dhs-variance-review</b></span><span>/</span>
+    <span>Run: <b id="c-run">…</b></span><span>/</span>
+    <span>Target: <b id="c-target">…</b></span><span>/</span>
+    <span>Evaluators: <b>14</b> (11 code rules, 3 judges, 0 vibes)</span>
+  </div>
+
+  <div class="headrow">
+    <div>
+      <h1 id="h1">Loading the latest experiment.</h1>
+      <p class="lede">Every refusal and data limit should pass every time. The agent's own calculations pass most of the time. The one-off queries are where it gets interesting, and the heatmap says exactly where.</p>
+    </div>
+    <button class="btn primary" type="button"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Analyze with human FDE <small>(he is standing right there)</small></button>
+  </div>
+
+  <section class="tiles" aria-label="Overall">
+    <div class="tile"><span>pass^1, mean per run</span><strong class="num" id="t-p1">…</strong><em id="t-p1s"></em></div>
+    <div class="tile"><span id="t-pkl">pass^k, all runs</span><strong class="num" id="t-pk">…</strong><em>Reported, never compared. Too coarse.</em></div>
+    <div class="tile"><span>Cost of this run</span><strong class="num" id="t-cost">…</strong><em id="t-costs"></em></div>
+    <div class="tile"><span>Latency, median</span><strong class="num" id="t-lat">…</strong><em id="t-lats"></em></div>
+  </section>
+
+  <section class="card" id="tests">
+    <h2 id="heat-h2">The heatmap: test cases by runs, colored by the first scorer that failed</h2>
+    <p class="sub" id="heat-sub">Rows grouped by tier. Flat rows are the argument; the speckled rows are noise, which is why one experiment's pass^k is never compared with another's.</p>
+    <div class="scroll"><div id="heat"></div></div>
+    <div class="legend" id="heatlegend"></div>
+    <p class="src">Evaluators run in table order; failure_category is the first one that fails. Hover a cell for the question and its latency.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Every experiment so far, pass^1 by tier. Repeated prompts still move.</h2>
+      <p class="sub">The x axis is the prompt hash each experiment ran; the same hash twice in a row is the same prompt rerun. That is why a change is judged on pooled pass^1 over two experiments, never on one number.</p>
+      <div id="base"></div>
+      <div class="legend"><span><i style="background:var(--pass)"></i>Verified</span><span><i style="background:var(--f-list)"></i>Exploratory</span><span><i style="background:var(--f-fna)"></i>Not available</span></div>
+      <p class="src" id="base-src"></p>
+    </section>
+
+    <section class="card">
+      <h2>What fails, and whose fault it is</h2>
+      <p class="sub" id="fail-sub"></p>
+      <div id="fails"></div>
+      <p class="src">Zero means zero in this experiment, not never.</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2 id="lat-h2">Latency by tier.</h2>
+    <p class="sub">Every graded run in the latest experiment, seconds from question to answer. The one-off query path waits in a five-per-minute queue, so its latency includes standing in line. The 500 s marks are the harness cap.</p>
+    <div id="lat"></div>
+    <p class="src">Latency is comparable only between passes with the same worker count.</p>
+  </section>
+</main>
+
+<aside class="debug" aria-label="Test case debug view">
+  <div class="dhead">
+    <b>Test case debug view</b>
+    <small id="d-sub">the first list_match failure with a one-off query, as the manual says to double-click</small>
+  </div>
+  <div class="dbody" id="dbody"><p class="meta">Loading.</p></div>
+</aside>
+</div>
+
+<footer class="gutter">pass^k is reported, not compared. The heatmap and the explained failures are the argument. Fourteen evaluators, eleven of them code rules over structured fields, three of them a judge with a rubric you can read. Results are never cached across runs.</footer>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const el = (t, a, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+const $ = id => document.getElementById(id);
+const tip = $('tip');
+function hover(node, html) {
+  node.addEventListener('mousemove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 300) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  node.addEventListener('mouseleave', () => { tip.hidden = true; });
+}
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const money = v => '$' + v.toFixed(2);
+const TIER = { Verified: 'var(--pass)', Exploratory: 'var(--f-list)', 'Not available': 'var(--f-fna)' };
+const TIERS = ['Verified', 'Exploratory', 'Not available'];
+// Three hues only (validated all-pairs); every other scorer shares grey and is told apart by its letter.
+const COLOR = c => c === 'list_match' ? 'var(--f-list)' : c === 'false_not_available' ? 'var(--f-fna)' : 'var(--f-other)';
+const LETTER = c => ({ list_match: 'L', false_not_available: 'F', numeric_match: 'N', label_match: 'B', error: 'E', faithfulness: 'J', limit_stated: 'S', assumption_stated: 'A', assumption_labeled: 'U' })[c] || c[0].toUpperCase();
+const WHY = { list_match: 'A ranking or breakdown that differs from truth: wrong order, a missing key, or a filter that pulled in the wrong people.', false_not_available: 'The agent declined a question truth says it could answer. Too polite is still wrong.', numeric_match: 'A number outside tolerance.', label_match: 'Wrong first line. Said Verified on a one-off query, or the reverse.', provenance: 'Cited a tool that did not run.', error: 'Infrastructure or a scorer crash, never retried.', labels_present: 'An imputed figure without the word estimated.', tool_use: 'A standard calculation that should have run did not, or a SQL tool did.', faithfulness: 'The judge found a truth fact misstated or a must-not-claim asserted.', limit_stated: 'The judge found no stated limit or no offered alternative.', assumption_stated: 'The judge found the supplied fact not stated as an assumption.' };
+
+function draw(d) {
+  const L = d.experiments.at(-1), pass1 = L.rows ? Object.values(L.pass1).reduce((s, v) => s + v[0], 0) / L.rows : 0;
+  $('spend').textContent = money(d.spend_usd);
+  $('banner').textContent = `${L.questions} TEST CASES // ${L.runs} RUNS EACH // THE POINT ESTIMATE IS NOT THE ARGUMENT, THE HEATMAP IS`;
+  $('c-run').textContent = L.id; $('c-target').textContent = `variance review assistant @ ${L.sha || 'unknown'} · prompt ${L.prompt}`;
+  $('h1').textContent = `${L.passk} of ${L.questions} questions pass ${L.runs} times out of ${L.runs}. We are telling you this on purpose.`;
+  $('t-p1').textContent = Math.round(pass1 * 100) + '%'; $('t-p1s').textContent = `${Object.values(L.pass1).reduce((s, v) => s + v[0], 0)} of ${L.rows} graded runs`;
+  $('t-pkl').textContent = `pass^${L.runs}, all ${L.runs} runs`; $('t-pk').textContent = `${L.passk} / ${L.questions}`;
+  $('t-cost').textContent = money(L.cost_usd); $('t-costs').textContent = `${L.rows} agent runs plus the judge calls`;
+  const naps = d.grid.flatMap(q => q.runs).filter(r => r.latency_s >= 500).length;
+  const na = d.grid.filter(q => q.tier === 'Not available').flatMap(q => q.runs.map(r => r.latency_s)).sort((a, b) => a - b);
+  $('t-lat').textContent = L.latency_p50_s + ' s'; $('t-lats').textContent = `Refusals ${na.length ? na[Math.floor(na.length / 2)] + ' s' : 'n/a'}. ${naps === 0 ? 'Nobody napped.' : naps === 1 ? 'One ranking took a nap.' : naps + ' rankings took a nap.'}`;
+  $('lat-h2').textContent = `Latency by tier. Refusals are instant, rankings take a coffee, ${naps === 0 ? 'nobody napped' : naps === 1 ? 'one took a nap' : naps + ' took a nap'}.`;
+
+  // Heatmap.
+  (() => {
+    const Q = TIERS.flatMap(t => d.grid.filter(q => q.tier === t));
+    const flat = Q.filter(q => q.runs.every(r => !r.pass)).length;
+    $('heat-h2').textContent = `The heatmap: ${Q.length} test cases, ${L.runs} runs, colored by the first scorer that failed`;
+    $('heat-sub').textContent = `Rows grouped by tier. Flat rows are the argument: ${flat} question${flat === 1 ? '' : 's'} fail every run, and each has a named cause. The speckled rows are noise, which is why one experiment's pass^${L.runs} is never compared with another's.`;
+    const cell = 30, gap = 3, LX = 330, top = 24, W = LX + L.runs * (cell + gap) + 40, H = top + Q.length * (cell + gap) + 2 * 10;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Pass and failure heatmap', style: 'min-width:520px' });
+    for (let r = 0; r < L.runs; r++) svg.append(el('text', { x: LX + r * (cell + gap) + cell / 2, y: 14, 'text-anchor': 'middle', class: 'mono' }, 'run ' + (r + 1)));
+    let y = top, lastTier = '';
+    const cats = new Set();
+    Q.forEach(q => {
+      if (q.tier !== lastTier && lastTier) y += 10;
+      lastTier = q.tier;
+      svg.append(el('text', { x: 0, y: y + cell / 2 + 4, class: 'mono lbl' }, q.id));
+      svg.append(el('text', { x: 40, y: y + cell / 2 + 4 }, q.text.length > 44 ? q.text.slice(0, 43) + '…' : q.text));
+      q.runs.forEach((r, i) => {
+        const c = r.category, g = el('g', {});
+        if (c) cats.add(c);
+        g.append(el('rect', { x: LX + i * (cell + gap), y, width: cell, height: cell, rx: 4, fill: c ? COLOR(c) : 'var(--pass)', opacity: c ? 1 : .35 }));
+        if (c) g.append(el('text', { x: LX + i * (cell + gap) + cell / 2, y: y + cell / 2 + 4, 'text-anchor': 'middle', class: 'mono', style: (c === 'false_not_available' ? 'fill:var(--ink)' : 'fill:#fff') + ';font-weight:600' }, LETTER(c)));
+        hover(g, `<b>${q.id} · run ${i + 1} · ${c || 'Passed'}</b>${esc(q.text)}<br>${r.latency_s} s`);
+        svg.append(g);
+      });
+      svg.append(el('text', { x: LX + L.runs * (cell + gap) + 6, y: y + cell / 2 + 4, class: 'mono' }, `${q.runs.filter(r => r.pass).length}/${q.runs.length}`));
+      y += cell + gap;
+    });
+    $('heat').replaceChildren(svg);
+    $('heatlegend').innerHTML = `<span><i style="background:var(--pass);opacity:.35"></i>Passed</span>` + [...cats].sort().map(c => `<span><i style="background:${COLOR(c)}"></i>${LETTER(c)} = ${c}</span>`).join('');
+  })();
+
+  // Every experiment: pass^1 by tier.
+  (() => {
+    const E = d.experiments, n = E.length, W = 640, H = 230, P = { t: 20, r: 110, b: 34, l: 40 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'pass^1 by tier across experiments' });
+    const x = i => P.l + (W - P.l - P.r) * (n > 1 ? i / (n - 1) : .5), y = v => P.t + (H - P.t - P.b) * (1 - v);
+    for (let v = 0; v <= 1; v += .25) {
+      svg.append(el('line', { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), class: v ? 'gridline' : 'axis' }));
+      svg.append(el('text', { x: P.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, Math.round(v * 100) + '%'));
+    }
+    E.forEach((e, i) => { if (i === 0 || e.prompt !== E[i - 1].prompt) svg.append(el('text', { x: x(i), y: H - 10, 'text-anchor': 'start', class: 'mono' }, e.prompt.slice(0, 6))); });
+    TIERS.forEach(t => {
+      const pts = E.map((e, i) => [i, e.pass1[t] ? e.pass1[t][0] / e.pass1[t][1] : null]).filter(p => p[1] != null);
+      svg.append(el('polyline', { points: pts.map(([i, v]) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: TIER[t], 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+      pts.forEach(([i, v]) => { const c = el('circle', { cx: x(i), cy: y(v), r: 4, fill: TIER[t], stroke: 'var(--panel)', 'stroke-width': 2 }); hover(c, `<b>${t} · ${E[i].label} · prompt ${E[i].prompt}</b>pass^1 ${E[i].pass1[t][0]}/${E[i].pass1[t][1]} = ${Math.round(v * 100)}%`); svg.append(c); });
+      if (pts.length) svg.append(el('text', { x: x(pts.at(-1)[0]) + 10, y: y(pts.at(-1)[1]) + 4, class: 'lbl' }, t));
+    });
+    $('base').replaceChildren(svg);
+    $('base-src').textContent = `${n} experiments, ${d.rows} graded runs, ${new Set(E.map(e => e.prompt)).size} prompts. A label marks where the prompt changed.`;
+  })();
+
+  // Failure categories, horizontal bars.
+  (() => {
+    const fails = Object.values(d.failures).reduce((a, b) => a + b, 0);
+    $('fail-sub').textContent = `${fails} failing runs out of ${L.rows}. Hover a bar for what that scorer catches.`;
+    const data = Object.entries(d.failures).sort((a, b) => b[1] - a[1]).concat([['provenance', d.failures.provenance ? null : 0], ['error', d.failures.error ? null : 0]].filter(x => x[1] === 0));
+    const W = 640, rowH = 30, P = { l: 150, r: 40 }, H = rowH * data.length + 4, max = Math.max(1, ...data.map(x => x[1])) * 1.15, x = v => P.l + (W - P.l - P.r) * v / max;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Failing runs by first failing scorer' });
+    data.forEach(([lab, v], i) => {
+      const yy = i * rowH + 2;
+      svg.append(el('text', { x: P.l - 8, y: yy + 19, 'text-anchor': 'end', class: 'mono' }, lab));
+      const r = el('rect', { x: P.l, y: yy + 4, width: Math.max(x(v) - P.l, 2), height: rowH - 8, rx: 3, fill: v ? COLOR(lab) : 'var(--line)' });
+      hover(r, `<b>${lab} · ${v} runs</b>${WHY[lab] || ''}`);
+      svg.append(r);
+      svg.append(el('text', { x: x(v) + 6, y: yy + 19, class: 'lbl' }, v));
+    });
+    $('fails').replaceChildren(svg);
+  })();
+
+  // Latency strip plot by tier.
+  (() => {
+    const tiers = ['Not available', 'Verified', 'Exploratory'];
+    const W = 640, rowH = 46, P = { l: 100, r: 20, t: 24 }, H = P.t + rowH * tiers.length + 24, max = 520, x = s => P.l + (W - P.l - P.r) * Math.min(s, max) / max;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Latency of every run by tier, seconds' });
+    [0, 100, 200, 300, 400, 500].forEach(s => { svg.append(el('line', { x1: x(s), x2: x(s), y1: P.t - 4, y2: H - 20, class: 'gridline' })); svg.append(el('text', { x: x(s), y: H - 4, 'text-anchor': 'middle' }, s + ' s')); });
+    tiers.forEach((t, i) => {
+      const cy = P.t + i * rowH + rowH / 2;
+      svg.append(el('text', { x: P.l - 10, y: cy + 4, 'text-anchor': 'end', class: 'lbl' }, t));
+      const pts = d.grid.filter(q => q.tier === t).flatMap(q => q.runs.map((r, k) => [r.latency_s, q, k]));
+      if (!pts.length) return;
+      const med = pts.map(p => p[0]).sort((a, b) => a - b)[Math.floor(pts.length / 2)];
+      svg.append(el('line', { x1: x(med), x2: x(med), y1: cy - 16, y2: cy + 16, stroke: 'var(--ink)', 'stroke-width': 2 }));
+      pts.forEach(([s, q, k], j) => {
+        const jitter = ((j * 7919) % 17 - 8) * 1.4;
+        const c = el('circle', { cx: x(s), cy: cy + jitter, r: 5, fill: TIER[t], opacity: .55, stroke: 'var(--panel)', 'stroke-width': 1 });
+        hover(c, `<b>${q.id} · run ${k + 1} · ${s} s</b>${esc(q.text)}${s >= 500 ? '<br>Harness cap. It napped.' : ''}`);
+        svg.append(c);
+      });
+      svg.append(el('text', { x: x(med), y: cy - 20, 'text-anchor': 'middle', class: 'mono' }, 'median ' + med + ' s'));
+    });
+    $('lat').replaceChildren(svg);
+  })();
+
+  // The debug view: one failing row from the latest experiment.
+  (() => {
+    const t = d.trace;
+    if (!t) { $('d-sub').textContent = 'nothing failed in the latest experiment'; $('dbody').innerHTML = '<p>Every run passed. Suspicious. Add harder questions.</p>'; return; }
+    $('d-sub').textContent = `${t.id}, run ${t.run_index} of ${L.runs} · double-clicked, as the manual says`;
+    const chip = { Verified: 'ok', Exploratory: 'no', 'Not available': 'no' }[t.label] || 'no';
+    const top = v => Array.isArray(v) ? v.slice(0, 3) : v == null ? [] : [{ key: '', value: v }];
+    const tv = top(t.truth_value), av = top(t.answer_value), rows = Math.max(tv.length, av.length);
+    const judges = ['faithfulness', 'limit_stated', 'assumption_stated'];
+    const scorers = Object.entries(t.scorers).map(([n, v]) => `<tr><td>${n}</td><td>${judges.includes(n) ? 'judge' : 'code'}</td><td>${v === true ? '<span class="chip ok">Passed</span>' : v === false ? '<span class="chip bad">Failed</span>' : '<span class="chip no">n/a</span>'}</td></tr>`).join('');
+    const cmp = rows ? `<table><thead><tr><th>#</th><th>Truth (independent SQL)</th><th class="r"></th><th>Answer</th><th class="r"></th></tr></thead><tbody class="num">` +
+      Array.from({ length: rows }, (_, i) => `<tr><td>${i + 1}</td><td>${esc(tv[i]?.key ?? '')}</td><td class="r">${esc(tv[i]?.value ?? '')}</td><td>${esc(av[i]?.key ?? '')}</td><td class="r">${esc(av[i]?.value ?? '')}</td></tr>`).join('') + '</tbody></table>' : '<p class="meta">No value to compare: the failure is structural.</p>';
+    const calls = t.tool_calls.map(c => `${c.name === 'genie' ? 'one-off query' : c.name}${c.rows != null ? ' · ' + c.rows + ' rows' : ''}${c.duration_ms ? ' · ' + Math.round(c.duration_ms / 1000) + ' s' : ''}`).join('; ') || 'no tool called';
+    $('dbody').innerHTML = `
+      <div class="dsec"><h3>Test case</h3><div class="q">${esc(t.question)}</div><span class="meta">tier: ${t.tier} · class: ${t.class} · author: ${t.author}</span></div>
+      <div class="dsec"><h3>Function output</h3><span class="chip ${chip}">${t.label || 'unlabeled'}</span><p>${esc((t.answer_text || '').slice(0, 700))}${(t.answer_text || '').length > 700 ? ' …' : ''}</p>${t.genie_sql ? `<pre>${esc(t.genie_sql)}</pre>` : ''}<span class="meta">${calls} · ${Math.round((t.latency_ms || 0) / 1000)} s turn · $${(t.cost_usd || 0).toFixed(3)} · ${t.output_tokens || 0} output tokens</span></div>
+      <div class="dsec"><h3>Evaluators</h3><table><thead><tr><th>Evaluator</th><th>Kind</th><th>Result</th></tr></thead><tbody>${scorers}</tbody></table></div>
+      <div class="dsec"><h3>Expected vs actual, first three</h3>${cmp}</div>
+      <div class="dsec"><h3>Debug outputs</h3><p>First failing scorer: <b>${t.failure_category}</b>. ${WHY[t.failure_category] || ''}</p><p class="meta">${judges.some(j => t.scorers[j] === false) ? 'A judge failed this row; its rationale is on the experiment row.' : 'Judge reasoning: none. This evaluator is a code rule. It has no feelings.'}</p></div>`;
+  })();
+}
+
+fetch('/api/evals').then(r => r.json()).then(draw).catch(e => { $('h1').textContent = 'Could not load experiments.'; console.error(e); });
+</script>
+</body>
+</html>

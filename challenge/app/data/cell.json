@@ -1,0 +1,388 @@
+{
+ "refreshed_at": "2026-11-02T23:48:57+00:00",
+ "cell": {
+  "component": "HSBD",
+  "series": "1895",
+  "quarter": "FY2026Q1",
+  "as_of": "2026-08-01"
+ },
+ "cbp_months": [
+  {
+   "month": "2025-09",
+   "n": 224
+  },
+  {
+   "month": "2025-10",
+   "n": 80
+  },
+  {
+   "month": "2025-11",
+   "n": 236
+  },
+  {
+   "month": "2025-12",
+   "n": 159
+  },
+  {
+   "month": "2026-01",
+   "n": 232
+  }
+ ],
+ "fema_months": [
+  {
+   "month": "2025-09",
+   "n": 1
+  },
+  {
+   "month": "2025-10",
+   "n": 1
+  },
+  {
+   "month": "2025-11",
+   "n": 8
+  },
+  {
+   "month": "2025-12",
+   "n": 1
+  },
+  {
+   "month": "2026-01",
+   "n": 5
+  },
+  {
+   "month": "2026-03",
+   "n": 2
+  },
+  {
+   "month": "2026-04",
+   "n": 1
+  },
+  {
+   "month": "2026-05",
+   "n": 76
+  },
+  {
+   "month": "2026-06",
+   "n": 63
+  },
+  {
+   "month": "2026-07",
+   "n": 217
+  },
+  {
+   "month": "2026-08",
+   "n": 125
+  }
+ ],
+ "yos": [
+  {
+   "bucket": "<1",
+   "headcount": 1850,
+   "share": 0.0669
+  },
+  {
+   "bucket": "1-3",
+   "headcount": 1943,
+   "share": 0.0703
+  },
+  {
+   "bucket": "3-5",
+   "headcount": 1563,
+   "share": 0.0565
+  },
+  {
+   "bucket": "5-10",
+   "headcount": 4789,
+   "share": 0.1732
+  },
+  {
+   "bucket": "10-20",
+   "headcount": 8773,
+   "share": 0.3173
+  },
+  {
+   "bucket": "20+",
+   "headcount": 8732,
+   "share": 0.3158
+  }
+ ],
+ "separations": [
+  {
+   "category": "RETIREMENT - VOLUNTARY",
+   "n": 552
+  },
+  {
+   "category": "QUIT",
+   "n": 185
+  },
+  {
+   "category": "OTHER SEPARATION",
+   "n": 143
+  },
+  {
+   "category": "RETIREMENT - OTHER",
+   "n": 34
+  },
+  {
+   "category": "TRANSFER OUT - INDIVIDUAL TRANSFER",
+   "n": 25
+  },
+  {
+   "category": "TERMINATION (EXPIRED APPT/OTHER)",
+   "n": 15
+  }
+ ],
+ "states": [
+  {
+   "state": "TEXAS",
+   "headcount": 2821,
+   "imputed": 2821
+  },
+  {
+   "state": "CALIFORNIA",
+   "headcount": 2129,
+   "imputed": 2129
+  },
+  {
+   "state": "VIRGINIA",
+   "headcount": 1929,
+   "imputed": 1929
+  },
+  {
+   "state": "DISTRICT OF COLUMBIA",
+   "headcount": 1920,
+   "imputed": 1920
+  },
+  {
+   "state": "NEW YORK",
+   "headcount": 1872,
+   "imputed": 1872
+  },
+  {
+   "state": "MAINE",
+   "headcount": 1726,
+   "imputed": 1726
+  },
+  {
+   "state": "WASHINGTON",
+   "headcount": 1256,
+   "imputed": 1256
+  },
+  {
+   "state": "FLORIDA",
+   "headcount": 1196,
+   "imputed": 1196
+  },
+  {
+   "state": "VERMONT",
+   "headcount": 1082,
+   "imputed": 1082
+  },
+  {
+   "state": "MONTANA",
+   "headcount": 945,
+   "imputed": 945
+  },
+  {
+   "state": "ARIZONA",
+   "headcount": 850,
+   "imputed": 850
+  },
+  {
+   "state": "MINNESOTA",
+   "headcount": 802,
+   "imputed": 802
+  },
+  {
+   "state": "MICHIGAN",
+   "headcount": 708,
+   "imputed": 708
+  },
+  {
+   "state": "ALASKA",
+   "headcount": 646,
+   "imputed": 646
+  },
+  {
+   "state": "NORTH DAKOTA",
+   "headcount": 644,
+   "imputed": 644
+  },
+  {
+   "state": "GEORGIA",
+   "headcount": 575,
+   "imputed": 575
+  },
+  {
+   "state": "PUERTO RICO",
+   "headcount": 574,
+   "imputed": 574
+  },
+  {
+   "state": "LOUISIANA",
+   "headcount": 424,
+   "imputed": 424
+  },
+  {
+   "state": "NEW MEXICO",
+   "headcount": 387,
+   "imputed": 387
+  },
+  {
+   "state": "OHIO",
+   "headcount": 353,
+   "imputed": 353
+  },
+  {
+   "state": "ILLINOIS",
+   "headcount": 335,
+   "imputed": 335
+  },
+  {
+   "state": "PENNSYLVANIA",
+   "headcount": 332,
+   "imputed": 332
+  },
+  {
+   "state": "MARYLAND",
+   "headcount": 319,
+   "imputed": 319
+  },
+  {
+   "state": "NORTH CAROLINA",
+   "headcount": 313,
+   "imputed": 313
+  },
+  {
+   "state": "KENTUCKY",
+   "headcount": 269,
+   "imputed": 269
+  },
+  {
+   "state": "WEST VIRGINIA",
+   "headcount": 237,
+   "imputed": 237
+  },
+  {
+   "state": "MASSACHUSETTS",
+   "headcount": 228,
+   "imputed": 228
+  },
+  {
+   "state": "IDAHO",
+   "headcount": 220,
+   "imputed": 220
+  },
+  {
+   "state": "TENNESSEE",
+   "headcount": 212,
+   "imputed": 212
+  },
+  {
+   "state": "NEW JERSEY",
+   "headcount": 208,
+   "imputed": 208
+  },
+  {
+   "state": "HAWAII",
+   "headcount": 204,
+   "imputed": 204
+  },
+  {
+   "state": "ALABAMA",
+   "headcount": 193,
+   "imputed": 193
+  },
+  {
+   "state": "MISSOURI",
+   "headcount": 169,
+   "imputed": 169
+  },
+  {
+   "state": "WISCONSIN",
+   "headcount": 162,
+   "imputed": 162
+  },
+  {
+   "state": "COLORADO",
+   "headcount": 159,
+   "imputed": 159
+  },
+  {
+   "state": "CONNECTICUT",
+   "headcount": 151,
+   "imputed": 151
+  },
+  {
+   "state": "SOUTH CAROLINA",
+   "headcount": 146,
+   "imputed": 146
+  },
+  {
+   "state": "VIRGIN ISLANDS",
+   "headcount": 137,
+   "imputed": 137
+  },
+  {
+   "state": "MISSISSIPPI",
+   "headcount": 113,
+   "imputed": 113
+  },
+  {
+   "state": "NEVADA",
+   "headcount": 98,
+   "imputed": 98
+  },
+  {
+   "state": "UTAH",
+   "headcount": 97,
+   "imputed": 97
+  },
+  {
+   "state": "OKLAHOMA",
+   "headcount": 81,
+   "imputed": 81
+  },
+  {
+   "state": "NORTHERN MARIANA ISLANDS",
+   "headcount": 71,
+   "imputed": 71
+  },
+  {
+   "state": "GUAM",
+   "headcount": 67,
+   "imputed": 67
+  },
+  {
+   "state": "DELAWARE",
+   "headcount": 67,
+   "imputed": 67
+  },
+  {
+   "state": "OREGON",
+   "headcount": 63,
+   "imputed": 63
+  },
+  {
+   "state": "INDIANA",
+   "headcount": 61,
+   "imputed": 61
+  },
+  {
+   "state": "RHODE ISLAND",
+   "headcount": 61,
+   "imputed": 61
+  },
+  {
+   "state": "ARKANSAS",
+   "headcount": 38,
+   "imputed": 38
+  }
+ ],
+ "plan": {
+  "planned_hires": 594,
+  "actual_accessions": 475,
+  "variance": -119,
+  "variance_pct": -0.2003
+ }
+}
