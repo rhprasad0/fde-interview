@@ -43,6 +43,11 @@ notebooks as the Databricks record, and the source files on disk under `challeng
    The service principal's OAuth secret stopped minting tokens (the token endpoint answers 403); the
    principal still lists at the account level and Ryan removes it in the account console with the
    budget and the Managed MCP preview toggle.
+   **Done 2026-11-03:** the principal, the budget, and the workspace itself were deleted through
+   the account-level CLI after a sweep found them still present (the hand-off step had not been
+   run). The account lists no workspaces, principals, or budgets; the AWS account held nothing
+   Databricks had created (serverless workspace, no customer-cloud configs). Both OAuth profiles
+   used for the sweep were removed from the laptop afterwards.
 3. Laptop: the `[workforce]` profile removed from `~/.databrickscfg`; the seven `DATABRICKS_*`
    keys removed from `challenge/.env`; the Terraform state files deleted; the merged
    `demo-app` worktree removed.

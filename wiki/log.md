@@ -417,3 +417,6 @@ synthesis amended.
 
 ## [2026-11-03] query | Final Databricks spend and leftover-resource check
 Account billable-usage export gives the final total: $517 list over Oct 31 to Nov 2, $418 of it UC function compute, against $400 of credits. The spend page's evening-of figures ($197 seen, $300 predicted) were lagged and are marked superseded; index updated. Account sweep: workspace, service principal, budget and metastore still exist but nothing inside bills while idle; AWS account holds nothing Databricks created.
+
+## [2026-11-03] ingest | Databricks account emptied
+Budget, service principal, and workspace deleted at account level; lists verified empty; sweep profiles removed from the laptop. Recorded in spec 06 teardown step 2.
