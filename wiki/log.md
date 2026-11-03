@@ -455,3 +455,8 @@ Exception exercised knowingly; blind set validates. Dev set not rerun. `DECISION
 Playwright e2e (agent faked in-process) plus unit tests, 9 passing, in `.github/workflows/test.yml`.
 `Dockerfile` + whitelist `.dockerignore`, image smoke-tested; live ask against RDS through the browser
 answered Verified in 7 s. Two `DECISIONS.md` entries (dashboard headline, deploy). App Runner was chosen then dropped the same evening: a fixed 120 s request timeout and closed to new customers; ECS Fargate with the same image replaces it.
+
+## [2026-11-03] build | Mission and Incident report pages on the app
+`/mission`: why this problem (rule dates, rubric scores, DHS), the user and buyer, impact split measured vs
+hypothesis with the pilot. `/incident`: the Databricks spend as a postmortem (timeline, itemized $517 bill,
+five findings, eleven surfaces, what survived the move). One static-page route; navs on every page; 11 tests.
