@@ -486,12 +486,17 @@ questions:
   session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
   verbatim: "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
   class: data_limit
-  expected_behavior: data_limit
+  expected_behavior: narrative  # 2026-11-03 (Ryan): the figure is judge-graded through truth_facts; class stays data_limit so the limit is still judged
   tier: refusal
   expected_tools: []
   answered_by: live_agent
   tester_judgment: null
   accept_labels: [Not available, Verified, Exploratory]  # corrected 2026-11-03: a figure plus the stated limit is the better answer; limit_stated still judges the limit
+  truth_facts:
+    - name: what "thin" is in the data, the coverage ratio for CBP Officers at August 2026, stated openings on announcements open on 2026-08-01 over separations in the twelve effective months to August 2026 (equivalent forms count, 0.84% or one opening per 119 separations)
+      tolerance: abs:0.0005
+      truth_sql: |
+        SELECT round(coalesce((SELECT sum(total_openings) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date <= DATE'2026-08-01' AND close_date >= DATE'2026-08-01'), 0)::numeric / (SELECT count(*) FROM workforce.synthetic.separations WHERE agency_subelement_code = 'HSBD' AND occupational_series_code = '1895' AND effective_month BETWEEN DATE'2025-09-01' AND DATE'2026-08-01'), 4)
   limit_text: [no reason, not record why, does not say why, cannot say why, do not say why, no budget, appropriations are not, outside this review, not in the data, hold no reasons]
   nearest: [coverage, openings, postings, announcements, separations]
   notes: Reasons and budget are not in the records; a good answer says so and restates what "thin" means in the data (the coverage ratio, stated openings against separations). The 2026-11-01 answer did this correctly without a tool call.

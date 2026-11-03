@@ -1,10 +1,10 @@
 {
  "C01": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 0.3158
  },
  "C02": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -49,7 +49,7 @@
   ]
  },
  "C03": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "FEMA hiring variance against plan in FY2026": {
     "to date, Q1 to Q4 with accessions through August 2026": -2252,
@@ -58,15 +58,15 @@
   }
  },
  "C04": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 158.6
  },
  "C05": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 0.12
  },
  "C06": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "TOTAL",
@@ -79,11 +79,11 @@
   ]
  },
  "C07": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 94
  },
  "C08": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -136,7 +136,7 @@
   ]
  },
  "C09": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "1802",
@@ -149,7 +149,7 @@
   ]
  },
  "C10": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "WASHINGTON",
@@ -204,7 +204,7 @@
   ]
  },
  "C11": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -257,17 +257,17 @@
   ]
  },
  "C12": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 889
  },
  "C13": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "Do higher-grade CBP Officer postings stay open longer, on average, than lower-grade ones (yes or no); any grade split or grouping that answers the direction counts": "no"
   }
  },
  "C14": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -320,11 +320,11 @@
   ]
  },
  "C15": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 170
  },
  "C16": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "HSAA",
@@ -354,7 +354,7 @@
   ]
  },
  "C17": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": [
    {
     "key": "5",
@@ -391,11 +391,11 @@
   ]
  },
  "C18": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 11387
  },
  "A01": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "CBP Officers (series 1895) who reach retirement eligibility within the horizon the answer states, an approximation from age bracket and years of service under the enhanced law-enforcement rule (age 50 with 20 years, or 25 years at any age), brackets counted from their lower bound": {
     "within two years": 8025,
@@ -405,7 +405,7 @@
   }
  },
  "A02": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "CBP headcount on the August 2026 snapshot": 70843,
    "CBP's rank among the DHS components on the measure the answer compares (1 is the highest); corrected 2026-11-03 to admit retirement-eligibility share, the measure A01 is about": {
@@ -417,19 +417,25 @@
   }
  },
  "A03": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "CBP Officer planned hires in FY2026 Q1": 594,
    "CBP Officer accessions in FY2026 Q1 (October to December 2025)": 475,
    "FY2026 Q1 variance, actual minus planned": -119
   }
  },
+ "A04": {
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
+  "facts": {
+   "what \"thin\" is in the data, the coverage ratio for CBP Officers at August 2026, stated openings on announcements open on 2026-08-01 over separations in the twelve effective months to August 2026 (equivalent forms count, 0.84% or one opening per 119 separations)": 0.0084
+  }
+ },
  "A05": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "truth_value": 11
  },
  "A08": {
-  "truth_computed_at": "2026-11-03T17:20:54+00:00",
+  "truth_computed_at": "2026-11-03T18:56:11+00:00",
   "facts": {
    "the population whose grade mix the answer describes, by count; corrected 2026-11-03 to admit the workforce reading (headcount by grade across snapshots) beside postings": {
     "the CBP Officer workforce on the August 2026 snapshot": 27650,

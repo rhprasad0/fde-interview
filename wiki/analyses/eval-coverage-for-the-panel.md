@@ -176,7 +176,10 @@ cause in three runs, and the judge ignores a rank tolerance three times. Those a
 spend the demo's time on. The sort is the builder's reading of the builder's own
 rows. A04 and A06 are the two to check first: if the Not available label binds the agent on a
 "why" question, as the prompt's own rule says, those twenty runs move from the spec bucket to the
-agent bucket and the agent count becomes 25, not 5.
+agent bucket and the agent count becomes 25, not 5. A04's figure has since been judge-graded
+against an independent truth: 9/10 on the same prompt, the miss a Not available answer that described
+the ratio without stating it (journal, "A04 figure judge-graded"). No agent change has been made
+since the tag; the prompt hash on every held-out run is the live one.
 
 ## What to be able to say
 

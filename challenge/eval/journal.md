@@ -325,6 +325,7 @@ corrects truth or the scorer's reference.
 | Held-out run 1 | A02 | rank fact admits retirement-eligibility share (now, five years) | the agent continued A01's measure (Ryan, 2026-11-03) |
 | Held-out run 1 | A02 | rank tolerance 1 to 2 | the rank moves two places with which series count as enhanced coverage (builder, 2026-11-03; not in the table Ryan approved; kept by Ryan 2026-11-03 after the rerun; this is what lets rank 1 and rank 3 both pass, and the rerun's three judge misses are on this fact) |
 | Held-out run 1 | A03 | `must_not_claim` narrowed to causal claims; right-censoring statements allowed | the data fact was being failed with the overclaim (Ryan, 2026-11-03) |
+| Held-out rerun | A04 | `expected_behavior` narrative with one `truth_facts` entry, the coverage ratio 0.0084 at `abs:0.0005`, judge-graded | the figure was ungraded under `accept_labels`; truth from the synthetic separations and silver postings tables, `--check` reproduces (Ryan, 2026-11-03) |
 | Held-out run 1 | A04, A06 | `accept_labels`: Verified or Exploratory pass when the limit is stated | the figure plus the limit is the better answer; scorer change in `label_match` and `data_limit` (Ryan, 2026-11-03) |
 | Held-out run 1 | A05 | either `open_postings` or `posting_coverage`; date phrases quoted; alternatives widened | sibling function returns the same count; YAML split the date at the comma (Ryan, 2026-11-03) |
 | Held-out run 1 | A08 | second reading: the workforce by grade (headcount Sep 2025, Aug 2026) | the tester's words admit it (Ryan, 2026-11-03) |
@@ -767,7 +768,8 @@ no-number check, and `tool_use` does not apply to the refusal tier, so the figur
 (A04's coverage ratio, A06's count of three) is ungraded. Their 10/10 means "stated the right
 limit and offered the nearest view", not "the number was right". Spec 04's rule that a perfect
 refusal cannot hide a wrong number is weakened here; A04's ratio has a deterministic truth
-(0.0084) and can become a graded fact on a later version if Ryan wants it.
+(0.0084) and can become a graded fact on a later version if Ryan wants it. Done for A04 the same
+evening, judge-graded: see "A04 figure judge-graded" below. A06 stays ungraded.
 
 **Agent findings, now with the row noise gone.**
 1. **Whole-component questions run away.** A01 and A02 median 300 s and 15k to 38k output tokens
@@ -792,3 +794,29 @@ and once the eval admits them, the agent passes four of five runs and three of e
 every time. The corrected rows were edited after seeing failures, by the builder, with Ryan's
 approval, and that is logged; the as-written result stays on the page for that reason.
 
+
+## A04 figure judge-graded (2026-11-03, evening)
+
+Ryan chose the judge route over the deterministic one. `expected_behavior` is now `narrative`, so
+`faithfulness` runs, with one truth fact: the coverage ratio for CBP Officers at August 2026,
+0.0084, tolerance `abs:0.0005`, computed from `workforce.synthetic.separations` and
+`workforce.silver.job_postings`, never the semantic function the agent calls. The class stays
+`data_limit`, so `limit_stated` still judges the limit and `accept_labels` still admits any label.
+The deterministic route was rejected because `numeric_match` reads the agent's closing block, and
+the agent nulls `answer_value` under the Not available label even when the prose states the figure:
+of the ten corrected-column runs, nine stated 0.0084 but only seven put it in the block.
+
+Two five-run experiments on A04 alone, prompt `b44a9181`, no agent change:
+`20261103T185831Z-b44a9181` 4/5 and `20261103T185848Z-b44a9181` 5/5, so pass^5 1 of 2 and
+pass^10 0/1, pooled 9/10, cost $0.02. Labels 7 Verified, 3 Not available. The one miss is the
+agent's: a Not available answer that described the coverage ratio in words and gave no figure; the
+judge's reason names the fact as missing, which is the right call. The corrected held-out column
+(65/80) is left as run; A04 was 10/10 there with the figure ungraded, and this line is reported
+beside it, not merged into it.
+
+**Has the agent been tuned on the held-out set?** No. `git diff eval-v1..HEAD -- challenge/prototype`
+is empty, the live prompt hashes to `b44a9181`, and every held-out row in `experiments.jsonl`
+carries that hash. What changed after the held-out runs is the measurement only: row corrections
+(set-change table), two scorer forms (`accept_labels`, any-of `expected_tools`), the `--ids` flag,
+and this truth fact. The four agent fixes the misses point at are not made (`DECISIONS.md`,
+2026-11-03).

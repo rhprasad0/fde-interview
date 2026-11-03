@@ -434,3 +434,7 @@ Six row corrections and two scorer changes (any-of tool lists, accepted labels),
 ## [2026-11-03] decision | Headline pass^5, pass^10 Wilson kept; Tester A never tuned against
 Ryan's calls on the five items the held-out rerun raised, two logged in `DECISIONS.md`; A01 reword
 and A02 tolerance kept; A04 figure grading still under review (two routes, 7/10 or 9/10).
+
+## [2026-11-03] build | A04 figure judge-graded: 9/10 on b44a9181, no agent change since eval-v1
+Truth fact 0.0084 from synthetic separations and silver postings; two five-run experiments on A04
+alone, reported beside the corrected column. `git diff eval-v1..HEAD -- challenge/prototype` is empty.
