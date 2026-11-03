@@ -1,0 +1,5 @@
+# The demo app, on top of the prototype's pins: uv pip install --python .venv/bin/python -r app/requirements.txt
+-r ../prototype/requirements.txt
+fastapi==0.128.0
+uvicorn==0.54.0
+pytest==8.4.1

@@ -580,6 +580,30 @@ functions, Agent Bricks.
   real questions mostly fall outside the functions. The removal rule stands, and its consequence is
   now stated: under 70%, most of what Tester A asked becomes Not available.
 
+## 2026-11-02  Demo app: stateless FastAPI, snapshot chart data, the agent behind one seam
+
+- **Context:** the two concept pages (workshop and eval dashboard) needed to become a real local app
+  that will later run on AWS serverless, while the tester app keeps its job and another session is
+  hill-climbing the prompt in the same files.
+- **Chosen:** `challenge/app/`: FastAPI serving the two pages, `/api/ask` streaming server-sent
+  events, `/api/cell` from a committed snapshot `data/cell.json` that `refresh.py` writes from the
+  semantic views, `/api/evals` from `experiments.jsonl`. Stateless: the browser sends the transcript
+  as text turns and the server builds a fresh agent per request. The agent sits behind
+  `backend.stream`, one async generator; the local implementation injects a callback into
+  `build_agent` so `run_turn` stays the single trace writer. agent.py changed by two keyword
+  parameters and three one-line Lambda guards (env fallback, `RAW_DIR`, the sha lookup). Later:
+  static files to S3, `main.py` to Lambda behind a response-streaming function URL via Lambda Web
+  Adapter, a `stream_agentcore` with the same signature chosen by `AGENT_RUNTIME_ARN`.
+- **Rejected:** server-side sessions (needs a table in deployment and keeps an agent warm per
+  browser); live chart queries per page load (the service principal's token cannot run SQL, and a
+  cold warehouse on stage); new semantic functions for the three chart series (touches the layer
+  another session depends on); splitting `run_turn` into a streaming variant (fifty lines moved in
+  a file under active edit elsewhere).
+- **Revisit:** if a demo needs the model to see prior tool results (text-only replay loses them),
+  carry the prior tool blocks in the transcript; if the per-request build (token plus MCP
+  initialize, about 6 s before the first byte) is too slow on stage, cache the token and the MCP
+  client per process.
+
 ## Build-week items, not decisions
 
 - Code freeze: last commit to this repo by Thursday 2026-11-05 at 17:00. Everything after that is

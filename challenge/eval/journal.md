@@ -289,13 +289,41 @@ OpenAI calls and warehouse time.
 4. Respecting the tools' limits: batching calls at twelve (iteration 4) ended the MCP errors.
 
 **For Ryan.**
-- **C18** (0/10 in five of six iterations) and **C15** are ambiguity in the questions, not agent
-  errors. C18 asks for "roughly" how many could retire without a convention; the agent answers a
-  floor (age 50 with 20 years) and names a ceiling of about 11,400, which matches truth (11,387);
-  truth also counts 25 years at any age. C15 reads "this year" as calendar 2026 in some runs.
-  Accepting both readings, as C03 does, or rewording, would make both measurable.
-- **Iteration 6** is ready to adopt.
-- **Caveat on the numbers.** Twenty questions, written with the agent's builder, tuned against for
-  six iterations. The prompt changes are general rules and facts, never answers, but a set this
-  small cannot rule out overfitting. Tester A's own questions, held out of every iteration, are
-  the next honest test.
+- **The Genie bar.** The headline rule is pass^5: 80% Verified, 70% Genie, and under 70% the agent
+  loses the Genie tool (DECISIONS, Genie measured). Iteration 4's pass^5 is Verified 6/6 and 6/6
+  (clears 80%), Genie **9/12 and 6/12** (75% and 50%: one experiment clears 70%, the other does
+  not), Not available 2/2. Pooled Genie pass^1 is 83%. The choice: move the bar, declare pass^5
+  on twelve Genie questions too coarse to trigger removal (the baselines measured that noise), or
+  remove the tool.
+- **Iteration 6** (`8c1cc317`, Genie 91% pooled) is likely a real gain: the 8-point bar came from
+  the spread of 36-run experiments, and these comparisons pool 120 runs against 120, where the
+  same noise is smaller. To adopt it: `git show 6af9d9a:challenge/prototype/prompt.md >
+  challenge/prototype/prompt.md`, run one more five-run experiment, and pool it with the two
+  above.
+- **C18** (0/10 in five of six iterations) is ambiguity in the question: it asks for "roughly" how
+  many could retire without a convention; the agent answers a floor (age 50 with 20 years) and
+  names a ceiling of about 11,400, which matches truth (11,387); truth also counts 25 years at any
+  age. **C15** is partly the question ("this year") and partly the agent's reading of it: it rose
+  from 2/10 to 6/10 to 9/10 as the period rules tightened. Accepting both readings, as C03 does,
+  or rewording, would make both measurable.
+- **The live app changed.** `app.py` loads the same prompt files, so the tester-facing agent now
+  runs iteration 4, not the prompt Tester A used.
+
+**Every change to the set, in one place.** The set was never frozen (`frozen: false`, no
+`eval-v1` tag). No question's wording changed and no answer went into the prompt; each edit
+corrects truth or the scorer's reference.
+
+| When | Row | Edit | Why |
+|---|---|---|---|
+| After smoke one | C11 | Genie to Verified | the agent answered it correctly from the functions |
+| After smoke one | C19 | limit phrases widened (later replaced by the judge) | a correct answer missed the phrases |
+| Truth written | C13 | list to narrative on the direction | answers used means, medians, and bands |
+| After baseline one | C03 | two acceptable readings | "this year" read either way is reasonable (Ryan) |
+| Iteration 1 | C02 | truth ranks components that missed plan only | the question asks which missed |
+| Iteration 5 | C20 | `limit_text` added | the judge had no reason to check against |
+
+**Caveat on the numbers.** Twenty questions, written with the agent's builder, tuned against for
+six iterations. The prompt changes are general rules and facts, never answers, but a set this
+small cannot rule out overfitting. Tester A's verbatim questions are the next test, but they are
+**related, not independent**: several co-written rows were seeded from them (C01 and C18 from A01,
+C17 from A07), so they share topics with the set the prompt was tuned on.
