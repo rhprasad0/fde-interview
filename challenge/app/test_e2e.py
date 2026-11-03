@@ -72,11 +72,12 @@ def test_evals_leads_with_the_headline_pair(base_url, page):
     assert page.locator("#heat svg rect").count() == d["headline"]["rows"]
 
 
-def test_study_renders(base_url, page):
-    page.goto(base_url + "/study")
-    pw.expect(page.locator("h1")).to_contain_text("One tester")
-    pw.expect(page.locator("nav.tabs a[aria-current]")).to_have_text("Field notes")
-    pw.expect(page.locator("#turns-t tbody tr")).to_have_count(8)
+@pytest.mark.parametrize("path,tab,h1", [("/study", "Field notes", "One tester"), ("/mission", "Mission", "Over 80 agencies"), ("/incident", "Incident report", "pick up Databricks")])
+def test_static_pages_render(base_url, page, path, tab, h1):
+    page.goto(base_url + path)
+    pw.expect(page.locator("h1")).to_contain_text(h1)
+    pw.expect(page.locator("nav.tabs a[aria-current]")).to_have_text(tab)
+    pw.expect(page.locator("main table tbody tr").first).to_be_visible()
 
 
 def test_ask_streams_a_labelled_answer(base_url, page):

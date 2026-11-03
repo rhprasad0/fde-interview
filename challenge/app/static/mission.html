@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the evals-suite chrome reused; the page on the left, a ledger in the right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pass:#2a78d6; --pass-soft:#dbe9fb;
+  --f-list:#eb6834; --f-fna:#1baf7a; --f-other:#6b717c;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --bad-bg:#fde3e1; --bad-ink:#7a1a16; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px}
+@media (max-width:1040px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:72ch}
+.headrow{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn small{font-weight:400;opacity:.85}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .mono{font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.scroll{overflow-x:auto}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:280px;z-index:20}
+.tip b{display:block}
+aside.debug{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1040px){aside.debug{position:static;max-height:none}}
+.dhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dhead b{font-size:14px}
+.dhead small{font-size:12px;color:var(--ink-3)}
+.dbody{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.dsec{display:flex;flex-direction:column;gap:6px}
+.dsec h3{margin:0;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.dsec p{margin:0}
+.q{background:var(--bg);border-radius:6px;padding:8px 12px}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink);white-space:pre-wrap}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.chip.warn{background:var(--banner);color:var(--banner-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Mission</span><small>WHY THIS · FOR WHOM · TO WHAT END</small></div>
+    <nav class="tabs" aria-label="Evaluation suite">
+      <a href="/">Workshop</a>
+      <a href="/evals">Metrics dashboard</a>
+      <a href="/study">Field notes</a>
+      <a href="/mission" aria-current="page">Mission</a>
+      <a href="/incident">Incident report</a>
+      <a href="#okrs" class="off" title="There is one objective. It is on this page.">OKRs</a>
+    </nav>
+    <div class="status">
+      <span>Rule effective <b>2026-11-30</b></span>
+      <span>Agencies covered <b>80+</b></span>
+      <span>Rows per monthly file <b class="num">2,000,000+</b></span>
+      <span>Hours-saved claims <b>0</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter">THE FRAMEWORK CHANGED ON 2026-10-29 // THE NEW ONE IS BUILT AROUND EXACTLY THIS QUESTION // WE CHECKED THE FEDERAL REGISTER, NOT A BLOG</div>
+
+<div class="shell gutter">
+<main>
+  <div class="crumb">
+    <span>Problem: <b>quarterly staffing variance explanations</b></span><span>/</span>
+    <span>User: <b>workforce-planning analyst, agency human capital office</b></span><span>/</span>
+    <span>Buyer: <b>the CHCO</b></span>
+  </div>
+
+  <div class="headrow">
+    <div>
+      <h1>Over 80 agencies now owe OPM a quarterly explanation of where hiring landed against plan. The offices that write it lost a fifth of their staff.</h1>
+      <p class="lede">The data to answer with is public and monthly, and it ships as files of two million rows that a spreadsheet cannot open. The gap between the mandate and the capacity is the problem. The agent is the layer an analyst drives to close it; it does not replace the analyst's judgment, and it says so on every answer.</p>
+    </div>
+    <a class="btn primary" href="/">See the brief it drafts</a>
+  </div>
+
+  <section class="tiles" aria-label="Scale">
+    <div class="tile"><span>Separations in 2025, 22 major agencies</span><strong class="num">~378,000</strong><em>Against about 127,000 hires. GAO-26-108583.</em></div>
+    <div class="tile"><span>Federal HR staff, May 2026</span><strong class="num">41,711</strong><em>Down 18.5% from December 2024. The workforce they serve fell 12.4%.</em></div>
+    <div class="tile"><span>OPM's own year-one estimate</span><strong class="num">100 h</strong><em>Per agency, at $156.30 an hour loaded. Federal Register 2026-22093.</em></div>
+    <div class="tile"><span>Time to hire, FY2024 vs target</span><strong class="num">101 → 80 d</strong><em>The Air Force got from 120 to under 80 with a dashboard. Visibility changes behavior.</em></div>
+  </section>
+
+  <section class="card" id="why">
+    <h2>Why this problem: the rule is dated, the data is public, and the capacity is gone</h2>
+    <p class="sub">OPM's final rule "Personnel Management in Agencies: Strategic Human Capital Management" was published on 2026-10-29 and takes effect on 2026-11-30. It replaces the old human capital plans and reviews with Annual Staffing Plans, quarterly staffing reviews, and a quarterly report to OPM and OMB "including an explanation of any significant variances." The plan is built bottom-up by component and mission-critical occupation, with a hiring forecast by quarter. Every vacancy goes through a Strategic Hiring Committee. Every hiring action is to close inside 80 days. The quarterly variance requirement is older than the rule: the OMB and OPM memo under Executive Order 14356 already asked for it from the second quarter of FY2026.</p>
+    <table>
+      <thead><tr><th>Candidate problem</th><th class="r">Score on the brief's rubric</th><th>Why not</th></tr></thead>
+      <tbody class="num">
+        <tr style="background:var(--pass-soft)"><td>Workforce staffing risk: separations against the plan, where hiring is aimed, what needs a decision</td><td class="r">25</td><td>Chosen. Real public data monthly, a rule with a date, and a user with a deadline.</td></tr>
+        <tr><td>Spending intelligence on USAspending</td><td class="r">23</td><td>Same mechanics, weaker urgency. The stated backup.</td></tr>
+        <tr><td>Cyber risk fusion</td><td class="r">20</td><td>The Firm already sells an accelerator there. Nothing to show them they do not have.</td></tr>
+        <tr><td>Critical-minerals supply chain</td><td class="r">17</td><td>No clean public data. A demo on bad data proves the wrong thing.</td></tr>
+      </tbody>
+    </table>
+    <p class="sub"><b>Home agency: DHS</b>, because it has several large components (TSA, CBP, ICE, USCIS, FEMA) with different hiring shapes, so a variance table has something to say. VA was rejected because one component dominates; Treasury because little exists beside the IRS.</p>
+    <p class="src">wiki/analyses/user-problem-impact.md · wiki/analyses/build-challenge-problem-selection.md · DECISIONS.md, User and problem statement; Home agency</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card" id="who">
+      <h2>Who the user is, and who pays</h2>
+      <p class="sub"><b>The user</b> is a workforce-planning analyst in an agency human capital office, typically a GS-13 or GS-14 HR specialist or management analyst, who prepares the CHCO's quarterly staffing review and the variance explanation that goes to OPM and OMB. Today that means pulling HRIS extracts or the OPM files, reconciling codes by hand, pivoting in a spreadsheet, writing the narrative, and doing it again next quarter and for every ad hoc request. OPM's director told Congress that 45,000 HR professionals "spend an inordinate amount of their time trying to collect data out of outdated systems."</p>
+      <p class="sub"><b>The buyer</b> is the Chief Human Capital Officer. <b>The consumer</b> is the Strategic Hiring Committee, chaired by non-career leadership, which approves each vacancy and needs a number it can defend. Program office leaders feel the result as filled or unfilled positions.</p>
+      <p class="sub"><b>What the one real user said.</b> A former federal HR professional sat with the prototype for 80 minutes (<a href="/study">Field notes</a>). The praise was for the refusals: "they tell you what you can't get." The want was the why behind the numbers, peer comparison, and trend, fed with the agency's own data rather than OPM's public picture. That is a component-level diagnostic, one altitude below this product. We wrote it down instead of pretending the persona was validated.</p>
+      <p class="src">DECISIONS.md, User and problem statement · wiki/analyses/tester-a-session-findings.md</p>
+    </section>
+
+    <section class="card" id="impact">
+      <h2>The impact we expect, split into what we measured and what we only claim</h2>
+      <table>
+        <thead><tr><th>Claim</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>A defensible, traceable answer in seconds to minutes, with the calculation it came from</td><td><span class="chip ok">Measured</span></td><td>Median 25 s across the tester's eight turns, 53 s on the held-out pair at xhigh; every Verified answer names its function.</td></tr>
+          <tr><td>Correctness on questions the prompt never saw</td><td><span class="chip ok">Measured</span></td><td>5 of 8 held-out questions pass 10 of 10, Wilson 31% to 86%. The <a href="/evals">dashboard</a> shows how it got there, including the drop.</td></tr>
+          <tr><td>Cost per question</td><td><span class="chip ok">Measured</span></td><td>About $0.03 for the tester's whole session; $1.16 for 80 graded runs at xhigh.</td></tr>
+          <tr><td>Fewer analyst hours per quarterly cycle</td><td><span class="chip warn">Hypothesis</span></td><td>No timed baseline exists. The pilot times one office's manual quarter first, then runs the next through the agent. No hours-saved number appears on this site until then.</td></tr>
+          <tr><td>Earlier visibility of where separation-driven risk is concentrating</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: the FBI's vacancy forecast nine months out per occupation. Ours is a quarterly brief, not a forecast model.</td></tr>
+          <tr><td>Shorter time to fill</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: an Air Force status dashboard took the average from 120 to under 80 days. Visibility changes behavior; we have not shown it here.</td></tr>
+        </tbody>
+      </table>
+      <p class="sub"><b>The pilot that tests it.</b> One agency human capital office runs its next quarterly review through the agent with the current manual effort timed first, at an agreed loaded rate. Stop or simplify if correctness on the agency's own questions falls below the agreed bar, or if the analysts route around it. The word is "capability risk," not "proven gap," and every number carries its baseline and its limit.</p>
+      <p class="src">wiki/analyses/user-problem-impact.md, Expected impact · challenge/eval/journal.md</p>
+    </section>
+  </div>
+</main>
+
+<aside class="debug" aria-label="Rejected and reserved">
+  <div class="dhead"><b>Rejected, on the record</b><small>each with the reason, because the reason is the design</small></div>
+  <div class="dbody">
+    <div class="dsec"><h3>Users we did not pick</h3><p>A congressional or GAO analyst: not the Firm's client. A program office director: too narrow, and they already know their own vacancies.</p></div>
+    <div class="dsec"><h3>Shapes we did not build</h3><p>Another chatbot over public charts: OPM's own FWD Chat already answers plain-English questions about the public data. It never sees the agency's plan. Ours is cross-source, scheduled, governed, and plan-aware, which is the whole difference.</p></div>
+    <div class="dsec"><h3>Words we do not use</h3><p>"Hours saved" without a stopwatch. "Proven gap" when the data shows a capability risk. "Tenure" when we mean length of service. "Days to hours" as a fact.</p></div>
+    <div class="dsec"><h3>What the demo plan is</h3><p>Synthetic, and labelled so on every screen. Agencies keep their real staffing plans private, so the plan the agent compares against was generated from the rule's own template. In deployment it is the agency's submission.</p></div>
+    <div class="dsec"><h3>Side note for the pitch</h3><p>The same OPM guidance names "forward deployed engineers" among the technical talent it wants agencies to recruit. We noticed.</p></div>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">Problem, user, impact. The first two are sourced to the Federal Register and a decision log. The third is split into measured and hypothesis, and stays split until a pilot with a stopwatch.</footer>
+</body>
+</html>

@@ -89,14 +89,19 @@ def evals_page():
     return FileResponse(HERE / "static/evals.html")
 
 
-@app.get("/study")
-def study_page():
-    return FileResponse(HERE / "static/study.html")
-
-
 @app.get("/health")
 def health():
     return {"ok": True}
+
+
+PAGES = {"study": "study.html", "mission": "mission.html", "incident": "incident.html"}
+
+
+@app.get("/{page}")
+def static_page(page: str):
+    if page not in PAGES:
+        raise HTTPException(404)
+    return FileResponse(HERE / "static" / PAGES[page])  # after the fixed routes: it matches any one-segment path
 
 
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
