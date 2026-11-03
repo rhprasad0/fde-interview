@@ -176,6 +176,23 @@ Revisit:   what evidence would change this
   questions exists, Tester A becomes a second development set and the new set is the check; the
   fixes the Tester A misses point at (runaway whole-component answers, the lost label line, the
   OPM paragraph's causal claim, the judge's rank tolerance) wait for that set.
+- **Amended 2026-11-03 (Ryan), later the same evening: judge effort `xhigh`; an agent effort
+  sweep on the held-out rows as a named exception.** The gpt-6-luna judges run at reasoning effort
+  `xhigh` from here on, recorded on every judged row as `judge_effort`. That moves the scorer, so
+  every column graded before it (the dev 18/20 and 19/20, the held-out 65/80) is on the old judge
+  until rerun; the sweep's own baseline is effort `high` under the new judge. The agent's effort
+  (Haiku 5.5 `output_config.effort`, `high` since the climb) is swept to `xhigh` and `max` on
+  Tester A's eight rows, two five-run experiments per arm, `max_tokens` unchanged at 16000 so
+  truncations are reported per arm rather than hidden. Choosing an effort on these results is
+  selection on the held-out set, an exception to the rule above made knowingly: whatever effort is
+  kept is validated on the fresh blind set when it exists. The first sweep at 16000 was
+  stopped after three experiments (Ryan): effort `high` scored 34/40 and 37/40 under the new judge,
+  and the first `xhigh` experiment 22/40 with 12 runs truncated at the cap (every A01 and A02
+  run), so the cap, not the reasoning, was being measured. `max_tokens` is now 64000 (the model
+  streams, so the SDK timeout does not bind) and recorded on every row; the sweep reruns at that
+  cap with its own `high` baseline. Rejected: a judge-effort flag (xhigh is the setting, not an
+  experiment); keeping the 16000 rows as the comparison (they measure truncation). Cost: about
+  $0.30 per experiment at `high`, more with thinking.
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real

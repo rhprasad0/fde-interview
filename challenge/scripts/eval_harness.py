@@ -292,7 +292,7 @@ def _evaluators():
 # ---- rows ----
 
 TOOL_KEYS = ("name", "params", "result_rows", "imputed_rows", "synthetic_rows", "duration_ms", "result_values")
-COLS = ["set_version", "id", "run_index", "session_id", "run_at", "agent_git_sha", "prompt_hash", "model_id", "effort", "provider_served",
+COLS = ["set_version", "id", "run_index", "session_id", "run_at", "agent_git_sha", "prompt_hash", "model_id", "effort", "max_tokens", "provider_served",
         "question_text", "turn_1_answer_text", "answer_text", "answer_value", "cited_tools", "tool_calls", "genie_sql",
         "genie_statement_id", "label", "tool_call_count", "judge_same_family", "judge_effort", "latency_ms", "cost_usd", "input_tokens",
         "output_tokens", "error",
@@ -447,7 +447,7 @@ def run(set_version, runs=5, ids=None):
         qs = {"STUB": {"id": "STUB", "set_version": set_version, "verbatim": "stub dry run", "class": "refusal",
                        "expected_behavior": "refusal", "tier": "refusal", "must_offer": "stub"}}
         runs = 1
-    print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, effort {A.EFFORT}, judge {JUDGE_EFFORT}, experiment {EXPERIMENT_ID}")
+    print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, effort {A.EFFORT}, max_tokens {A.MAX_TOKENS}, judge {JUDGE_EFFORT}, experiment {EXPERIMENT_ID}")
 
     def one(job):  # one fresh agent per (question, run); nothing cached across runs
         q, r = job
