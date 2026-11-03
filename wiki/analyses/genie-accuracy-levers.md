@@ -77,6 +77,15 @@ the largest documented gain but semantic-layer work deferred with the other data
 Genie One MCP and Agent mode, which replace the tool rather than tune it
 ([Genie One MCP](https://docs.databricks.com/aws/en/agents/mcp-tools/genie-mcp)).
 
+## Benchmarks built (2026-11-02)
+
+The eleven Genie-tier eval rows with truth SQL are now benchmarks in the space
+(`challenge/scripts/genie_bench.py`). Genie answering them directly passes 8 of 22 over two runs
+(5/11 and 3/11), against 83% for the same questions through the agent. Genie's own benchmark grader
+scores only 3 of 22: it fails correct answers on result format, so the script also grades Genie's
+rows with the agent eval's scorers. Details and the errors seen: `challenge/eval/journal.md`,
+"Genie direct".
+
 ## Not checked
 
 Whether every lever applies equally through the per-space MCP endpoint the agent uses (the docs

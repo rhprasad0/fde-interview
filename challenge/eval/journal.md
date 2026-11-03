@@ -327,3 +327,35 @@ six iterations. The prompt changes are general rules and facts, never answers, b
 small cannot rule out overfitting. Tester A's verbatim questions are the next test, but they are
 **related, not independent**: several co-written rows were seeded from them (C01 and C18 from A01,
 C17 from A07), so they share topics with the set the prompt was tuned on.
+
+# Genie direct: benchmarks in the space
+
+A second measurement, built 2026-11-02 after the agent climb plateaued: the eval's Genie-tier
+questions asked of Genie directly, through the space's own benchmarks, with no agent writing the
+request. `challenge/scripts/genie_bench.py` (`sync`, `run`, `report`); results in
+`challenge/eval/genie-bench.jsonl`, tagged with a space hash (the space configuration without its
+benchmarks), so a change to the space shows as a new hash the way a prompt change does.
+
+**Two graders.** Genie's own benchmark grader compares result sets exactly and fails correct
+answers on format: a month as a DATE where truth has `yyyy-MM`, every city where truth keeps the
+top ten, two figures as columns of one row. `genie_bench.py` therefore also grades Genie's returned
+rows with the agent eval's scorers (`numeric_match`, `list_match` with `key_by`), forgiving only
+format (which columns, long or wide, a rate as a percent), never values. Every verdict of the first
+run was checked by hand; a self-check confirms a wrong value still fails.
+
+**Baseline, space `3443cb4f` (as built in spec 03: no column values visible, no expressions, no
+example SQL).**
+
+| Run | Pass (eval scorers) | Genie's grader GOOD | Minutes |
+|---|---|---|---|
+| `20261103T001958Z` | 5/11 | 2/11 | about 4 |
+| `20261103T002537Z` | 3/11 | 1/11 | 3.7 |
+| Pooled | **8/22 (36%)** | 3/22 | |
+
+Through the agent (iteration 4), the same Genie-tier questions pass 83% pooled. The gap is the
+agent's precise requests; the space-side levers (`wiki/analyses/genie-accuracy-levers.md`) are how
+to close it inside Genie. Real errors seen: C16 counts 225 FEMA "senior executives" (truth 44),
+C09 finds no CBP Officer pay row, C17 divides by average monthly headcount, C14 groups by month
+name, C08 once returned zeros, C06 once counted the wrong population (1,368 against 1,041).
+
+**Noise.** 5/11 then 3/11 with nothing changed: compare space changes on at least three pooled runs.

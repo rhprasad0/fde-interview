@@ -579,6 +579,11 @@ functions, Agent Bricks.
 - **Amended 2026-11-02 (spec 04):** Genie is now the larger tier, with a floor of 20 rows, because
   real questions mostly fall outside the functions. The removal rule stands, and its consequence is
   now stated: under 70%, most of what Tester A asked becomes Not available.
+- **Amended 2026-11-02 (Ryan): Genie is also measured directly.** The Genie-tier rows are benchmarks
+  in the space, run through the Beta eval-run API by `challenge/scripts/genie_bench.py` and graded
+  with the agent eval's scorers (Genie's own grader fails correct answers on result format).
+  Baseline 8/22 direct against 83% through the agent. The removal rule still reads the
+  through-the-agent line; the direct line measures changes to the space itself.
 
 ## 2026-11-02  Demo app: stateless FastAPI, snapshot chart data, the agent behind one seam
 

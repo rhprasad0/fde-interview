@@ -390,3 +390,11 @@ pass^1 (`challenge/eval/journal.md`). Kept iteration 4 (`b06cf68a`): Verified 56
 Research through Exa filed as `wiki/analyses/genie-accuracy-levers.md`: the live Genie space has no
 column configuration, SQL expressions, example SQL, or benchmarks; the Beta eval-run API makes
 benchmarks scriptable. `genie-accuracy.md` gains an update section.
+
+## [2026-11-02] query | Persistent memory for the demo agent
+Exa research on AgentCore Memory, Strands session managers, file-based memory patterns, and memory benchmarks (LongMemEval, LoCoMo). Finding: Cognito is unnecessary; recommended a per-actor notes file plus `remember` tool seeded from captured decisions, with six memory eval rows and three spec 04 amendments; AgentCore Memory deferred to spec 06 with a reopen condition. Filed as `analyses/agent-memory-for-the-demo.md`.
+
+## [2026-11-02] build | Genie benchmarks
+Eleven Genie-tier eval rows pushed to the space as benchmarks; `genie_bench.py` runs them through
+the Beta eval-run API and grades Genie's rows with the agent eval's scorers. Genie direct 8/22
+pooled (5/11, 3/11) against 83% through the agent; Genie's own grader 3/22.
