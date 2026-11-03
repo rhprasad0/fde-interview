@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Layout: the evals-suite chrome reused; the page on the left, a ledger in the right rail. */
+/* The evals-suite chrome reused: the page on the left, a ledger in the right rail. */
 :root{
   --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
   --accent:#2a78d6; --accent-ink:#ffffff;
@@ -105,104 +105,103 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
 <header class="top">
   <div class="in gutter">
-    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Mission</span><small>WHY THIS · FOR WHOM · TO WHAT END</small></div>
-    <nav class="tabs" aria-label="Evaluation suite">
+    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Mission</span><small>WHY · WHO · SO WHAT</small></div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission" aria-current="page">Mission</a>
       <a href="/">Workshop</a>
       <a href="/evals">Metrics dashboard</a>
       <a href="/study">Field notes</a>
-      <a href="/mission" aria-current="page">Mission</a>
       <a href="/incident">Incident report</a>
-      <a href="#okrs" class="off" title="There is one objective. It is on this page.">OKRs</a>
+      <a href="#okrs" class="off" title="One objective. It is on this page.">OKRs</a>
     </nav>
     <div class="status">
       <span>Rule effective <b>2026-11-30</b></span>
-      <span>Agencies covered <b>80+</b></span>
+      <span>Agencies <b>80+</b></span>
       <span>Rows per monthly file <b class="num">2,000,000+</b></span>
       <span>Hours-saved claims <b>0</b></span>
     </div>
   </div>
 </header>
-<div class="banner gutter">THE FRAMEWORK CHANGED ON 2026-10-29 // THE NEW ONE IS BUILT AROUND EXACTLY THIS QUESTION // WE CHECKED THE FEDERAL REGISTER, NOT A BLOG</div>
+<div class="banner gutter">A NEW OPM RULE // 80+ AGENCIES OWE A QUARTERLY VARIANCE EXPLANATION // THE HR OFFICES WRITING IT LOST A FIFTH OF THEIR STAFF</div>
 
 <div class="shell gutter">
 <main>
   <div class="crumb">
     <span>Problem: <b>quarterly staffing variance explanations</b></span><span>/</span>
-    <span>User: <b>workforce-planning analyst, agency human capital office</b></span><span>/</span>
+    <span>User: <b>workforce-planning analyst</b></span><span>/</span>
     <span>Buyer: <b>the CHCO</b></span>
   </div>
 
   <div class="headrow">
     <div>
       <h1>Over 80 agencies now owe OPM a quarterly explanation of where hiring landed against plan. The offices that write it lost a fifth of their staff.</h1>
-      <p class="lede">The data to answer with is public and monthly, and it ships as files of two million rows that a spreadsheet cannot open. The gap between the mandate and the capacity is the problem. The agent is the layer an analyst drives to close it; it does not replace the analyst's judgment, and it says so on every answer.</p>
+      <p class="lede">The data to answer with is public and monthly. It ships as files of two million rows. An analyst with a spreadsheet cannot open them. This agent reads them, computes the variance, and drafts the explanation with every number traced to its calculation. The analyst decides what to send.</p>
     </div>
     <a class="btn primary" href="/">See the brief it drafts</a>
   </div>
 
   <section class="tiles" aria-label="Scale">
-    <div class="tile"><span>Separations in 2025, 22 major agencies</span><strong class="num">~378,000</strong><em>Against about 127,000 hires. GAO-26-108583.</em></div>
-    <div class="tile"><span>Federal HR staff, May 2026</span><strong class="num">41,711</strong><em>Down 18.5% from December 2024. The workforce they serve fell 12.4%.</em></div>
-    <div class="tile"><span>OPM's own year-one estimate</span><strong class="num">100 h</strong><em>Per agency, at $156.30 an hour loaded. Federal Register 2026-22093.</em></div>
-    <div class="tile"><span>Time to hire, FY2024 vs target</span><strong class="num">101 → 80 d</strong><em>The Air Force got from 120 to under 80 with a dashboard. Visibility changes behavior.</em></div>
+    <div class="tile"><span>Separations in 2025, 22 agencies</span><strong class="num">~378,000</strong><em>Against about 127,000 hires. GAO-26-108583.</em></div>
+    <div class="tile"><span>Federal HR staff, May 2026</span><strong class="num">41,711</strong><em>Down 18.5% since December 2024.</em></div>
+    <div class="tile"><span>OPM's year-one estimate</span><strong class="num">100 h</strong><em>Per agency, at $156.30 an hour. Federal Register 2026-22093.</em></div>
+    <div class="tile"><span>Time to hire, FY2024 vs target</span><strong class="num">101 → 80 d</strong><em>The Air Force reached 80 with a status dashboard.</em></div>
   </section>
 
   <section class="card" id="why">
-    <h2>Why this problem: the rule is dated, the data is public, and the capacity is gone</h2>
-    <p class="sub">OPM's final rule "Personnel Management in Agencies: Strategic Human Capital Management" was published on 2026-10-29 and takes effect on 2026-11-30. It replaces the old human capital plans and reviews with Annual Staffing Plans, quarterly staffing reviews, and a quarterly report to OPM and OMB "including an explanation of any significant variances." The plan is built bottom-up by component and mission-critical occupation, with a hiring forecast by quarter. Every vacancy goes through a Strategic Hiring Committee. Every hiring action is to close inside 80 days. The quarterly variance requirement is older than the rule: the OMB and OPM memo under Executive Order 14356 already asked for it from the second quarter of FY2026.</p>
+    <h2>Why this problem</h2>
+    <p class="sub">OPM's final rule on strategic human capital management was published 2026-10-29 and takes effect 2026-11-30. Each agency now files an Annual Staffing Plan with a hiring forecast by quarter and by component or mission-critical occupation, then reports to OPM and OMB every quarter "including an explanation of any significant variances." That explanation is what this agent drafts.</p>
     <table>
-      <thead><tr><th>Candidate problem</th><th class="r">Score on the brief's rubric</th><th>Why not</th></tr></thead>
+      <thead><tr><th>Candidate problem</th><th class="r">Rubric score</th><th>Why not</th></tr></thead>
       <tbody class="num">
-        <tr style="background:var(--pass-soft)"><td>Workforce staffing risk: separations against the plan, where hiring is aimed, what needs a decision</td><td class="r">25</td><td>Chosen. Real public data monthly, a rule with a date, and a user with a deadline.</td></tr>
-        <tr><td>Spending intelligence on USAspending</td><td class="r">23</td><td>Same mechanics, weaker urgency. The stated backup.</td></tr>
-        <tr><td>Cyber risk fusion</td><td class="r">20</td><td>The Firm already sells an accelerator there. Nothing to show them they do not have.</td></tr>
-        <tr><td>Critical-minerals supply chain</td><td class="r">17</td><td>No clean public data. A demo on bad data proves the wrong thing.</td></tr>
+        <tr style="background:var(--pass-soft)"><td>Workforce staffing risk: separations against plan, where hiring is aimed, what needs a decision</td><td class="r">25</td><td>Chosen. Public monthly data, a rule with a date, a user with a deadline.</td></tr>
+        <tr><td>Spending intelligence on USAspending</td><td class="r">23</td><td>Same mechanics, less urgency. The backup.</td></tr>
+        <tr><td>Cyber risk fusion</td><td class="r">20</td><td>The Firm already sells an accelerator there.</td></tr>
+        <tr><td>Critical-minerals supply chain</td><td class="r">17</td><td>No clean public data.</td></tr>
       </tbody>
     </table>
-    <p class="sub"><b>Home agency: DHS</b>, because it has several large components (TSA, CBP, ICE, USCIS, FEMA) with different hiring shapes, so a variance table has something to say. VA was rejected because one component dominates; Treasury because little exists beside the IRS.</p>
-    <p class="src">wiki/analyses/user-problem-impact.md · wiki/analyses/build-challenge-problem-selection.md · DECISIONS.md, User and problem statement; Home agency</p>
+    <p class="sub">The home agency is DHS. It has several large components with different hiring shapes, so a variance table has something to say. VA has one dominant component. Treasury is mostly the IRS.</p>
+    <p class="src">wiki/analyses/user-problem-impact.md · wiki/analyses/build-challenge-problem-selection.md · DECISIONS.md</p>
   </section>
 
   <div class="grid2">
     <section class="card" id="who">
-      <h2>Who the user is, and who pays</h2>
-      <p class="sub"><b>The user</b> is a workforce-planning analyst in an agency human capital office, typically a GS-13 or GS-14 HR specialist or management analyst, who prepares the CHCO's quarterly staffing review and the variance explanation that goes to OPM and OMB. Today that means pulling HRIS extracts or the OPM files, reconciling codes by hand, pivoting in a spreadsheet, writing the narrative, and doing it again next quarter and for every ad hoc request. OPM's director told Congress that 45,000 HR professionals "spend an inordinate amount of their time trying to collect data out of outdated systems."</p>
-      <p class="sub"><b>The buyer</b> is the Chief Human Capital Officer. <b>The consumer</b> is the Strategic Hiring Committee, chaired by non-career leadership, which approves each vacancy and needs a number it can defend. Program office leaders feel the result as filled or unfilled positions.</p>
-      <p class="sub"><b>What the one real user said.</b> A former federal HR professional sat with the prototype for 80 minutes (<a href="/study">Field notes</a>). The praise was for the refusals: "they tell you what you can't get." The want was the why behind the numbers, peer comparison, and trend, fed with the agency's own data rather than OPM's public picture. That is a component-level diagnostic, one altitude below this product. We wrote it down instead of pretending the persona was validated.</p>
+      <h2>Who the user is</h2>
+      <p class="sub">The user is a workforce-planning analyst in an agency human capital office, usually a GS-13 or GS-14 HR specialist. They prepare the CHCO's quarterly staffing review and the variance explanation. Today that means pulling extracts, reconciling codes by hand, pivoting in a spreadsheet, and writing the narrative. Then doing it again next quarter.</p>
+      <p class="sub">The buyer is the Chief Human Capital Officer. The reader is the Strategic Hiring Committee, which approves each vacancy and needs a number it can defend.</p>
+      <p class="sub">The one real user so far (<a href="/study">Field notes</a>) trusted the refusals ("they tell you what you can't get") and wanted the why behind the numbers, peer comparison, and trend, computed on the agency's own data. That is a component-level product, one level below this one. The design notes record it.</p>
       <p class="src">DECISIONS.md, User and problem statement · wiki/analyses/tester-a-session-findings.md</p>
     </section>
 
     <section class="card" id="impact">
-      <h2>The impact we expect, split into what we measured and what we only claim</h2>
+      <h2>Expected impact</h2>
       <table>
         <thead><tr><th>Claim</th><th>Status</th><th>Evidence</th></tr></thead>
         <tbody>
-          <tr><td>A defensible, traceable answer in seconds to minutes, with the calculation it came from</td><td><span class="chip ok">Measured</span></td><td>Median 25 s across the tester's eight turns, 53 s on the held-out pair at xhigh; every Verified answer names its function.</td></tr>
-          <tr><td>Correctness on questions the prompt never saw</td><td><span class="chip ok">Measured</span></td><td>5 of 8 held-out questions pass 10 of 10, Wilson 31% to 86%. The <a href="/evals">dashboard</a> shows how it got there, including the drop.</td></tr>
-          <tr><td>Cost per question</td><td><span class="chip ok">Measured</span></td><td>About $0.03 for the tester's whole session; $1.16 for 80 graded runs at xhigh.</td></tr>
-          <tr><td>Fewer analyst hours per quarterly cycle</td><td><span class="chip warn">Hypothesis</span></td><td>No timed baseline exists. The pilot times one office's manual quarter first, then runs the next through the agent. No hours-saved number appears on this site until then.</td></tr>
-          <tr><td>Earlier visibility of where separation-driven risk is concentrating</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: the FBI's vacancy forecast nine months out per occupation. Ours is a quarterly brief, not a forecast model.</td></tr>
-          <tr><td>Shorter time to fill</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: an Air Force status dashboard took the average from 120 to under 80 days. Visibility changes behavior; we have not shown it here.</td></tr>
+          <tr><td>A traceable answer in under a minute, naming its calculation</td><td><span class="chip ok">Measured</span></td><td>Median 25 s over the tester's eight turns. 53 s on the held-out pair at xhigh.</td></tr>
+          <tr><td>Correct on questions the prompt never saw</td><td><span class="chip ok">Measured</span></td><td>5 of 8 held-out questions pass 10 of 10 runs, 95% interval 31% to 86%. <a href="/evals">Dashboard</a>.</td></tr>
+          <tr><td>Cost per question</td><td><span class="chip ok">Measured</span></td><td>$0.03 for the tester's session. $1.16 for 80 graded runs.</td></tr>
+          <tr><td>Fewer analyst hours per quarter</td><td><span class="chip warn">Hypothesis</span></td><td>No timed baseline. The pilot times one office's manual quarter first.</td></tr>
+          <tr><td>Earlier warning on where risk concentrates</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: the FBI's nine-month vacancy forecast. Ours is a quarterly brief.</td></tr>
+          <tr><td>Shorter time to fill</td><td><span class="chip warn">Hypothesis</span></td><td>Precedent: an Air Force dashboard, 120 days to under 80. Not shown here.</td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>The pilot that tests it.</b> One agency human capital office runs its next quarterly review through the agent with the current manual effort timed first, at an agreed loaded rate. Stop or simplify if correctness on the agency's own questions falls below the agreed bar, or if the analysts route around it. The word is "capability risk," not "proven gap," and every number carries its baseline and its limit.</p>
-      <p class="src">wiki/analyses/user-problem-impact.md, Expected impact · challenge/eval/journal.md</p>
+      <p class="sub">The pilot: one human capital office runs its next quarterly review through the agent, with the manual effort timed first. Stop if correctness on the agency's own questions drops below the agreed bar, or if analysts route around it.</p>
+      <p class="src">wiki/analyses/user-problem-impact.md, Expected impact</p>
     </section>
   </div>
 </main>
 
-<aside class="debug" aria-label="Rejected and reserved">
-  <div class="dhead"><b>Rejected, on the record</b><small>each with the reason, because the reason is the design</small></div>
+<aside class="debug" aria-label="Side notes">
+  <div class="dhead"><b>Rejected, on the record</b><small>with the reason</small></div>
   <div class="dbody">
-    <div class="dsec"><h3>Users we did not pick</h3><p>A congressional or GAO analyst: not the Firm's client. A program office director: too narrow, and they already know their own vacancies.</p></div>
-    <div class="dsec"><h3>Shapes we did not build</h3><p>Another chatbot over public charts: OPM's own FWD Chat already answers plain-English questions about the public data. It never sees the agency's plan. Ours is cross-source, scheduled, governed, and plan-aware, which is the whole difference.</p></div>
-    <div class="dsec"><h3>Words we do not use</h3><p>"Hours saved" without a stopwatch. "Proven gap" when the data shows a capability risk. "Tenure" when we mean length of service. "Days to hours" as a fact.</p></div>
-    <div class="dsec"><h3>What the demo plan is</h3><p>Synthetic, and labelled so on every screen. Agencies keep their real staffing plans private, so the plan the agent compares against was generated from the rule's own template. In deployment it is the agency's submission.</p></div>
-    <div class="dsec"><h3>Side note for the pitch</h3><p>The same OPM guidance names "forward deployed engineers" among the technical talent it wants agencies to recruit. We noticed.</p></div>
+    <div class="dsec"><h3>Users</h3><p>A congressional or GAO analyst: not the Firm's client. A program office director: too narrow.</p></div>
+    <div class="dsec"><h3>Shapes</h3><p>Another chatbot over public charts. OPM's own FWD Chat already does that, and it never sees the agency's plan. This one is plan-aware and governed.</p></div>
+    <div class="dsec"><h3>Words</h3><p>"Hours saved" without a stopwatch. "Proven gap" when the data shows a capability risk. "Tenure" when we mean length of service.</p></div>
+    <div class="dsec"><h3>The demo plan</h3><p>Synthetic, labelled on every screen. Agencies keep their real plans private. In deployment it is the agency's submission.</p></div>
   </div>
 </aside>
 </div>
 
-<footer class="gutter">Problem, user, impact. The first two are sourced to the Federal Register and a decision log. The third is split into measured and hypothesis, and stays split until a pilot with a stopwatch.</footer>
+<footer class="gutter">Sources: the Federal Register, GAO, OPM, and the project decision log.</footer>
 </body>
 </html>

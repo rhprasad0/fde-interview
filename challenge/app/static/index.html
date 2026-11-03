@@ -125,10 +125,10 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
       <small>SEEING-STONE ADJACENT</small>
     </div>
     <nav class="tabs" aria-label="Ontology">
+      <a href="/mission">Mission</a>
       <a href="/" aria-current="page">Objects</a>
       <a href="/evals">Evals</a>
       <a href="/study">Field notes</a>
-      <a href="/mission">Mission</a>
       <a href="/incident">Incident report</a>
       <a href="#actions">Actions</a>
       <a href="#vibes" class="off" aria-disabled="true" title="Not in scope">Vibes</a>
@@ -140,7 +140,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
   </div>
 </header>
-<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // STAFFING PLAN IS SYNTHETIC (THE AGENT WILL REMIND YOU)</div>
+<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // THE STAFFING PLAN IS SYNTHETIC</div>
 
 <div class="shell gutter">
 <main id="objects">
@@ -158,14 +158,14 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
   </div>
 
   <section class="tiles" aria-label="Key figures">
-    <div class="tile"><span>Planned hires, Q1</span><strong class="num" id="t-plan">…</strong><em>From the plan. It is synthetic. We know.</em></div>
+    <div class="tile"><span>Planned hires, Q1</span><strong class="num" id="t-plan">…</strong><em>From the synthetic plan.</em></div>
     <div class="tile"><span>Onboarded, Oct to Dec 2025</span><strong class="num" id="t-actual">…</strong><em>Later OPM files can add to this.</em></div>
-    <div class="tile"><span>Variance to plan</span><strong class="num" id="t-var">…</strong><em>Or better, if you tell the sidebar about the shutdown.</em></div>
+    <div class="tile"><span>Variance to plan</span><strong class="num" id="t-var">…</strong><em>Tell the sidebar about the shutdown and it recomputes.</em></div>
   </section>
 
   <section class="card">
-    <h2>Accessions by month: October is the whole story</h2>
-    <p class="sub">CBP Officer accessions by effective month. The dashed line is the plan spread evenly across the quarter, which is what a plan does when nobody tells it about a shutdown.</p>
+    <h2>Accessions by month</h2>
+    <p class="sub">CBP Officer accessions by effective month. The dashed line is the plan spread evenly over the quarter. The plan did not know about the shutdown.</p>
     <div id="dip"></div>
     <div class="legend"><span><i style="background:var(--accent)"></i>Accessions</span><span><i style="background:var(--dip)"></i>Lapse in appropriations, Oct 1 to Nov 12</span><span><i style="background:transparent;border-top:2px dashed var(--ink-3);height:0;vertical-align:3px"></i>Plan ÷ 3</span></div>
     <p class="src">Source: OPM accessions, effective month, HSBD × 1895. Verified.</p>
@@ -173,15 +173,15 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
   <div class="grid2">
     <section class="card">
-      <h2>FEMA's plan is wrong, not its hiring</h2>
-      <p class="sub">Months of almost nothing, then hiring restarts in May 2026. A plan built from last year's departures assumed replacements that never came. Ask the sidebar about FEMA and it will say so.</p>
+      <h2>FEMA: the plan assumed replacements that never came</h2>
+      <p class="sub">Almost nothing for months, then hiring restarts in May 2026. Ask the sidebar about FEMA.</p>
       <div id="fema"></div>
       <p class="src">Source: OPM accessions, all FEMA occupations. The first bar folds the quiet months; a month with no file is a month with no bar.</p>
     </section>
 
     <section class="card">
       <h2>Two in three officers have served ten years or more</h2>
-      <p class="sub">The retirement cliff is not a metaphor here. It is a bar.</p>
+      <p class="sub">Years of service, August 2026 snapshot.</p>
       <div id="yos"></div>
       <p class="src">Source: length_of_service_profile, August 2026 snapshot.</p>
     </section>
@@ -189,16 +189,16 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
   <div class="grid2">
     <section class="card">
-      <h2>Where the officers are (OPM will not say, so we guessed from job ads)</h2>
-      <p class="sub">Estimated from where CBP advertises positions. Every one of these tiles is imputed, which is why the agent says "estimated" whenever you ask about a state.</p>
+      <h2>Where the officers are, estimated from job ads</h2>
+      <p class="sub">OPM redacts location. Every tile is imputed from where CBP advertises, so the agent says "estimated" on any state question.</p>
       <div id="map"></div>
       <div class="legend" id="maplegend"></div>
       <p class="src">Source: headcount, August 2026. <span id="map-imputed">…</span> Hover Maine.</p>
     </section>
 
     <section class="card">
-      <h2><span id="sep-total">…</span> separations in twelve months, and most of them had a cake</h2>
-      <p class="sub">Separation categories, twelve months to August 2026. The data has categories, not reasons. The agent will tell you so if you ask why anyone left.</p>
+      <h2><span id="sep-total">…</span> separations in twelve months, mostly retirements</h2>
+      <p class="sub">Twelve months to August 2026. The data has categories, not reasons. Ask why anyone left and the agent says so.</p>
       <div id="sep"></div>
       <p class="src">Source: OPM separations, HSBD × 1895, Sep 2025 to Aug 2026. Verified.</p>
     </section>
@@ -206,11 +206,11 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
   <section class="card" id="actions">
     <h2>Recommended for the review</h2>
-    <p class="sub">Drafted from the figures above. Nothing happens until a human clicks. That is the feature, not a limitation.</p>
+    <p class="sub">Drafted from the figures above. Nothing happens until a human clicks.</p>
     <div class="actions">
       <div class="action"><p>Put CBP Officer on the Strategic Hiring Committee agenda to settle whether the Q1 shortfall is a planning assumption or a hiring problem.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
       <div class="action"><p>Request retirement eligibility projections for the officers with 20 or more years before FY2027 targets are set.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
-      <div class="action"><p>Ask CBP how many openings "Many" means on its "Many" announcements. The agent has asked twice. It is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action"><p>Ask CBP how many openings "Many" means on its announcements. The agent is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
     </div>
   </section>
 </main>
@@ -235,16 +235,16 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
     <form id="askform">
       <label for="q" class="sr">Ask about this cell</label>
-      <input id="q" type="text" autocomplete="off" placeholder="Ask about this cell. It will not ask you a clarifying question.">
+      <input id="q" type="text" autocomplete="off" placeholder="Ask about this cell.">
       <button class="btn primary" id="askbtn" type="submit">Ask</button>
     </form>
     <label class="ctx"><input type="checkbox" id="ctx"> This is a fact the data does not have (an analyst assumption), not a question</label>
-    <span class="hint">Every answer opens with Verified, Exploratory, or Not available. There is no fourth label.</span>
+    <span class="hint">Every answer opens with Verified, Exploratory, or Not available.</span>
   </div>
 </aside>
 </div>
 
-<footer class="gutter">Built on eight standard calculations, one one-off query, and an agent that refuses budget questions on principle. Headcount, separations and postings are real OPM and USAJOBS data. The plan is not. Locations are estimated.</footer>
+<footer class="gutter">Eight standard calculations, one one-off query. Headcount, separations and postings are real OPM and USAJOBS data. The plan is synthetic. Locations are estimated.</footer>
 
 <div class="tip" id="tip" hidden></div>
 

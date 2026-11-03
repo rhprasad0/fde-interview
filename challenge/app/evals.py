@@ -26,14 +26,14 @@ SCORERS = ("label_match", "numeric_match", "list_match", "labels_present", "tool
 
 _P = "20261103T{}-b44a9181"
 MILESTONES = [  # journal.md: "After the plateau", "Held-out line", "Held-out rerun", "Agent effort sweep"
-    {"name": "Final dev prompt, the 20 rows it was tuned against", "ids": [_P.format("155440Z"), _P.format("155658Z")]},
-    {"name": "Held-out, the tester's 8 rows as first written", "ids": [_P.format("170036Z"), _P.format("170419Z")]},
-    {"name": "Held-out, six rows corrected by Ryan, rerun beside", "ids": [_P.format("172209Z"), _P.format("172735Z")]},
-    {"name": "Sweep at cap 16000, high (stopped: the cap was being measured)", "ids": [_P.format("190755Z"), _P.format("191253Z")]},
-    {"name": "Sweep at cap 16000, xhigh (stopped)", "ids": [_P.format("191926Z"), _P.format("192638Z")]},
-    {"name": "Sweep at cap 64000, high", "ids": [_P.format("193405Z"), _P.format("193928Z")]},
-    {"name": "Sweep at cap 64000, xhigh: the shipped configuration", "ids": [_P.format("194449Z"), _P.format("195233Z")], "headline": True},
-    {"name": "Sweep at cap 64000, max", "ids": [_P.format("195932Z"), _P.format("202031Z")]},
+    {"name": "Final dev prompt, 20 tuned rows", "ids": [_P.format("155440Z"), _P.format("155658Z")]},
+    {"name": "Held-out, 8 tester rows as written", "ids": [_P.format("170036Z"), _P.format("170419Z")]},
+    {"name": "Held-out, 6 rows corrected", "ids": [_P.format("172209Z"), _P.format("172735Z")]},
+    {"name": "Sweep, high, cap 16000 (stopped)", "ids": [_P.format("190755Z"), _P.format("191253Z")]},
+    {"name": "Sweep, xhigh, cap 16000 (stopped)", "ids": [_P.format("191926Z"), _P.format("192638Z")]},
+    {"name": "Sweep, high, cap 64000", "ids": [_P.format("193405Z"), _P.format("193928Z")]},
+    {"name": "Sweep, xhigh, cap 64000 (ships)", "ids": [_P.format("194449Z"), _P.format("195233Z")], "headline": True},
+    {"name": "Sweep, max, cap 64000", "ids": [_P.format("195932Z"), _P.format("202031Z")]},
 ]
 
 

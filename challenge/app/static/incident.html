@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Layout: the evals-suite chrome reused; the page on the left, a ledger in the right rail. */
+/* The evals-suite chrome reused: the page on the left, a ledger in the right rail. */
 :root{
   --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
   --accent:#2a78d6; --accent-ink:#ffffff;
@@ -106,11 +106,11 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 <header class="top">
   <div class="in gutter">
     <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Incident Report</span><small>INC-0001 · SEVERITY: WALLET</small></div>
-    <nav class="tabs" aria-label="Evaluation suite">
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission">Mission</a>
       <a href="/">Workshop</a>
       <a href="/evals">Metrics dashboard</a>
       <a href="/study">Field notes</a>
-      <a href="/mission">Mission</a>
       <a href="/incident" aria-current="page">Incident report</a>
       <a href="#blameless" class="off" title="It was Ryan.">Blameless</a>
     </nav>
@@ -122,118 +122,118 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
   </div>
 </header>
-<div class="banner gutter">INCIDENT 0001 // ONE AFTERNOON OF HILL CLIMBING // $497.30 IN A DAY // RESOLVED BY LEAVING // THE SEMANTIC LAYER DID NOT NOTICE</div>
+<div class="banner gutter">INCIDENT 0001 // ONE AFTERNOON OF HILL CLIMBING // $497.30 IN A DAY // RESOLVED BY LEAVING</div>
 
 <div class="shell gutter">
 <main>
   <div class="crumb">
-    <span>Opened: <b>2026-11-02 20:09</b> (the "credits exhausted" email)</span><span>/</span>
-    <span>Mitigated: <b>22:09</b> (Postgres smoke 18/20)</span><span>/</span>
-    <span>Closed: <b>2026-11-03 08:20</b> (account emptied)</span>
+    <span>Opened <b>2026-11-02 20:09</b>, the "credits exhausted" email</span><span>/</span>
+    <span>Mitigated <b>22:09</b>, Postgres smoke 18/20</span><span>/</span>
+    <span>Closed <b>2026-11-03 08:20</b>, account emptied</span>
   </div>
 
   <div class="headrow">
     <div>
-      <h1>Can Ryan pick up Databricks fast? Fast enough to spend $517 of it in one afternoon, then move the whole platform off it before midnight.</h1>
-      <p class="lede">Round one asked whether Ryan can pick up Databricks fast. This is the postmortem. Three days from signup to a governed semantic layer, Genie, and a managed MCP endpoint the agent called 4,800 times. Then the bill for calling it. The card was charged about $100 past the $400 of trial credits. Everything the agent learned survived the move. The budget did not.</p>
+      <h1>Can Ryan pick up Databricks fast? Fast enough to spend $517 of it in one afternoon, then move off it before midnight.</h1>
+      <p class="lede">Three days from signup to a governed semantic layer, Genie, and a managed MCP endpoint the agent called 4,800 times. Then the bill for the calls. The card took about $100 past the $400 of trial credits. Everything the agent learned survived the move.</p>
     </div>
-    <a class="btn primary" href="/evals#story">See what the climb bought</a>
+    <a class="btn primary" href="/evals#story">What the climb bought</a>
   </div>
 
   <section class="tiles" aria-label="Damage">
-    <div class="tile"><span>Spent at list, Oct 31 to Nov 2</span><strong class="num">$517</strong><em>$7.66, then $12.46, then $497.30. Guess which day the climb was.</em></div>
-    <div class="tile"><span>Over the credits, at list</span><strong class="num">$117</strong><em>Ryan's card saw about $100. The account console knows the cents.</em></div>
-    <div class="tile"><span>Function calls over managed MCP</span><strong class="num">~4,800</strong><em>At about $0.09 each. Spec 01 estimated the whole build at $60 to $90.</em></div>
-    <div class="tile"><span>What the cost tracker said</span><strong class="num">$2.68</strong><em>It counted model tokens. The compute was on a different invoice.</em></div>
+    <div class="tile"><span>Spent at list, Oct 31 to Nov 2</span><strong class="num">$517</strong><em>$7.66, then $12.46, then $497.30.</em></div>
+    <div class="tile"><span>Over the credits</span><strong class="num">$117</strong><em>At list. The card saw about $100.</em></div>
+    <div class="tile"><span>Function calls over managed MCP</span><strong class="num">~4,800</strong><em>About $0.09 each. The estimate for the whole build was $60 to $90.</em></div>
+    <div class="tile"><span>What the cost tracker said</span><strong class="num">$2.68</strong><em>It counted model tokens only.</em></div>
   </section>
 
   <section class="card" id="timeline">
-    <h2>Timeline: the part where it went fast</h2>
+    <h2>Timeline</h2>
     <table>
       <thead><tr><th>When</th><th>What</th><th>Note</th></tr></thead>
       <tbody>
-        <tr><td class="mono">Oct 30</td><td>Platform chosen: Databricks on AWS, express trial, "under $50", two budget alerts. Cost estimate $60 to $90 at list, covered by $400 of credits.</td><td>Spec 01 step 10: "confirm the SKU the MCP functions server bills to on day one." Status on Nov 2: open.</td></tr>
-        <tr><td class="mono">Oct 31 am</td><td>Trial signup, Terraform over the workspace, serverless SQL warehouse cut to 2X-Small with a five-minute auto-stop, Unity Catalog, service principal with OAuth scopes, Managed MCP preview on, handshake passed.</td><td>Serverless egress to OPM was blocked at DNS. A card was added to try to lift it. It did not. The trial's spend cap left with it.</td></tr>
-        <tr><td class="mono">Oct 31 midday</td><td>761 MB of OPM and USAJOBS files to a volume in 68 s; one notebook job built ten bronze and silver Delta tables in 2 min 17 s.</td><td>The spec had guessed 10 to 20 minutes. Every check matched.</td></tr>
-        <tr><td class="mono">Oct 31 pm</td><td>Imputation schema, eight semantic views, eight Unity Catalog table functions, a Genie space created from a JSON file over the CLI.</td><td>Every number matched on the first full build. Genie rejected DATE parameters; they became strings.</td></tr>
-        <tr><td class="mono">Nov 1</td><td>Eval set and the prototype agent. The agent calls the workspace MCP endpoints directly; the gateway in front of them was deferred.</td><td>One user test that evening (<a href="/study">Field notes</a>).</td></tr>
-        <tr><td class="mono">Nov 2, 13:00 to 19:00</td><td>First live smoke, two baselines, six hill-climb iterations: 1,720 graded runs.</td><td>The last three hours ran at about $105 an hour. Nobody was watching the account console, because the cost tracker said $2.68.</td></tr>
-        <tr><td class="mono">Nov 2, 20:09</td><td>"Your trial credits are exhausted. We will charge your account using the payment information we have on file."</td><td>Incident opened. The email showed no amount.</td></tr>
-        <tr><td class="mono">Nov 2, 20:32</td><td>Spend analysis from the billing tables, committed. Decision: tear it down tonight.</td><td>The evening estimate read a lagged table and said $197. The morning export said $517.</td></tr>
-        <tr><td class="mono">Nov 2, 21:53 to 22:09</td><td>Genie space, jobs, notebooks, catalog, warehouse, service principal destroyed. The same views and functions re-expressed on a $14-a-month Postgres. Thirteen-minute ship. First smoke four timeouts; second smoke 18 of 20, zero errors, median 10 s against Genie's 44.</td><td>Two hours from the email to a passing smoke on the replacement.</td></tr>
-        <tr><td class="mono">Nov 3, 08:20</td><td>Billing export pulled. The service principal, the budget, and the workspace shell were still there. Deleted over the account CLI.</td><td>Incident closed. Things left running: zero. The guard grep in AGENTS.md makes sure it stays zero.</td></tr>
+        <tr><td class="mono">Oct 30</td><td>Databricks on AWS chosen. Express trial, $400 of credits, two budget alerts. Estimate: $60 to $90.</td><td>Spec 01 step 10: confirm which SKU the managed MCP server bills to. Never closed.</td></tr>
+        <tr><td class="mono">Oct 31 am</td><td>Signup. Terraform over the workspace. SQL warehouse cut to 2X-Small, five-minute auto-stop. Unity Catalog, service principal, managed MCP preview on.</td><td>Serverless egress to OPM blocked at DNS. A card went on to lift it. It did not. The trial's spend cap left with it.</td></tr>
+        <tr><td class="mono">Oct 31 midday</td><td>761 MB to a volume in 68 s. One notebook job built ten Delta tables in 2 min 17 s.</td><td>Every check matched.</td></tr>
+        <tr><td class="mono">Oct 31 pm</td><td>Eight semantic views, eight Unity Catalog functions, a Genie space from a JSON file.</td><td>Every number matched on the first build.</td></tr>
+        <tr><td class="mono">Nov 1</td><td>Eval set, prototype agent, one user test.</td><td><a href="/study">Field notes</a>.</td></tr>
+        <tr><td class="mono">Nov 2, 13:00 to 19:00</td><td>Smoke, two baselines, six hill-climb iterations. 1,720 graded runs.</td><td>The last three hours ran at about $105 an hour. The cost tracker said $2.68.</td></tr>
+        <tr><td class="mono">Nov 2, 20:09</td><td>"Your trial credits are exhausted. We will charge your account using the payment information we have on file."</td><td>No amount in the email.</td></tr>
+        <tr><td class="mono">Nov 2, 20:32</td><td>Spend analysis committed. Decision: tear it down tonight.</td><td>The evening estimate read a lagged table and said $197.</td></tr>
+        <tr><td class="mono">Nov 2, 21:53 to 22:09</td><td>Everything destroyed. Same views and functions re-expressed on a $14-a-month Postgres. Thirteen-minute ship. Smoke 18 of 20, zero errors, median 10 s against Genie's 44.</td><td>Two hours from the email to a passing smoke.</td></tr>
+        <tr><td class="mono">Nov 3, 08:20</td><td>Billing export pulled: $517. Service principal, budget, and workspace shell deleted over the account CLI.</td><td>Closed. A guard grep in the repo fails any commit that could reach the workspace again.</td></tr>
       </tbody>
     </table>
-    <p class="src">challenge/specs/01-results.md, 02-results.md, 03-results.md, 06-postgres-and-teardown.md · wiki/analyses/databricks-spend-during-the-climb.md · wiki/log.md</p>
+    <p class="src">challenge/specs/01 to 03-results.md, 06-postgres-and-teardown.md · wiki/analyses/databricks-spend-during-the-climb.md</p>
   </section>
 
   <div class="grid2">
     <section class="card" id="bill">
-      <h2>The bill, itemized, because an FDE reads the bill</h2>
+      <h2>The bill</h2>
       <table>
-        <thead><tr><th>Line</th><th class="r">DBU</th><th class="r">USD at list</th><th>What it was</th></tr></thead>
+        <thead><tr><th>Line</th><th class="r">DBU</th><th class="r">USD</th><th>What</th></tr></thead>
         <tbody class="num">
-          <tr><td>All-purpose serverless compute</td><td class="r">557</td><td class="r">$418</td><td>Every Unity Catalog function call the agent made through the managed MCP server ran on serverless general compute at $0.75 a DBU, about $0.09 a call.</td></tr>
-          <tr><td>Serverless real-time inference</td><td class="r">1,082</td><td class="r">$76</td><td>Genie's own charge, billed because the caller was a service principal rather than a person in the UI.</td></tr>
-          <tr><td>Serverless SQL warehouse</td><td class="r">32</td><td class="r">$23</td><td>Genie's queries. The warehouse we so carefully shrank to 2X-Small.</td></tr>
-          <tr><td>Jobs serverless</td><td class="r">3</td><td class="r">$1</td><td>Loading 761 MB and building the whole semantic layer. The part that was supposed to be expensive.</td></tr>
+          <tr><td>All-purpose serverless</td><td class="r">557</td><td class="r">$418</td><td>Every function call through managed MCP ran on serverless general compute, $0.75 a DBU.</td></tr>
+          <tr><td>Real-time inference</td><td class="r">1,082</td><td class="r">$76</td><td>Genie, billed because the caller was a service principal.</td></tr>
+          <tr><td>SQL warehouse</td><td class="r">32</td><td class="r">$23</td><td>Genie's queries.</td></tr>
+          <tr><td>Jobs</td><td class="r">3</td><td class="r">$1</td><td>Loading the data and building the semantic layer.</td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>The one question that did most of it.</b> C11 asks how far behind plan each component is for the first three quarters. The variance function was shaped for one component and one quarter, so the agent fanned out to about thirty calls a run. Over the climb that is 4,445 calls of one function, two thirds of them from C11: roughly $280 of the $418. On Postgres the same fan-out costs nothing per call, which is a lesson about pricing models, not about the question.</p>
-      <p class="src">wiki/analyses/databricks-spend-during-the-climb.md, system.billing.usage joined to list_prices</p>
+      <p class="sub">C11 asks how far behind plan each component is for three quarters. The variance function took one component and one quarter, so the agent made about thirty calls a run. Over the climb: 4,445 calls of that function, two thirds from C11, roughly $280. On Postgres the same fan-out costs nothing per call.</p>
+      <p class="src">system.billing.usage joined to list_prices</p>
     </section>
 
     <section class="card" id="rootcause">
-      <h2>Root cause: five findings, no villains, one owner</h2>
+      <h2>Root cause</h2>
       <table>
         <thead><tr><th>Finding</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td><b>The SKU check was never closed.</b> Spec 01 said to confirm on day one what the managed MCP function server bills to. It was still "Open, due 2026-11-01" when the climb started. The estimate assumed 75 runs; the climb ran 1,720.</td><td><span class="chip bad">Root cause</span></td></tr>
-          <tr><td><b>The cost tracker measured the wrong thing.</b> The harness's cost field counts model tokens, which came to $2.68. Compute was billed elsewhere, at 150 times that.</td><td><span class="chip bad">Contributing</span></td></tr>
-          <tr><td><b>Adding a card removed the cap.</b> It went on to lift an egress block. It did not lift the block. It did convert the trial from "stops at $400" to "sends an email at $400."</td><td><span class="chip bad">Contributing</span></td></tr>
-          <tr><td><b>The budget alerts were real and useless.</b> $25 and $45 thresholds, email only, at list price, with up to 24 hours of lag. The afternoon was over before the lag was.</td><td><span class="chip warn">Contributing</span></td></tr>
-          <tr><td><b>Genie as a service principal is a billable product.</b> Called from the agent rather than by a person, it bills real-time inference per request. Fine at demo volume, not at eval volume.</td><td><span class="chip warn">Contributing</span></td></tr>
+          <tr><td><b>The SKU check was never closed.</b> Spec 01 said to confirm on day one what the managed MCP server bills to. The estimate assumed 75 runs. The climb ran 1,720.</td><td><span class="chip bad">Root cause</span></td></tr>
+          <tr><td><b>The cost tracker measured model tokens.</b> $2.68. Compute was 150 times that, on another line.</td><td><span class="chip bad">Contributing</span></td></tr>
+          <tr><td><b>Adding a card removed the cap.</b> It went on to fix an egress block. It did not fix the block. It turned "stops at $400" into "emails at $400."</td><td><span class="chip bad">Contributing</span></td></tr>
+          <tr><td><b>Budget alerts lag a day.</b> $25 and $45 thresholds, email only, up to 24 hours late.</td><td><span class="chip warn">Contributing</span></td></tr>
+          <tr><td><b>Genie as a service principal bills per request.</b> Fine at demo volume. Not at eval volume.</td><td><span class="chip warn">Contributing</span></td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>Corrective actions.</b> Platform torn down the same evening and the account emptied the next morning. A guard grep in the repo's instructions fails any commit that could reach the workspace again. The harness's cost field still counts model tokens, and on Postgres that is the whole bill: nothing else is metered per call. The $50 budget is enforced by the cheapest instance class on RDS and nothing serverless per call.</p>
-      <p class="src">DECISIONS.md, Platform: RDS Postgres replaces Databricks · AGENTS.md, the guard</p>
+      <p class="sub">Platform torn down that evening, account emptied the next morning. The repo's instructions carry a grep that fails any commit naming a workspace host or key. The data layer is now the cheapest RDS instance class with nothing metered per call, so the harness's token-only cost field is the whole bill.</p>
+      <p class="src">DECISIONS.md, Platform: RDS Postgres replaces Databricks · AGENTS.md</p>
     </section>
   </div>
 
   <section class="card" id="learned">
-    <h2>What "pick it up fast" looked like in practice: eleven surfaces in three days, in order</h2>
+    <h2>Eleven platform surfaces in three days, in order</h2>
     <table>
-      <thead><tr><th>#</th><th>Surface</th><th>What we learned the hard way</th></tr></thead>
+      <thead><tr><th>#</th><th>Surface</th><th>Learned the hard way</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Express trial, account budgets</td><td>The region is assigned, not chosen. Alerts lag a day.</td></tr>
-        <tr><td>2</td><td>Serverless SQL warehouse, Terraform provider</td><td>Import what the trial already made; the provider cannot create a catalog on default storage.</td></tr>
-        <tr><td>3</td><td>Unity Catalog: catalog, schemas, grants</td><td>Schema-level EXECUTE is the governance boundary the agent's service principal lives inside.</td></tr>
-        <tr><td>4</td><td>Service principal with OAuth M2M scopes; Managed MCP Servers preview</td><td>Tool names are catalog__schema__function. A disabled preview returns HTTP 200 with a JSON-RPC error inside.</td></tr>
-        <tr><td>5</td><td>Serverless egress allowlist, outbound network audit</td><td>Closed egress is a governance story. It is also why the loader runs on a laptop.</td></tr>
-        <tr><td>6</td><td>Volumes, the files CLI, notebook jobs writing bronze and silver Delta</td><td>761 MB in 68 s; ten tables in 2 min 17 s. The part the spec worried about took no time.</td></tr>
+        <tr><td>1</td><td>Express trial, account budgets</td><td>The region is assigned. Alerts lag a day.</td></tr>
+        <tr><td>2</td><td>Serverless SQL warehouse, Terraform provider</td><td>Import what the trial made. The provider cannot create a catalog on default storage.</td></tr>
+        <tr><td>3</td><td>Unity Catalog grants</td><td>Schema-level EXECUTE is the boundary the agent lives inside.</td></tr>
+        <tr><td>4</td><td>Service principal, OAuth M2M, Managed MCP preview</td><td>Tool names are catalog__schema__function. A disabled preview returns HTTP 200 with the error inside.</td></tr>
+        <tr><td>5</td><td>Serverless egress allowlist</td><td>Closed egress is a governance story. It is also why the loader runs on a laptop.</td></tr>
+        <tr><td>6</td><td>Volumes, files CLI, notebook jobs to Delta</td><td>761 MB in 68 s. Ten tables in 2 min 17 s.</td></tr>
         <tr><td>7</td><td>SQL Statement Execution API</td><td>How truth values were computed independently of the agent.</td></tr>
-        <tr><td>8</td><td>Views and table functions as the semantic layer</td><td>Same design, same signatures, later re-expressed on Postgres in an evening.</td></tr>
-        <tr><td>9</td><td>Genie space from a file over the CLI; permissions API</td><td>Genie refuses DATE parameters. Strings it is.</td></tr>
-        <tr><td>10</td><td>Genie over MCP as a service principal; query history; Genie benchmark eval runs</td><td>Genie scored 8 of 22 against truth on its own. The agent with the functions beat it, which decided the architecture.</td></tr>
-        <tr><td>11</td><td>system.billing.usage, list_prices, system.access.audit, the account billable-usage export, account-level deletes</td><td>Learned last, which is the whole incident.</td></tr>
+        <tr><td>8</td><td>Views and table functions as the semantic layer</td><td>Re-expressed on Postgres in an evening, same signatures.</td></tr>
+        <tr><td>9</td><td>Genie space from a file, permissions API</td><td>Genie refuses DATE parameters, so the functions take strings.</td></tr>
+        <tr><td>10</td><td>Genie over MCP, query history, Genie benchmarks</td><td>Genie alone scored 8 of 22 against truth, and the agent with functions beat it, so the functions stayed and Genie became a side tool.</td></tr>
+        <tr><td>11</td><td>system.billing.usage, list_prices, audit log, account billable-usage export</td><td>Where the $517 figure came from, the morning after.</td></tr>
       </tbody>
     </table>
-    <p class="src">challenge/specs/01-results.md to 03-results.md · DECISIONS.md, Databricks surface, decided by omission</p>
+    <p class="src">challenge/specs/01-results.md to 03-results.md · DECISIONS.md</p>
   </section>
 </main>
 
-<aside class="debug" aria-label="What survived">
-  <div class="dhead"><b>What survived the move</b><small>unchanged, byte for byte, from the Databricks era</small></div>
+<aside class="debug" aria-label="Side notes">
+  <div class="dhead"><b>What survived the move</b><small>from the Databricks era</small></div>
   <div class="dbody">
-    <div class="dsec"><h3>Unchanged</h3><p>The eval set (eval-v1). All 1,720 graded rows. The prompt and skills, one hash apart. The harness and its fourteen scorers. The demo app and the tester app. The source files on disk.</p></div>
-    <div class="dsec"><h3>Re-expressed</h3><p>The same eight views and eight functions, same signatures, same return columns, behind a read-only role with a 60-second statement timeout. The imputation hash moved from xxhash64 to md5: same design, different bits, two truth rows re-pinned, sixteen reproduced.</p></div>
-    <div class="dsec"><h3>Lost</h3><p>Genie, replaced by a fenced SQL tool over the same views. The AgentCore gateway that was going to sit in front of the MCP endpoints, never built. The Unity Catalog governance story, now told as a Postgres role with grants, which is the same story with fewer logos.</p></div>
-    <div class="dsec"><h3>Gained</h3><p>Median latency 10 s where Genie took 44. Zero per-call cost, so the agent can fan out as much as it likes. A $14-a-month data layer with one public address in its security group.</p></div>
-    <div class="dsec"><h3>Severity assessment</h3><p class="num">Customer impact: none, there were no customers. Data loss: none, the data is public and monthly. Budget: exceeded ten times over at list. Lesson retention: high. Ryan still has the email.</p></div>
+    <div class="dsec"><h3>Unchanged</h3><p>The eval set. All 1,720 graded rows. The prompt and skills, one hash apart. The harness and its fourteen scorers. Both apps. The source files.</p></div>
+    <div class="dsec"><h3>Re-expressed</h3><p>Eight views and eight functions, same signatures, behind a read-only role with a 60-second timeout. Imputation hash moved from xxhash64 to md5: two truth rows re-pinned, sixteen reproduced.</p></div>
+    <div class="dsec"><h3>Lost</h3><p>Genie, replaced by a fenced SQL tool over the same views. The AgentCore gateway, never built. The Unity Catalog story, now a Postgres role with grants.</p></div>
+    <div class="dsec"><h3>Gained</h3><p>Median latency 10 s where Genie took 44. No per-call cost. A $14-a-month data layer.</p></div>
+    <div class="dsec"><h3>Severity</h3><p>Customers affected: none. Data lost: none, it is public. Budget: exceeded ten times at list.</p></div>
   </div>
 </aside>
 </div>
 
-<footer class="gutter">Three days to learn the platform well enough to build a governed semantic layer on it. One afternoon to learn its pricing. One evening to leave. Can Ryan pick up Databricks fast? The bill says yes.</footer>
+<footer class="gutter">Three days on the platform, one afternoon of its pricing, one evening to move off it. The semantic layer came along unchanged.</footer>
 </body>
 </html>

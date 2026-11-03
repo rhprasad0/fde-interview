@@ -109,13 +109,13 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
       <span>Lantern Evals</span>
       <small>HOW DO YOU KNOW IT WORKS</small>
     </div>
-    <nav class="tabs" aria-label="Evaluation suite">
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission">Mission</a>
       <a href="/">Workshop</a>
       <a href="/evals" aria-current="page">Metrics dashboard</a>
       <a href="/study">Field notes</a>
-      <a href="/mission">Mission</a>
       <a href="/incident">Incident report</a>
-      <a href="#objectives" class="off" title="Not supported in the dashboard view. We checked the original. Same.">Metric objectives</a>
+      <a href="#objectives" class="off" title="Not supported in this view.">Metric objectives</a>
     </nav>
     <div class="status">
       <span>Suite <b>dhs-variance-review · eval-v1</b></span>
@@ -125,7 +125,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
   </div>
 </header>
-<div class="banner gutter" id="banner">LOADING EXPERIMENTS // THE POINT ESTIMATE IS NOT THE ARGUMENT, THE INTERVAL IS</div>
+<div class="banner gutter" id="banner">LOADING EXPERIMENTS</div>
 
 <div class="shell gutter">
 <main id="metrics">
@@ -139,53 +139,53 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
   <div class="headrow">
     <div>
       <h1 id="h1">Loading the held-out experiments.</h1>
-      <p class="lede">Eight questions a tester typed, never shown to the prompt. pass^5 per experiment is the headline, pass^10 with its interval is how sure we are, and the pooled rate is for the climb only. The dev set was never run at xhigh; we say so when asked, and also when not asked.</p>
+      <p class="lede">Eight questions a tester typed. The prompt never saw them. The headline is pass^5 per experiment. The interval on pass^10 says how sure to be. The pooled rate is for comparing prompts during the climb. The dev set was never run at xhigh.</p>
     </div>
     <button class="btn primary" type="button"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Analyze with human FDE <small>(he is standing right there)</small></button>
   </div>
 
   <section class="tiles" aria-label="Overall">
-    <div class="tile"><span>pass^5 per experiment, the headline</span><strong class="num" id="t-p5">…</strong><em>Two experiments of five. Compared. Carefully.</em></div>
-    <div class="tile"><span id="t-pkl">pass^10, Wilson 95%</span><strong class="num" id="t-pk">…</strong><em id="t-pks">How sure we are. Read the interval, not the point.</em></div>
+    <div class="tile"><span>pass^5 per experiment</span><strong class="num" id="t-p5">…</strong><em>Two experiments of five runs.</em></div>
+    <div class="tile"><span id="t-pkl">pass^10, Wilson 95%</span><strong class="num" id="t-pk">…</strong><em id="t-pks"></em></div>
     <div class="tile"><span>Pooled pass^1 over runs</span><strong class="num" id="t-p1">…</strong><em id="t-p1s"></em></div>
     <div class="tile"><span>Cost · median latency</span><strong class="num" id="t-cost">…</strong><em id="t-lats"></em></div>
   </section>
 
   <section class="card" id="story">
-    <h2>How we got here: the dev climb, the held-out drop, the corrections, the effort sweep</h2>
-    <p class="sub">Each row is two experiments of five runs on the same prompt. pass^5 is per experiment, pass^10 and its interval span the pair, and the pooled rate is the number we do not lead with. The highlighted row is the configuration that ships.</p>
+    <h2>How we got here</h2>
+    <p class="sub">Each row is two experiments of five runs on the same prompt. The highlighted row is what ships.</p>
     <div class="scroll"><table id="story-t"><thead><tr><th>Milestone</th><th>Set</th><th>Judge</th><th>Effort · cap</th><th class="r">pass^5 each</th><th class="r">pass^10 · Wilson 95%</th><th class="r">Pooled pass^1</th><th class="r">Cut at cap</th><th class="r">Cost</th></tr></thead><tbody></tbody></table></div>
-    <p class="src">Every row through the corrected rerun was graded by the old judge; the sweep by the judge at reasoning effort xhigh. 65 to 69 is a judge change, not an agent change. The prompt hash is b44a9181 on every row here. The dev set was never run at xhigh.</p>
+    <p class="src">Rows through the corrected rerun used the old judge. The sweep used the xhigh judge, so 65 to 69 is a judge change. Prompt hash b44a9181 on every row. Dev was never run at xhigh.</p>
   </section>
 
   <section class="card" id="tests">
     <h2 id="heat-h2">The heatmap: test cases by runs, colored by the first scorer that failed</h2>
-    <p class="sub" id="heat-sub">Rows grouped by tier, ten columns for two experiments of five. A row solid across all ten is in pass^10; the speckled rows are the noise the interval is for.</p>
+    <p class="sub" id="heat-sub">Rows grouped by tier. Ten columns, two experiments. A solid row is in pass^10.</p>
     <div class="scroll"><div id="heat"></div></div>
     <div class="legend" id="heatlegend"></div>
-    <p class="src">Evaluators run in table order; failure_category is the first one that fails. Hover a cell for the question and its latency.</p>
+    <p class="src">Scorers run in table order. The letter is the first that failed. Hover a cell.</p>
   </section>
 
   <div class="grid2">
     <section class="card">
-      <h2>The dev climb, pass^1 by tier. Repeated prompts still move.</h2>
-      <p class="sub">Development-set experiments only. The x axis is the prompt hash each experiment ran; the same hash twice in a row is the same prompt rerun. That is why a prompt change was judged on pooled pass^1 over two experiments, never on one number. Held-out and sweep experiments are in the story table, not here.</p>
+      <h2>The dev climb, pass^1 by tier</h2>
+      <p class="sub">Dev experiments only. A label marks a prompt change. Each prompt ran twice before it was judged, because the same prompt moves between runs.</p>
       <div id="base"></div>
       <div class="legend"><span><i style="background:var(--pass)"></i>Verified</span><span><i style="background:var(--f-list)"></i>Exploratory</span><span><i style="background:var(--f-fna)"></i>Not available</span></div>
       <p class="src" id="base-src"></p>
     </section>
 
     <section class="card">
-      <h2>What fails, and whose fault it is</h2>
+      <h2>What failed</h2>
       <p class="sub" id="fail-sub"></p>
       <div id="fails"></div>
-      <p class="src">Zero means zero in this experiment, not never.</p>
+      <p class="src">Counts are for this pair only.</p>
     </section>
   </div>
 
   <section class="card">
     <h2 id="lat-h2">Latency by tier.</h2>
-    <p class="sub">Every graded run in the headline pair, seconds from question to answer. The one-off query runs one SELECT against the semantic views; the rest of the latency is the model thinking, which at xhigh is a lot of thinking. The 500 s marks are the harness cap.</p>
+    <p class="sub">Every run in the headline pair, seconds from question to answer. Most of it is the model thinking. 500 s is the harness cap.</p>
     <div id="lat"></div>
     <p class="src">Latency is comparable only between passes with the same worker count.</p>
   </section>
@@ -194,13 +194,13 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 <aside class="debug" aria-label="Test case debug view">
   <div class="dhead">
     <b>Test case debug view</b>
-    <small id="d-sub">the first list_match failure with a one-off query, as the manual says to double-click</small>
+    <small id="d-sub">one failing run</small>
   </div>
   <div class="dbody" id="dbody"><p class="meta">Loading.</p></div>
 </aside>
 </div>
 
-<footer class="gutter">pass^5 is the headline and is compared. pass^10 comes with its interval. The heatmap and the explained failures are the argument. Fourteen evaluators, eleven of them code rules over structured fields, three of them a judge with a rubric you can read. Results are never cached across runs.</footer>
+<footer class="gutter">Fourteen scorers: eleven code rules over structured fields, three judges with a rubric you can read. Nothing is cached between runs.</footer>
 
 <div class="tip" id="tip" hidden></div>
 
@@ -226,22 +226,22 @@ function draw(d) {
   const L = d.headline, H = d.milestones.find(m => m.headline), pct = v => Math.round(v * 100) + '%';
   const passed = Object.values(L.pass1).reduce((s, v) => s + v[0], 0);
   $('spend').textContent = money(d.spend_usd);
-  $('banner').textContent = `${L.questions} HELD-OUT TEST CASES // ${L.runs} RUNS EACH // THE POINT ESTIMATE IS NOT THE ARGUMENT, THE INTERVAL IS`;
+  $('banner').textContent = `${L.questions} ${L.set === 'dev' ? 'DEV' : 'HELD-OUT'} TEST CASES // ${L.runs} RUNS EACH // READ THE INTERVAL`;
   $('c-run').textContent = L.ids.map(i => i.slice(9, 16)).join(' + '); $('c-target').textContent = `variance review assistant @ ${L.sha || 'unknown'} · prompt ${L.prompt} · effort ${L.effort} · cap ${L.max_tokens}`;
-  $('h1').textContent = `${L.passk} of ${L.questions} ${L.set === 'dev' ? 'dev' : 'held-out'} questions pass ${L.runs} times out of ${L.runs}. Wilson says ${pct(L.wilson[0])} to ${pct(L.wilson[1])}. We are telling you this on purpose.`;
+  $('h1').textContent = `${L.passk} of ${L.questions} ${L.set === 'dev' ? 'dev' : 'held-out'} questions pass ${L.runs} of ${L.runs} runs. 95% interval ${pct(L.wilson[0])} to ${pct(L.wilson[1])}.`;
   $('t-p5').textContent = H ? H.passk_each.map(p => `${p[0]}/${p[1]}`).join(' and ') : `${L.passk}/${L.questions}`;
-  $('t-pkl').textContent = `pass^${L.runs}, Wilson 95%`; $('t-pk').textContent = `${L.passk} / ${L.questions}`; $('t-pks').textContent = `${pct(L.wilson[0])} to ${pct(L.wilson[1])}. How sure we are. Read the interval, not the point.`;
-  $('t-p1').textContent = pct(L.rows ? passed / L.rows : 0); $('t-p1s').textContent = `${passed} of ${L.rows} graded runs. For the climb, not the headline.`;
+  $('t-pkl').textContent = `pass^${L.runs}, Wilson 95%`; $('t-pk').textContent = `${L.passk} / ${L.questions}`; $('t-pks').textContent = `${pct(L.wilson[0])} to ${pct(L.wilson[1])}`;
+  $('t-p1').textContent = pct(L.rows ? passed / L.rows : 0); $('t-p1s').textContent = `${passed} of ${L.rows} graded runs`;
   const naps = d.grid.flatMap(q => q.runs).filter(r => r.latency_s >= 500).length;
   const na = d.grid.filter(q => q.tier === 'Not available').flatMap(q => q.runs.map(r => r.latency_s)).sort((a, b) => a - b);
-  $('t-cost').textContent = `${money(L.cost_usd)} · ${L.latency_p50_s} s`; $('t-lats').textContent = `${L.rows} agent runs plus the judge calls. Refusals ${na.length ? na[Math.floor(na.length / 2)] + ' s' : 'n/a'}. ${naps === 0 ? 'Nobody napped.' : naps === 1 ? 'One ranking took a nap.' : naps + ' rankings took a nap.'}`;
+  $('t-cost').textContent = `${money(L.cost_usd)} · ${L.latency_p50_s} s`; $('t-lats').textContent = `${L.rows} agent runs plus the judge. Refusals ${na.length ? na[Math.floor(na.length / 2)] + ' s' : 'n/a'}.`;
 
   // The story table: one row per milestone, the shipped configuration highlighted.
   $('story-t').querySelector('tbody').innerHTML = d.milestones.map(m => `<tr${m.headline ? ' style="background:var(--pass-soft)"' : ''}>
     <td>${esc(m.name)}<br><span class="meta">${m.ids.map(i => i.slice(9, 16)).join(' + ')}</span></td><td>${m.set}</td><td>${m.judge}</td><td class="mono">${m.effort} · ${m.max_tokens}</td>
     <td class="r">${m.passk_each.map(p => `${p[0]}/${p[1]}`).join(' and ')}</td><td class="r"><b>${m.passk_pair[0]}/${m.passk_pair[1]}</b> · ${pct(m.wilson[0])} to ${pct(m.wilson[1])}</td>
     <td class="r">${m.pass1[0]}/${m.pass1[1]} (${pct(m.pass1[0] / m.pass1[1])})</td><td class="r">${m.truncated}</td><td class="r">${money(m.cost_usd)}</td></tr>`).join('');
-  $('lat-h2').textContent = `Latency by tier. Refusals are instant, rankings take a coffee, ${naps === 0 ? 'nobody napped' : naps === 1 ? 'one took a nap' : naps + ' took a nap'}.`;
+  $('lat-h2').textContent = `Latency by tier. ${naps} run${naps === 1 ? '' : 's'} hit the cap.`;
 
   // Heatmap.
   (() => {
@@ -249,7 +249,7 @@ function draw(d) {
     const flat = Q.filter(q => q.runs.every(r => !r.pass)).length;
     const solid = Q.filter(q => q.runs.every(r => r.pass)).length;
     $('heat-h2').textContent = `The heatmap: ${Q.length} test cases, ${L.runs} runs over ${L.ids.length} experiment${L.ids.length === 1 ? '' : 's'}, colored by the first scorer that failed`;
-    $('heat-sub').textContent = `Rows grouped by tier. ${solid} row${solid === 1 ? '' : 's'} solid across all ${L.runs}: that is pass^${L.runs}. ${flat} question${flat === 1 ? '' : 's'} fail every run, each with a named cause. The speckled rows are the noise the interval is for.`;
+    $('heat-sub').textContent = `Rows grouped by tier. ${solid} row${solid === 1 ? '' : 's'} solid across all ${L.runs}: that is pass^${L.runs}. ${flat} fail every run.`;
     const cell = 30, gap = 3, LX = 330, top = 24, W = LX + L.runs * (cell + gap) + 40, H = top + Q.length * (cell + gap) + 2 * 10;
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Pass and failure heatmap', style: 'min-width:640px' });
     for (let r = 0; r < L.runs; r++) svg.append(el('text', { x: LX + r * (cell + gap) + cell / 2, y: 14, 'text-anchor': 'middle', class: 'mono' }, (r ? '' : 'run ') + (r + 1)));
@@ -295,13 +295,13 @@ function draw(d) {
     });
     ends.sort((a, b) => a[1] - b[1]).forEach((e, i) => { if (i && e[1] < ends[i - 1][1] + 14) e[1] = ends[i - 1][1] + 14; svg.append(el('text', { x: e[2], y: e[1], class: 'lbl' }, e[0])); });
     $('base').replaceChildren(svg);
-    $('base-src').textContent = `${n} dev experiments, ${E.reduce((s, e) => s + e.rows, 0)} graded runs, ${new Set(E.map(e => e.prompt)).size} prompts. A label marks where the prompt changed. Single-run smoke tests are left out.`;
+    $('base-src').textContent = `${n} dev experiments, ${E.reduce((s, e) => s + e.rows, 0)} graded runs, ${new Set(E.map(e => e.prompt)).size} prompts. Single-run smoke tests left out.`;
   })();
 
   // Failure categories, horizontal bars.
   (() => {
     const fails = Object.values(d.failures).reduce((a, b) => a + b, 0);
-    $('fail-sub').textContent = `${fails} failing runs out of ${L.rows}. Hover a bar for what that scorer catches.`;
+    $('fail-sub').textContent = `${fails} failing runs of ${L.rows}. Hover a bar.`;
     const data = Object.entries(d.failures).sort((a, b) => b[1] - a[1]).concat([['provenance', d.failures.provenance ? null : 0], ['error', d.failures.error ? null : 0]].filter(x => x[1] === 0));
     const W = 640, rowH = 30, P = { l: 150, r: 40 }, H = rowH * data.length + 4, max = Math.max(1, ...data.map(x => x[1])) * 1.15, x = v => P.l + (W - P.l - P.r) * v / max;
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Failing runs by first failing scorer' });
@@ -343,8 +343,8 @@ function draw(d) {
   // The debug view: one failing row from the headline pair.
   (() => {
     const t = d.trace;
-    if (!t) { $('d-sub').textContent = 'nothing failed in the headline pair'; $('dbody').innerHTML = '<p>Every run passed. Suspicious. Add harder questions.</p>'; return; }
-    $('d-sub').textContent = `${t.id}, run ${t.run_index} of ${L.runs} · double-clicked, as the manual says`;
+    if (!t) { $('d-sub').textContent = 'nothing failed in the headline pair'; $('dbody').innerHTML = '<p>Every run passed.</p>'; return; }
+    $('d-sub').textContent = `${t.id}, run ${t.run_index} of ${L.runs}`;
     const chip = { Verified: 'ok', Exploratory: 'no', 'Not available': 'no' }[t.label] || 'no';
     const top = v => Array.isArray(v) ? v.slice(0, 3) : v == null ? [] : [{ key: '', value: v }];
     const tv = top(t.truth_value), av = top(t.answer_value), rows = Math.max(tv.length, av.length);
@@ -358,7 +358,7 @@ function draw(d) {
       <div class="dsec"><h3>Function output</h3><span class="chip ${chip}">${t.label || 'unlabeled'}</span><p>${esc((t.answer_text || '').slice(0, 700))}${(t.answer_text || '').length > 700 ? ' …' : ''}</p>${t.genie_sql ? `<pre>${esc(t.genie_sql)}</pre>` : ''}<span class="meta">${calls} · ${Math.round((t.latency_ms || 0) / 1000)} s turn · $${(t.cost_usd || 0).toFixed(3)} · ${t.output_tokens || 0} output tokens</span></div>
       <div class="dsec"><h3>Evaluators</h3><table><thead><tr><th>Evaluator</th><th>Kind</th><th>Result</th></tr></thead><tbody>${scorers}</tbody></table></div>
       <div class="dsec"><h3>Expected vs actual, first three</h3>${cmp}</div>
-      <div class="dsec"><h3>Debug outputs</h3><p>First failing scorer: <b>${t.failure_category}</b>. ${WHY[t.failure_category] || ''}</p><p class="meta">${judges.some(j => t.scorers[j] === false) ? 'A judge failed this row; its rationale is on the experiment row.' : 'Judge reasoning: none. This evaluator is a code rule. It has no feelings.'}</p></div>`;
+      <div class="dsec"><h3>Debug outputs</h3><p>First failing scorer: <b>${t.failure_category}</b>. ${WHY[t.failure_category] || ''}</p><p class="meta">${judges.some(j => t.scorers[j] === false) ? 'A judge failed this row. Its rationale is on the experiment row.' : 'A code rule failed this row. No judge involved.'}</p></div>`;
   })();
 }
 

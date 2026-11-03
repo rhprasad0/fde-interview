@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Layout: the evals-suite chrome reused; the study on the left, the provenance ledger in a right rail. */
+/* The evals-suite chrome reused: the page on the left, a ledger in the right rail. */
 :root{
   --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
   --accent:#2a78d6; --accent-ink:#ffffff;
@@ -105,16 +105,12 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
 <header class="top">
   <div class="in gutter">
-    <div class="brand">
-      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg>
-      <span>Lantern Field Notes</span>
-      <small>ONE TESTER IS NOT A STUDY · IT IS A START</small>
-    </div>
-    <nav class="tabs" aria-label="Evaluation suite">
+    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Field Notes</span><small>ONE TESTER IS A START</small></div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission">Mission</a>
       <a href="/">Workshop</a>
       <a href="/evals">Metrics dashboard</a>
       <a href="/study" aria-current="page">Field notes</a>
-      <a href="/mission">Mission</a>
       <a href="/incident">Incident report</a>
       <a href="#personas" class="off" title="One persona. It was a person.">Synthetic personas</a>
     </nav>
@@ -126,107 +122,103 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
   </div>
 </header>
-<div class="banner gutter">ONE TESTER // EIGHT TYPED TURNS // EVERY ONE OF THEM IS NOW A TEST CASE THE PROMPT NEVER SAW</div>
+<div class="banner gutter">ONE TESTER // EIGHT TYPED TURNS // EVERY ONE IS NOW A TEST CASE THE PROMPT NEVER SAW</div>
 
 <div class="shell gutter">
 <main>
   <div class="crumb">
-    <span>User study: <b>dhs-variance-review</b></span><span>/</span>
     <span>n = <b>1</b></span><span>/</span>
     <span>Planned <b>45 min</b>, ran <b>80</b></span><span>/</span>
-    <span>Written feedback submitted in the app: <b>0</b> (it is all on the recording)</span>
+    <span>Feedback typed into the app: <b>0</b>. It is all on the recording.</span>
   </div>
 
   <div class="headrow">
     <div>
       <h1>One tester, eight typed turns, four answered Not available. Two of those limits did not exist.</h1>
-      <p class="lede">A former federal HR professional, now a contractor in an unrelated field, sat with the spec 05 prototype for 80 minutes on 2026-11-01 and played a DHS workforce-planning analyst with a quarterly staffing review due Thursday. Everything typed became an eval row. The two false refusals became the two rows that fail an agent for being too polite.</p>
+      <p class="lede">A former federal HR professional, now a contractor in an unrelated field, used the prototype for 80 minutes as a DHS workforce analyst with a staffing review due Thursday. Everything typed became an eval row. The two false refusals became the two rows that fail an agent for being too polite.</p>
     </div>
-    <a class="btn primary" href="/evals#story">See what the rows did to the numbers</a>
+    <a class="btn primary" href="/evals#story">What the rows did to the numbers</a>
   </div>
 
   <section class="tiles" aria-label="Session">
-    <div class="tile"><span>Testers</span><strong class="num">1</strong><em>Not a simulated user. Consented to an anonymized, verbatim record.</em></div>
-    <div class="tile"><span>Typed turns</span><strong class="num">8</strong><em>Plus about six spoken questions that never reached the keyboard.</em></div>
-    <div class="tile"><span>Answered Not available</span><strong class="num">4 of 8</strong><em>Two on limits the data does not have. That was the finding.</em></div>
+    <div class="tile"><span>Testers</span><strong class="num">1</strong><em>A real person. Consented to an anonymized verbatim record.</em></div>
+    <div class="tile"><span>Typed turns</span><strong class="num">8</strong><em>Plus about six spoken questions.</em></div>
+    <div class="tile"><span>Answered Not available</span><strong class="num">4 of 8</strong><em>Two on limits the data does not have.</em></div>
     <div class="tile"><span>Dev rows seeded by the session</span><strong class="num">13 of 20</strong><em>Two more from the session plan, five from public sources.</em></div>
   </section>
 
   <section class="card" id="session">
-    <h2>The session: three screens, five tasks, one think-aloud</h2>
-    <p class="sub">The briefing asked the tester to read a draft quarterly explanation for one occupation cold, pick three cells for the staffing review, draft the paragraph OPM gets with the assistant's help, act on the recommended actions, and then try to break it. Task five never ran; the paragraph took the time. The facilitator promised to stay quiet and mostly did.</p>
+    <h2>The session</h2>
+    <p class="sub">Three screens, five tasks, think-aloud. Read a draft explanation cold. Pick three cells for the review. Draft the paragraph OPM gets. Act on the recommendations. Try to break it. The last task never ran.</p>
     <table>
       <thead><tr><th>Task</th><th>What happened</th><th>What it told us</th></tr></thead>
       <tbody>
-        <tr><td>1 · Read the brief</td><td>Read the hiring miss correctly; judged 475 onboarded low against a remembered baseline; jumped ahead to the recommended cells twice.</td><td>The numbers were legible. The navigation was not.</td></tr>
-        <tr><td>2 · Pick three cells</td><td>CBP, USCIS, TSA, spoken rather than typed. Chosen by size.</td><td>Size is the analyst's prior. The variance table did not change it.</td></tr>
-        <tr><td>3 · Draft the paragraph</td><td>Thirty minutes of silent typing. Wrote an original paragraph rather than editing the draft: the numbers are the what, the director needs the why.</td><td>The product answers what. The buyer asks why. Noted, and not something a prompt fixes.</td></tr>
-        <tr><td>4 · Act on recommendations</td><td>Three accepts in 24 seconds, no reject, no flag. Argued retirement risk is the larger issue.</td><td>The trace reads as a clean session. The criticism lives only in the recording. Traces lie by omission.</td></tr>
-        <tr><td>5 · Try to break it</td><td>Never run.</td><td>The break-it rows are still an open item.</td></tr>
+        <tr><td>1 · Read the brief</td><td>Read the hiring miss correctly. Jumped ahead to the recommended cells twice.</td><td>The numbers were legible. The navigation was not.</td></tr>
+        <tr><td>2 · Pick three cells</td><td>CBP, USCIS, TSA. By size.</td><td>The variance table did not change the prior.</td></tr>
+        <tr><td>3 · Draft the paragraph</td><td>Thirty minutes of silent typing. Wrote an original paragraph: the numbers are the what, the director needs the why.</td><td>The brief gives the what. A director asks why.</td></tr>
+        <tr><td>4 · Act on recommendations</td><td>Three accepts in 24 seconds. Argued retirement risk is the bigger issue.</td><td>The trace looks clean. The criticism is only on the recording.</td></tr>
+        <tr><td>5 · Try to break it</td><td>Not run.</td><td>Break-it rows are still open.</td></tr>
       </tbody>
     </table>
     <p class="src">challenge/eval/sessions/2026-11-01-tester-briefing.md · wiki/analyses/tester-a-session-findings.md</p>
   </section>
 
   <section class="card" id="turns">
-    <h2>The eight typed turns, verbatim, and what each one became</h2>
-    <p class="sub">Label and latency are from the 2026-11-01 trace, the agent of that day. Half the answers were refusals. The refusals were the answer type the tester trusted most, which is exactly why two of them resting on invented limits is the most dangerous thing in this table.</p>
+    <h2>The eight turns, verbatim</h2>
+    <p class="sub">Label and seconds are from the 2026-11-01 trace. Half the answers were refusals. Refusals were the answer type the tester trusted most, and two of them rested on invented limits.</p>
     <div class="scroll"><table id="turns-t">
-      <thead><tr><th>Row</th><th style="width:42%">The tester's words</th><th>Label that day</th><th class="r">s</th><th class="r">Tools</th><th style="width:30%">What it became</th></tr></thead>
-      <tbody><tr><td class="mono">A01</td><td>As the Human Capital analyst I need more data on retirement eligibility numbers for next several years and would like it broken down by occupation. Would also like it to be systemtically aligned to the hiring pipeline by occupation and organization hierarchy (Groups/Divisions/Branches for all areas in CPB.</td><td><span class="chip warn">Not available</span></td><td class="r">36</td><td class="r">1</td><td>Refused on a limit that does not exist: age bracket and length of service are on the views. Became C18. Seeded C01, C10, C14, C18.</td></tr><tr><td class="mono">A02</td><td>Just need CPB occupations but now that you asked, it might be useful to know how CBP compares to other components.</td><td><span class="chip no">Exploratory</span></td><td class="r">69</td><td class="r">9</td><td>Nine tool calls, the answer the tester liked best. Its rank was wrong on either measure; the row now admits both. Seeded C01.</td></tr><tr><td class="mono">A03</td><td>Draft the OPM paragraph.</td><td><span class="chip ok">Verified</span></td><td class="r">25</td><td class="r">3</td><td>A facilitator prompt, not the tester&#x27;s own words; the only turn that asked for the draft itself. Seeded C02.</td></tr><tr><td class="mono">A04</td><td>I would need to know why CBP recruitment is &quot;thin&quot; Is it a budgetary issue and why are the announcements with stated openings not being increased?</td><td><span class="chip warn">Not available</span></td><td class="r">9</td><td class="r">0</td><td>A why question. The row now accepts the figure plus a stated limit under any label.</td></tr><tr><td class="mono">A05</td><td>Number of announcements would be helpful.</td><td><span class="chip ok">Verified</span></td><td class="r">5</td><td class="r">0</td><td>Answered from memory of a result two turns earlier; the row now accepts either counting function. Seeded C12.</td></tr><tr><td class="mono">A06</td><td>Would want to know what many means</td><td><span class="chip warn">Not available</span></td><td class="r">5</td><td class="r">0</td><td>Many is the posting&#x27;s own word. The row now accepts the figure plus a stated limit.</td></tr><tr><td class="mono">A07</td><td>When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants.</td><td><span class="chip warn">Not available</span></td><td class="r">9</td><td class="r">0</td><td>Refused on a limit that does not exist: grade is a column. Became C17. Fixed by the climb: 10 of 10 on the final dev prompt. Seeded C13, C17.</td></tr><tr><td class="mono">A08</td><td>Grade mix over time would be helpful.  It is hard to prepare for a briefing for the Director without having the &quot;why&quot; behind the numbers which is what is also needed in addition to the numbers (the what).  The why is what Director will be interested in knowing after seeing the numbers and what these numbers tell me is helpful because they show that there are issues to be addressed and Director will definitely ask about recruitment numbers, hiring pluses and minuses, HR development (does it meet workforce development goals and actual training needs), performance assessments, etc. All of these areas need to be analyzed using a model that can help Director get a true picture of what is happening in the organization.  Director will ask these kinds of questions. Director will want a comparison with other larger organizations of like size to make some comparisons. Just seeing the numbers and percentages is helpful but if OPM could provide more details it would help Director of CBP and other elements to address issues like recruitment and skills mix. What can be done about not having enough OPM data to systemtically address issue?</td><td><span class="chip no">Exploratory</span></td><td class="r">74</td><td class="r">1</td><td>Two defensible readings of grade mix; the row now accepts both. Seeded C03, C04, C08, C09.</td></tr></tbody>
+      <thead><tr><th>Row</th><th style="width:46%">The tester's words</th><th>Label that day</th><th class="r">s</th><th style="width:28%">What it became</th></tr></thead>
+      <tbody><tr><td class="mono">A01</td><td>As the Human Capital analyst I need more data on retirement eligibility numbers for next several years and would like it broken down by occupation. Would also like it to be systemtically aligned to the hiring pipeline by occupation and organization hierarchy (Groups/Divisions/Branches for all areas in CPB.</td><td><span class="chip warn">Not available</span></td><td class="r">36</td><td>Refused on a limit that does not exist. Became C18. Seeded C01, C10, C14, C18.</td></tr><tr><td class="mono">A02</td><td>Just need CPB occupations but now that you asked, it might be useful to know how CBP compares to other components.</td><td><span class="chip no">Exploratory</span></td><td class="r">69</td><td>Nine tool calls. The answer the tester liked best. Its rank was wrong; the row now admits both measures. Seeded C01.</td></tr><tr><td class="mono">A03</td><td>Draft the OPM paragraph.</td><td><span class="chip ok">Verified</span></td><td class="r">25</td><td>A facilitator prompt, not the tester&#x27;s words. Seeded C02.</td></tr><tr><td class="mono">A04</td><td>I would need to know why CBP recruitment is &quot;thin&quot; Is it a budgetary issue and why are the announcements with stated openings not being increased?</td><td><span class="chip warn">Not available</span></td><td class="r">9</td><td>A why question. The row now accepts the figure plus a stated limit under any label.</td></tr><tr><td class="mono">A05</td><td>Number of announcements would be helpful.</td><td><span class="chip ok">Verified</span></td><td class="r">5</td><td>Answered from a result two turns earlier. The row now accepts either counting function. Seeded C12.</td></tr><tr><td class="mono">A06</td><td>Would want to know what many means</td><td><span class="chip warn">Not available</span></td><td class="r">5</td><td>&quot;Many&quot; is the posting&#x27;s own word. Same fix as A04.</td></tr><tr><td class="mono">A07</td><td>When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants.</td><td><span class="chip warn">Not available</span></td><td class="r">9</td><td>Refused on a limit that does not exist: grade is a column. Became C17. Fixed by the climb. Seeded C13, C17.</td></tr><tr><td class="mono">A08</td><td>Grade mix over time would be helpful.  It is hard to prepare for a briefing for the Director without having the &quot;why&quot; behind the numbers which is what is also needed in addition to the numbers (the what).  The why is what Director will be interested in knowing after seeing the numbers and what these numbers tell me is helpful because they show that there are issues to be addressed and Director will definitely ask about recruitment numbers, hiring pluses and minuses, HR development (does it meet workforce development goals and actual training needs), performance assessments, etc. All of these areas need to be analyzed using a model that can help Director get a true picture of what is happening in the organization.  Director will ask these kinds of questions. Director will want a comparison with other larger organizations of like size to make some comparisons. Just seeing the numbers and percentages is helpful but if OPM could provide more details it would help Director of CBP and other elements to address issues like recruitment and skills mix. What can be done about not having enough OPM data to systemtically address issue?</td><td><span class="chip no">Exploratory</span></td><td class="r">74</td><td>Two readings of &quot;grade mix&quot;. The row now accepts both. Seeded C03, C04, C08, C09.</td></tr></tbody>
     </table></div>
-    <p class="src">challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl · challenge/eval/questions.yaml rows A01 to A08 (verbatim, session order)</p>
+    <p class="src">challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl · challenge/eval/questions.yaml, rows A01 to A08</p>
   </section>
 
   <div class="grid2">
     <section class="card" id="seeds">
-      <h2>How the session drove the development set</h2>
-      <p class="sub">Twenty rows, co-written by Ryan and Claude on 2026-11-02 from a cited seed each, approved row by row before any run. No row comes from a simulated user.</p>
+      <h2>How the session drove the dev set</h2>
+      <p class="sub">Twenty rows, co-written by Ryan and Claude on 2026-11-02 from a cited seed each, approved row by row before any run.</p>
       <table>
         <thead><tr><th>Seed</th><th class="r">Rows</th><th>Examples</th></tr></thead>
         <tbody>
-          <tr><td>A tester question or a transcript timestamp</td><td class="r">13</td><td>C01 (20 or more years of service, from A01 and A02), C09 (TSA screener pay, from A08), C19 (time to hire, spoken at 16:51)</td></tr>
-          <tr><td>A session-plan task</td><td class="r">2</td><td>C11 (task 4, the year to date against plan), C20 (task 5, the names of resigned officers in one city: Not available, and it had better stay that way)</td></tr>
-          <tr><td>A public source only</td><td class="r">5</td><td>C06 (TSA testimony to Congress), C07 (GAO on FEMA hiring), C15, C16</td></tr>
+          <tr><td>A tester question or transcript timestamp</td><td class="r">13</td><td>C01 (20+ years of service), C09 (TSA screener pay), C19 (time to hire, spoken at 16:51)</td></tr>
+          <tr><td>A session-plan task</td><td class="r">2</td><td>C11 (year to date against plan), C20 (names of resigned officers in one city: Not available)</td></tr>
+          <tr><td>A public source only</td><td class="r">5</td><td>C06 (TSA testimony), C07 (GAO on FEMA hiring)</td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>The two rows that exist because of the session's failures.</b> On 2026-11-01 the agent said the data has no grade field (A07, zero tool calls, nine seconds) and no way to approximate retirement eligibility (A01). Grade is a column on three views; age bracket and length of service are enough for a caveated count. Neither limit is in the prompt or the skills; the model asserted them unchecked. C17 and C18 ask those questions and fail a Not available answer as <span class="mono">false_not_available</span>. On the final dev prompt C17 passed 10 of 10 and C18 9 of 10, at effort high and the old judge; neither has been run at xhigh.</p>
-      <p class="src">challenge/eval/questions.yaml, seed field per row · challenge/specs/04-eval-set.md</p>
+      <p class="sub"><b>Two rows exist because of the false refusals.</b> On 2026-11-01 the agent said the data has no grade field (A07) and no way to approximate retirement eligibility (A01). Grade is a column. Age bracket and length of service are enough for a caveated count. C17 and C18 ask those questions and fail a Not available answer. On the final dev prompt: C17 10 of 10, C18 9 of 10.</p>
+      <p class="src">challenge/eval/questions.yaml, seed per row</p>
     </section>
 
     <section class="card" id="heldout">
       <h2>How the session became the held-out line</h2>
-      <p class="sub">Twenty rows tuned against for eight iterations cannot rule out overfitting. So the dev set was tagged <span class="mono">eval-v1</span> and frozen, and only then were the eight typed turns added, verbatim, with the expected behaviour relabelled from what the data supports rather than from the 2026-11-01 answers, and truth pinned before the first run.</p>
+      <p class="sub">The dev set was tagged and frozen first. Then the eight typed turns were added verbatim, with expected behaviour relabelled from what the data supports, and truth pinned before the first run.</p>
       <table>
-        <thead><tr><th>Line</th><th class="r">pass^5 each</th><th class="r">pass^10 · Wilson</th><th class="r">Pooled</th></tr></thead>
+        <thead><tr><th>Line</th><th class="r">pass^5 each</th><th class="r">pass^10 · 95%</th><th class="r">Pooled</th></tr></thead>
         <tbody class="num">
           <tr><td>Dev set, same prompt</td><td class="r">18/20 and 19/20</td><td class="r">17/20 · 64% to 95%</td><td class="r">197/200</td></tr>
-          <tr><td>Held-out, rows as written</td><td class="r">2/8 and 1/8</td><td class="r">1/8 · 2% to 47%</td><td class="r">23/80</td></tr>
+          <tr><td>Held-out, as written</td><td class="r">2/8 and 1/8</td><td class="r">1/8 · 2% to 47%</td><td class="r">23/80</td></tr>
           <tr><td>Held-out, six rows corrected</td><td class="r">3/8 and 5/8</td><td class="r">3/8 · 14% to 69%</td><td class="r">65/80</td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>The drop is the finding.</b> About 49 of the 57 as-written failures were a row that accepted one reading of a question that admits two. The twenty dev rows were written to have one reading each, so the prompt learned to find it; a tester's words have two or three. Ryan approved six row corrections the same day (A02, A03, A04, A05, A06, A08: a second reading, a narrowed must-not-claim, either label when the limit is stated, either counting function), each logged with its reason, and the rerun was reported beside the as-written result, never in place of it. What is left after the corrections is the agent: runaway answers on whole-component questions, lost labels on long answers, and an OPM paragraph that asserts a cause.</p>
-      <p class="sub"><b>The rule.</b> These eight rows are never tuned against: no prompt, skill, agent, or judge change is made to fix an A-row miss. The one named exception, the reasoning-effort sweep, was run on them knowingly and is labelled as such on the <a href="/evals#story">metrics dashboard</a>. A fresh blind set validates it.</p>
-      <p class="src">challenge/eval/journal.md, Held-out line and Held-out rerun · DECISIONS.md, Evaluation</p>
+      <p class="sub">About 49 of the 57 as-written failures were a row that accepted one reading of a question with two. The dev rows were written to have one reading each. A tester's words have more. Ryan approved six row corrections (A02, A03, A04, A05, A06, A08), each logged with its reason, and the rerun was reported beside the first, never instead of it. What remains is the agent: runaway answers on wide questions, lost labels, an OPM paragraph that asserts a cause.</p>
+      <p class="sub">These rows are never tuned against. The one exception, the reasoning-effort sweep, is labelled as such on the <a href="/evals#story">dashboard</a>.</p>
+      <p class="src">challenge/eval/journal.md, Held-out line · DECISIONS.md, Evaluation</p>
     </section>
   </div>
 </main>
 
-<aside class="debug" aria-label="Provenance ledger">
-  <div class="dhead">
-    <b>Provenance ledger</b>
-    <small>what was recorded, and what deliberately was not</small>
-  </div>
+<aside class="debug" aria-label="Side notes">
+  <div class="dhead"><b>Provenance</b><small>what was recorded, and what was not</small></div>
   <div class="dbody">
-    <div class="dsec"><h3>Recorded</h3><p>Audio of the session, 80 minutes. A trace line per assistant turn (question, answer, tool calls, latency, cost). Three button clicks. Four screenshots the briefing referred to. A redacted transcript, names and employers replaced by roles.</p></div>
-    <div class="dsec"><h3>Not recorded</h3><p>The tester's name and employer, anywhere. The briefing promised it; the forbidden-terms hook on every commit enforces it.</p></div>
-    <div class="dsec"><h3>Empty on purpose</h3><p>The session log CSV has a header and no rows: the facilitator was listening, not typing. In-app feedback: none submitted. Task five: not run.</p></div>
-    <div class="dsec"><h3>What the tester said that no eval row measures</h3><p>"They tell you what you can't get" was the praise. The want was a component-level diagnostic fed with the agency's own numbers: the why behind the quits, peer comparisons, trend. That is a different product, and it is in the design notes, not the prompt.</p></div>
-    <div class="dsec"><h3>Cost of the session's eight turns</h3><p class="num">about $0.03. The eval runs that followed cost more than the tester did.</p></div>
+    <div class="dsec"><h3>Recorded</h3><p>Audio, 80 minutes. A trace line per turn. Three button clicks. Four screenshots. A transcript with names and employers replaced by roles.</p></div>
+    <div class="dsec"><h3>Not recorded</h3><p>The tester's name and employer, anywhere. A commit hook enforces it.</p></div>
+    <div class="dsec"><h3>Empty on purpose</h3><p>The session log CSV: header only. In-app feedback: none. Task five: not run.</p></div>
+    <div class="dsec"><h3>What no eval row measures</h3><p>The tester wanted a component-level diagnostic on the agency's own numbers: why people quit, peer comparison, trend. That is a different product, recorded in the design notes.</p></div>
+    <div class="dsec"><h3>Cost of the eight turns</h3><p class="num">About $0.03.</p></div>
   </div>
 </aside>
 </div>
 
-<footer class="gutter">n = 1. We know. The eight questions were still the first thing the prompt had never seen, and the first time the number went down. The next tester's questions go in the same way: after the tag, verbatim, never tuned against.</footer>
+<footer class="gutter">One tester. The eight questions were the first ones the prompt had never seen.</footer>
 </body>
 </html>
