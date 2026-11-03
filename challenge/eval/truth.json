@@ -1,10 +1,10 @@
 {
  "C01": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 0.3158
  },
  "C02": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -49,7 +49,7 @@
   ]
  },
  "C03": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "facts": {
    "FEMA hiring variance against plan in FY2026": {
     "to date, Q1 to Q4 with accessions through August 2026": -2252,
@@ -58,15 +58,15 @@
   }
  },
  "C04": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 158.6
  },
  "C05": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 0.12
  },
  "C06": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "TOTAL",
@@ -79,11 +79,11 @@
   ]
  },
  "C07": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 94
  },
  "C08": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -136,7 +136,7 @@
   ]
  },
  "C09": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "1802",
@@ -149,7 +149,7 @@
   ]
  },
  "C10": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "WASHINGTON",
@@ -204,7 +204,7 @@
   ]
  },
  "C11": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -257,17 +257,17 @@
   ]
  },
  "C12": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 889
  },
  "C13": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "facts": {
-   "Do CBP Officer postings at minimum grade 12 or above stay open longer, on average, than those at grade 11 or below (yes or no)": "no"
+   "Do higher-grade CBP Officer postings stay open longer, on average, than lower-grade ones (yes or no); any grade split or grouping that answers the direction counts": "no"
   }
  },
  "C14": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -320,11 +320,11 @@
   ]
  },
  "C15": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 170
  },
  "C16": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "HSAA",
@@ -354,7 +354,7 @@
   ]
  },
  "C17": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": [
    {
     "key": "5",
@@ -391,7 +391,7 @@
   ]
  },
  "C18": {
-  "truth_computed_at": "2026-11-03T02:51:15+00:00",
+  "truth_computed_at": "2026-11-03T15:53:49+00:00",
   "truth_value": 11387
  }
 }

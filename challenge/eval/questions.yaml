@@ -265,7 +265,7 @@ questions:
   tier: genie
   expected_tools: [genie]
   truth_facts:
-    - name: Do CBP Officer postings at minimum grade 12 or above stay open longer, on average, than those at grade 11 or below (yes or no)
+    - name: Do higher-grade CBP Officer postings stay open longer, on average, than lower-grade ones (yes or no); any grade split or grouping that answers the direction counts
       tolerance: exact
       truth_sql: |
         SELECT CASE WHEN avg(CASE WHEN g >= 12 THEN d END) > avg(CASE WHEN g <= 11 THEN d END) THEN 'yes' ELSE 'no' END
@@ -273,7 +273,7 @@ questions:
         WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895'
         AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-10-31')
         WHERE g BETWEEN 1 AND 15
-  notes: Moved to narrative 2026-11-02 when truth was written; agents answered with grade-by-grade means, medians, and bands, so the graded fact is the direction. Postings opened September 2025 to October 2026, days open = close minus open date. The tester's own question, which the agent wrongly called unanswerable.
+  notes: Moved to narrative 2026-11-02 when truth was written; agents answered with grade-by-grade means, medians, and bands, so the graded fact is the direction. Postings opened September 2025 to October 2026, days open = close minus open date. The tester's own question, which the agent wrongly called unanswerable. Fact reworded 2026-11-03 (Ryan) because it named the grade-12 split the truth SQL uses, and the judge failed right-direction answers that grouped 5-9 against 11-15 or by maximum grade; the SQL's split stays as the computation.
 
 - id: C14
   author: ryan_claude

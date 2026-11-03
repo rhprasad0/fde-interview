@@ -607,3 +607,21 @@ Eight experiments, 800 runs, $1.70 of model calls (the baseline pair another $0.
   `label_match` is a scorer change, yours to approve; the prompt shows the labels in backticks.
 - **The 8-point bar** was replaced for this era by target rows plus the baseline spread (rules
   entry above). Under the old bar nothing here would have been kept, iteration 2 included.
+
+## After the plateau: set fix on C13, and the candidate `b44a9181` (Ryan, 2026-11-03)
+
+**Set fix.** C13's graded fact named the truth SQL's split (minimum grade 12 and up against 11 and
+below), and the judge failed answers with the right direction ("no") that grouped grades 5 to 9
+against 11 to 15, or by maximum grade. The row's own notes say the direction is what is graded.
+The fact now reads "Do higher-grade CBP Officer postings stay open longer, on average, than
+lower-grade ones (yes or no); any grade split or grouping that answers the direction counts".
+Truth regenerated: only C13's fact name changed, the value stays "no", and `truth --check` passes.
+C13 rows before this are scored against the old wording and are not rescored; C13 is left out of
+the comparison below. Added to the set-change list: C13, fact reworded, Ryan.
+
+**Candidate, run past the plateau at Ryan's request.** Iteration 2 plus three general changes:
+iteration 3's shape rule (rule 8), iteration 4's retirement-eligibility bullet, and the posting
+view's `agency_subelement_code` in the data fields skill (it was missing, and one C13 answer said
+postings carry no component; the truth SQL filters on it). Targets: C18 (computed truth 10/10 on
+iteration 4, failed on shape), the single shape misses, and C03's two extra queries on iteration
+4 (does that recur?).
