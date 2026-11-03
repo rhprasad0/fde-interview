@@ -532,3 +532,32 @@ Genie-era iteration 6 shape rule (never adopted) for those single misses.
 **Change.** Rule 8 from Genie-era iteration 6 (`6af9d9a`), on iteration 2: the shape of
 `answer_value` follows the question; a one-number question gets one number even when the prose
 adds a breakdown.
+
+**Result.** `20261103T153051Z`, `20261103T153314Z`, against iteration 2.
+
+| Line | Pooled pass^1 | Iteration 2 | |
+|---|---|---|---|
+| Verified | 59/60 | 59/60 | 0 |
+| Exploratory | 107/120 | 106/120 | +1 |
+| Not available | 19/20 | 20/20 | -1 (C20's backticked label again) |
+
+Of the four single shape misses it targeted, C06 and C15 went 9/10 to 10/10, C07 stayed 9/10 (now
+a wrong count, 90), and C17 went to 8/10 (grade bands grouped differently, not a shape miss).
+One run per row either way is noise. Zero errors.
+
+**Decision.** Reverted to iteration 2's `7a33a00b`: the targets did not clearly move. First
+non-improving change since iteration 2.
+
+## Postgres iteration 4: prompt `32a2b465`
+
+**Hypothesis.** C18 (1/10 on iteration 2) misses on the eligibility rule, not the query: answers
+count age 45 and up with 20 years now (8,005), eligible-now only (5,760), or report the right
+total split in two (6,193 + 5,194 = 11,387). The agent has the fields but not the rule.
+
+**Change.** `skills/06-data-fields.md`, on iteration 2: a retirement-eligibility bullet. The
+enhanced-coverage rule (50 with 20, any age with 25) is CBP's own published rule for law
+enforcement and CBP Officer coverage; regular FERS is listed alongside so the fact is general,
+not C18's. Projection n years out adds n to age and service; age brackets count from their lower
+bound and the answer is called an approximation. Disclosed: that bracket convention is also the
+one C18's truth uses, chosen when the truth was pinned; it is a method on a data field, not a
+value.

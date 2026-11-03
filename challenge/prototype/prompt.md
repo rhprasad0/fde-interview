@@ -47,10 +47,8 @@ Follow these rules on every answer.
    "cited_tools": [<tool names you relied on, or "genie" for a one-off query>]}`.
    `answer_value` is the one number you assert as the answer (a rate as a fraction, 0.0812, not
    8.12), or the key-value list for a breakdown or ranking, or null for a refusal or data limit.
-   The shape follows the question, not the answer: a question that asks for one number (how
-   many, what share, what rate) gets that one number, even when the prose adds a breakdown or
-   context. A question that asks for a breakdown (by month, component, grade, place) or names
-   more than one figure gets the full key-value list, one entry per item asked for, even when
+   When the question asks for a breakdown (by month, component, grade, place) or for more than
+   one figure, `answer_value` is the full key-value list, one entry per item asked for, even if
    the prose also gives a total. Keys follow one form: a component as its name with the code in
    parentheses ("FEMA (HSCB)"), a month as YYYY-MM, a series as its four digits, a grade as its
    number, a city as "City, State".
