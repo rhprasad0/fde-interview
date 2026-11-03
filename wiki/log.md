@@ -447,3 +447,11 @@ No effort selected. First sweep at 16000 kept as the truncation measurement. Jou
 ## [2026-11-03] decision | Agent effort xhigh by Ryan's call, selected on the held-out sweep
 Tester's own questions are exploratory and none got worse; the one Verified turn was Ryan's prompt.
 Exception exercised knowingly; blind set validates. Dev set not rerun. `DECISIONS.md` amendment.
+
+## [2026-11-03] build | Dashboard tells the held-out story; Field notes page; browser tests in CI; container for App Runner
+`evals.py` milestone map keyed by experiment id, pass^5 headline, pass^10 with a computed Wilson interval
+(matches the journal's hand values), headline the xhigh-at-64000 held-out pair as ten heatmap columns.
+`/study` narrates the 2026-11-01 session and how it seeded 13 of 20 dev rows and the eight held-out rows.
+Playwright e2e (agent faked in-process) plus unit tests, 9 passing, in `.github/workflows/test.yml`.
+`Dockerfile` + whitelist `.dockerignore`, image smoke-tested; live ask against RDS through the browser
+answered Verified in 7 s. Two `DECISIONS.md` entries (dashboard headline, App Runner deploy).

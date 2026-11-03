@@ -735,3 +735,40 @@ functions, Agent Bricks.
   text-to-SQL by a second model, re-creating Genie (no benefit on an eight-view schema).
 - **Revisit:** if the exploratory line stalls below the Genie-era 83% on the same questions, the
   query-spec tool is the next shape; if the panel pushes on governance, show the role's grants.
+
+## 2026-11-03  Eval dashboard: the held-out xhigh pair is the headline, the story table is the argument
+
+- **Context:** the dashboard read the last experiment in `experiments.jsonl` (by then a held-out
+  `max` arm) and led with pooled pass^1, against the 2026-11-03 headline decision. No row field
+  marks dev, held-out as written, corrected, or sweep arm: the as-written and corrected runs share
+  prompt hash and question ids. Wilson intervals and pass^10 existed only by hand in the journal.
+- **Chosen:** an explicit milestone map in `challenge/app/evals.py` keyed by experiment id (final
+  dev, as written, corrected, the two stopped 16000 arms, the three 64000 arms), with pass^5 per
+  experiment, pass^10 and a computed Wilson interval per pair, judge marker, and runs cut at the
+  cap. The headline is the `xhigh` at 64000 held-out pair, the configuration that ships; the
+  heatmap shows both experiments as ten columns so pass^10 is visible as a solid row. The dev
+  climb is context, marked old judge and never run at `xhigh`. A `/study` page (Field notes)
+  tells the tester session and how it drove the dev seeds and the held-out line, with the tester
+  described only as `questions.yaml` does.
+- **Rejected:** inferring the sets from row fields (ambiguous for the as-written versus corrected
+  pair; smoke rows unmarked); a selectable milestone that redraws the heatmap (more page code for
+  a demo that opens on one pair); an `/api/study` computed from the trace (the session is history).
+- **Revisit:** when the fresh blind set runs, add its pair to the map and make it the headline.
+
+## 2026-11-03  Deploy: one container on App Runner, static files served by FastAPI
+
+- **Context:** the demo-app entry above planned Lambda behind Lambda Web Adapter with static
+  files on S3. The app streams server-sent events for turns that run up to 300 s at `xhigh`, and
+  the only cloud resource is the RDS instance with a security group open to one laptop address.
+- **Chosen:** a `Dockerfile` at the repo root (so `challenge/` paths survive for `agent.py` and
+  `evals.py`), `python:3.13-slim`, uvicorn on 8080, `/health` for the service check, configuration
+  from the environment only, `.dockerignore` as a whitelist so `raw/`, `.env`, and state never
+  enter the image. App Runner runs that image; the RDS security group gets a rule for the service
+  on deploy day. Browser tests (Playwright, headless Chromium, the agent faked in-process) run
+  locally and in a new `tests` workflow; Playwright stays out of the image.
+- **Rejected:** Lambda Web Adapter plus S3 (outside the VPC it needs the database open to the
+  world, inside it needs a NAT gateway against a $50 budget; two artifacts to deploy instead of
+  one); a single EC2 host (cheapest, but no managed TLS or rollout, and nothing to show for the
+  serverless story).
+- **Revisit:** if App Runner cannot stream SSE for a 300 s turn, fall back to ECS Fargate with the
+  same image.

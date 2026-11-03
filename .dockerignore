@@ -1,0 +1,12 @@
+# Whitelist: only what the Dockerfile copies can enter the build context.
+*
+!challenge/app
+!challenge/prototype
+!challenge/eval/questions.yaml
+!challenge/eval/experiments.jsonl
+!challenge/eval/truth.json
+challenge/app/__pycache__
+challenge/prototype/__pycache__
+challenge/app/test_*.py
+challenge/app/requirements-dev.txt
+challenge/prototype/screens
