@@ -21,12 +21,6 @@ Workforce snapshots, separations and accessions, all by component and occupation
   ES rows carry "00"; TSA bands are letters).
 - **Age bracket** (`age_bracket`). Five-year brackets as text ("20-24" to "65 or more") on every row.
 - **Length of service** (`length_of_service_years`) in years, as a number on every row.
-- **Retirement eligibility** comes from age and service together. CBP Officers (1895), Border
-  Patrol agents (1896), and other law-enforcement series have enhanced coverage: eligible at age
-  50 with 20 years of service, or at any age with 25. Regular FERS staff: age 62 with 5 years, 60
-  with 20, or the minimum retirement age (57) with 30. For eligibility n years out, add n to both
-  age and service. Age is a bracket, so count each bracket from its lower bound (the youngest
-  anyone in it can be) and call the result an approximation.
 - **Annual basic pay** (`annualized_adjusted_basic_pay`). Present on every row; estimated from job
   postings where OPM redacted it (`pay_imputed` is true).
 - **Supervisory status, tenure, work schedule** (`supervisory_status`, `tenure`, `work_schedule`).

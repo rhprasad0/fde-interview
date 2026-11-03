@@ -561,3 +561,49 @@ not C18's. Projection n years out adds n to age and service; age brackets count 
 bound and the answer is called an approximation. Disclosed: that bracket convention is also the
 one C18's truth uses, chosen when the truth was pinned; it is a method on a data field, not a
 value.
+
+**Result.** `20261103T153612Z`, `20261103T153841Z`, against iteration 2.
+
+| Line | Pooled pass^1 | Iteration 2 | |
+|---|---|---|---|
+| Verified | 58/60 | 59/60 | -1 net; **C03 lost two runs: a fall** |
+| Exploratory | 109/120 | 106/120 | +3 |
+| Not available | 19/20 | 20/20 | -1 (C20's backticked label) |
+
+**The hypothesis held in the answers, not the score.** Every one of the ten C18 runs computed
+11,387, truth exactly (the prose says "about 11,400" and gives the 6,193 already eligible). Three
+passed. The seven misses put the bracket breakdown or the now-plus-later split in `answer_value`
+instead of the total: the shape miss iteration 3 aimed at, here with a row that needs it. The two
+C03 misses (`tool_use`) made four correct plan-variance calls, then one extra one-off query; the
+variance (-2,252) and the Verified label were right. Nothing in a retirement bullet bears on FEMA
+hiring, but the rule counts a Verified row lost twice as a fall.
+
+**Decision.** Reverted to iteration 2's `7a33a00b` under the rule. Second non-improving change in
+a row (3 within noise, 4 a fall): **plateau**.
+
+## Postgres-era plateau (2026-11-03)
+
+The working prompt is iteration 2, `7a33a00b`.
+
+| Prompt | Verified | Exploratory | Not available | Note |
+|---|---|---|---|---|
+| Baseline `7a3ae5a9` | 60/60 | 105/120 | 19/20 | |
+| 1 `4e7c7538` "this year", broad | 52/60 | 106/120 | 20/20 | reverted: C03 10 to 2 |
+| **2 `7a33a00b` "this year", separations** | **59/60** | **106/120** | **20/20** | **kept: C15 5 to 9** |
+| 3 `22623574` shape rule | 59/60 | 107/120 | 19/20 | reverted: targets within noise |
+| 4 `32a2b465` retirement eligibility | 58/60 | 109/120 | 19/20 | reverted: C03 lost two |
+
+Eight experiments, 800 runs, about $1.80 of model calls, zero tool errors.
+
+**For Ryan.**
+- **The candidate.** Iterations 3 and 4 together: the retirement fact makes C18 compute truth in
+  10/10 runs, and the shape rule is what turns those into passes. Neither was tested with the
+  other. One more pair of experiments (`32a2b465`'s skill plus `22623574`'s rule 8, on iteration
+  2) would show whether C18 goes to about 10/10 and whether C03's extra query recurs. Adopting it
+  is past the plateau, so it is your call.
+- **C13** passes 9 or 10 of 10 on every prompt since the baseline; its misses are the judge
+  wanting the grade-12 threshold (iteration 1 entry). A set question.
+- **C20** loses one run in ten to a label wrapped in backticks. Stripping backticks in
+  `label_match` is a scorer change, yours to approve; the prompt shows the labels in backticks.
+- **The 8-point bar** was replaced for this era by target rows plus the baseline spread (rules
+  entry above). Under the old bar nothing here would have been kept, iteration 2 included.
