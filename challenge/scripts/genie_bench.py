@@ -3,6 +3,7 @@
   genie_bench.py sync                 benchmarks from questions.yaml into challenge/genie/dhs-workforce.json; push the space
   genie_bench.py run [--note TEXT]    start an eval run, wait, append one line per question to challenge/eval/genie-bench.jsonl
   genie_bench.py report [run ...]     per-question GOOD counts across runs (default: every run of the current space hash)
+  genie_bench.py calibrate            both graders against the hand labels in challenge/eval/genie-labels.jsonl
 
 Runs as Ryan's user (databricks CLI, profile workforce), who owns the space. Each run is tagged with the space hash, a
 hash of the space configuration without its benchmarks, so a Genie experiment shows as a new hash the way a prompt
@@ -33,6 +34,7 @@ import agent as A  # noqa: E402  (REPO, SPACE, redact)
 SPACE_JSON = A.REPO / "challenge/genie/dhs-workforce.json"
 QUESTIONS = A.REPO / "challenge/eval/questions.yaml"
 RESULTS = A.REPO / "challenge/eval/genie-bench.jsonl"
+LABELS = A.REPO / "challenge/eval/genie-labels.jsonl"  # one hand label per (run, question): is Genie's answer right
 DONE = {"DONE", "EVALUATION_FAILED", "EVALUATION_CANCELLED", "EVALUATION_TIMEOUT"}
 
 
@@ -200,11 +202,38 @@ def report(runs=None):
         print(f"  {qid} pass {per[qid][0]}/{per[qid][2]}  native GOOD {per[qid][1]}/{per[qid][2]}")
 
 
+def calibrate():
+    """Each grader against the hand labels: agreement, false passes (graded right, labelled wrong), false fails."""
+    _, qs = H._questions()
+    results = {(r["genie_run_id"], r["q_id"]): r for r in map(json.loads, RESULTS.read_text().splitlines())}
+    labels = [json.loads(x) for x in LABELS.read_text().splitlines()]
+    tally = {"eval scorers": [0, 0, 0], "Genie's grader": [0, 0, 0]}  # agree, false pass, false fail
+    misses = []
+    for lab in labels:
+        r = results.get((lab["genie_run_id"], lab["q_id"]))
+        if r is None:
+            continue
+        for name, verdict in (("eval scorers", grade(qs[lab["q_id"]], r["detail"])[0]), ("Genie's grader", r["assessment"] == "GOOD")):
+            t = tally[name]
+            if verdict == lab["correct"]:
+                t[0] += 1
+            else:
+                t[1 if verdict else 2] += 1
+                misses.append(f"  {name}: {lab['q_id']} {lab['genie_run_id'][:16]} graded {'pass' if verdict else 'fail'}, "
+                              f"labelled {'right' if lab['correct'] else 'wrong'} ({lab['note']})")
+    n = sum(1 for lab in labels if (lab["genie_run_id"], lab["q_id"]) in results)
+    confirmed = sum(1 for lab in labels if lab.get("confirmed_by"))
+    print(f"{n} labelled results ({confirmed} confirmed by a person), {sum(lab['correct'] for lab in labels)} right")
+    for name, (agree, fp, ff) in tally.items():
+        print(f"{name}: agrees {agree}/{n}, false passes {fp}, false fails {ff}")
+    print("\n".join(misses) or "  no disagreements")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["sync", "run", "report"])
+    ap.add_argument("cmd", choices=["sync", "run", "report", "calibrate"])
     ap.add_argument("runs", nargs="*")
     ap.add_argument("--note")
     ap.add_argument("--force", action="store_true", help="sync: replace the space even if it was edited outside the repo")
     a = ap.parse_args()
-    sync(a.force) if a.cmd == "sync" else run(a.note) if a.cmd == "run" else report(a.runs)
+    {"sync": lambda: sync(a.force), "run": lambda: run(a.note), "report": lambda: report(a.runs), "calibrate": calibrate}[a.cmd]()

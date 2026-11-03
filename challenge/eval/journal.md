@@ -359,3 +359,19 @@ C09 finds no CBP Officer pay row, C17 divides by average monthly headcount, C14 
 name, C08 once returned zeros, C06 once counted the wrong population (1,368 against 1,041).
 
 **Noise.** 5/11 then 3/11 with nothing changed: compare space changes on at least three pooled runs.
+
+**Grader calibration (2026-11-02).** All 22 results hand-labelled from Genie's rows against truth,
+before looking at either grader's verdict (`challenge/eval/genie-labels.jsonl`;
+`genie_bench.py calibrate`). 8 of 22 answers are right.
+
+| Grader | Agrees | False passes | False fails |
+|---|---|---|---|
+| Eval scorers (`pass`) | 22/22 | 0 | 0 |
+| Genie's own grader (GOOD) | 17/22 | 0 | 5 |
+
+Genie's grader never passes a wrong answer; it fails right ones on format (C06 wide row, C07 total
+beside months, C08 DATE months, C10 twice for ranking every city). **Caveat:** the eval-scorer
+figure is in-sample. The same hand that labelled these rows wrote the grader and adjusted it on two
+of them (the wide row in C06, percent rates in C17), and no person has confirmed the labels
+(`confirmed_by` is empty). It becomes a calibration when Ryan confirms the labels and the next
+space experiment's runs are labelled blind, before the grader is run on them.
