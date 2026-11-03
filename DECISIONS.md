@@ -196,6 +196,15 @@ Revisit:   what evidence would change this
   **Outcome (the same night):** at 64000, `xhigh` scored 67/80 against `high` 69/80 and dropped the
   Verified line to 4/10 twice; `max` 43/80 with 23 runs cut. Effort stays `high`, so the exception
   was not exercised (journal, "Agent effort sweep").
+  **Amended later that night (Ryan): effort `xhigh` is the default after all**, chosen on the
+  held-out sweep, so the exception is exercised and Ryan takes that on. The reasoning: the tester's
+  own questions are exploratory (A01, A02, A08 went 26/30 to 29/30 and A04 8/10 to 10/10, nothing she
+  asked got worse); the one Verified-labelled turn, the OPM paragraph, was prompted by Ryan in the
+  session, not asked for; and cost and latency are not constraints (median A01/A02 169 s to 285 s,
+  about double the spend). Accepted: the Verified line at 4/10 twice on A03 and A05, A03's causal
+  overclaim rising to 7/10 (the skill 05 fix still waits for the blind set), and the dev set never
+  run at `xhigh`. Rejected: running the dev set first (Ryan: not needed). The fresh blind set is the
+  validation, as the exception requires.
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real

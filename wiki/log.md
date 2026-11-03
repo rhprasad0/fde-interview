@@ -443,3 +443,7 @@ alone, reported beside the corrected column. `git diff eval-v1..HEAD -- challeng
 Agent effort `high`/`xhigh`/`max` at a 64000 cap, two five-run experiments each on A01 to A08:
 69, 67, 43 of 80; `xhigh` trades the Verified line (4/10 twice) for the wide rows; `max` cap-bound.
 No effort selected. First sweep at 16000 kept as the truncation measurement. Journal, "Agent effort sweep".
+
+## [2026-11-03] decision | Agent effort xhigh by Ryan's call, selected on the held-out sweep
+Tester's own questions are exploratory and none got worse; the one Verified turn was Ryan's prompt.
+Exception exercised knowingly; blind set validates. Dev set not rerun. `DECISIONS.md` amendment.

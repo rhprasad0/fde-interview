@@ -40,7 +40,7 @@ for _line in _envf.read_text().splitlines() if _envf.exists() else []:
         ENV[_k.strip()] = _v.strip().strip("'\"")
 
 MODEL_ID = "claude-haiku-5-5"
-EFFORT = "high"  # Haiku 5.5 defaults to medium; read when an agent is built, so the harness --effort can set it first
+EFFORT = "xhigh"  # Ryan, 2026-11-03, chosen on the held-out sweep (DECISIONS.md); read when an agent is built, so the harness --effort can set it first
 MAX_TOKENS = 64000  # was 16000 until 2026-11-03; thinking counts against it, and the xhigh sweep truncated 12 of 40 runs
 PRICE = {"inputTokens": 0.10, "outputTokens": 0.50, "cacheReadInputTokens": 0.01, "cacheWriteInputTokens": 0.125}  # $/MTok; cache read 0.1x, 5-min write 1.25x
 

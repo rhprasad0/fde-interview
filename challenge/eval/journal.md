@@ -891,3 +891,12 @@ every row, and the four fixes the misses point at are still not made. `agent.py`
 `eval-v1` in two settings only, both ordered by Ryan for this sweep and neither aimed at a held-out
 miss: `max_tokens` 16000 to 64000, and effort made settable (default still `high`). The cap's
 effect on the kept configuration is one run: at `high`, 16000 cut one A02 run and 64000 cut none.
+
+**Amended later the same night (Ryan): the default is `xhigh` after all.** The paragraphs above
+stand as the builder's reading. Ryan's call, logged in `DECISIONS.md`: the tester's own questions
+are the exploratory ones and none got worse at `xhigh`; the one Verified-labelled turn in the
+session (A03, the OPM paragraph) was Ryan's prompt at 30:45 in the transcript, not hers, and she
+wrote her own paragraph by hand at 58:55; cost and latency are not constraints. So the named
+exception is exercised, knowingly, and the fresh blind set validates it. `agent.py` `EFFORT` is
+`xhigh`; the prompt hash is unchanged. The dev set has not run at `xhigh` (Ryan: not needed). Every
+row from here carries `effort: xhigh` unless `--effort` says otherwise.

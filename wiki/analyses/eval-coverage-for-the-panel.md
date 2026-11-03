@@ -181,8 +181,10 @@ against an independent truth: 9/10 on the same prompt, the miss a Not available 
 the ratio without stating it (journal, "A04 figure judge-graded"). The prompt and skills are unchanged
 since the tag; the prompt hash on every held-out run is the live one. The agent's output cap
 went from 16000 to 64000 and its effort became settable (still `high`) for an effort sweep Ryan
-ordered the same night: `xhigh` and `max` did not beat `high` by line (journal, "Agent effort
-sweep"), so nothing was selected on the held-out rows. The judges now run at reasoning effort
+ordered the same night (journal, "Agent effort sweep"). Ryan chose `xhigh` as the default on that
+sweep: the tester's own exploratory questions went 26/30 to 29/30 and none got worse, at the price
+of the Verified line (4/10 twice, A03's causal overclaim 7/10). That is selection on the held-out
+rows, taken knowingly, and the fresh blind set is its validation. The judges now run at reasoning effort
 `xhigh`; the three columns above are on the old judge, and `high` under the new one scored 69/80
 and 71/80.
 
@@ -196,6 +198,9 @@ and 71/80.
 - "Per question, not per run: 17 of 20 pass all ten runs, interval 64 to 95%; 18 or 19 of 20
   pass all five within one experiment. Pooled over runs it is 98%; that number is in the journal
   and it is the one I would not lead with."
+- "I set reasoning to xhigh on the tester's eight questions, which is selection on the held-out
+  set; I say so, and the blind set is the test. Her questions were the exploratory ones, and the one
+  Verified turn was mine. Cost doubled, and that is the right trade for this user."
 - "The judge agrees with me on N of 30; it grades five rows, including both Not-available ones."
 - "The refusal rows are the polite kind. The break-it rows are new; here is what they found."
 - "Spider 2.0 is at 10 to 17% for the same shape of problem. My number is high because the
