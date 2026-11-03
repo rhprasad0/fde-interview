@@ -40,6 +40,7 @@ for _line in _envf.read_text().splitlines() if _envf.exists() else []:
         ENV[_k.strip()] = _v.strip().strip("'\"")
 
 MODEL_ID = "claude-haiku-5-5"
+EFFORT = "high"  # Haiku 5.5 defaults to medium; read when an agent is built, so the harness --effort can set it first
 PRICE = {"inputTokens": 0.10, "outputTokens": 0.50, "cacheReadInputTokens": 0.01, "cacheWriteInputTokens": 0.125}  # $/MTok; cache read 0.1x, 5-min write 1.25x
 
 _SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "ANTHROPIC_API_KEY")}
@@ -214,7 +215,7 @@ def build_agent(session_id: str, run_index: int = 0, messages: list | None = Non
             StrandsTelemetry().setup_console_exporter(out=_spans)
     model = AnthropicModel(client_args={"api_key": ENV["ANTHROPIC_API_KEY"]}, model_id=MODEL_ID, max_tokens=16000,
                            cache_config=CacheConfig(strategy="anthropic"),
-                           params={"output_config": {"effort": "high"}})  # Haiku 5.5 defaults to medium
+                           params={"output_config": {"effort": EFFORT}})
     # Sequential: one connection per live agent (16 eval workers = 16), within a db.t4g.micro's limit.
     agent = Agent(model=model, tools=[*map(_function_tool, FUNCTIONS), one_off_query], tool_executor=SequentialToolExecutor(),
                   system_prompt=SYSTEM, callback_handler=callback_handler, messages=messages)
@@ -335,7 +336,7 @@ def run_turn(agent: Agent, text: str, q_id: str | None = None, context: str | No
     line = {
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "session_id": st["session_id"],
         "run_index": st["run_index"], "set_version": SET_VERSION, "q_id": q_id or f"A{st['n']:02d}",
-        "agent_git_sha": GIT_SHA, "git_dirty": GIT_DIRTY, "prompt_hash": PROMPT_HASH, "model_id": MODEL_ID,
+        "agent_git_sha": GIT_SHA, "git_dirty": GIT_DIRTY, "prompt_hash": PROMPT_HASH, "model_id": MODEL_ID, "effort": EFFORT,
         "provider_served": "anthropic", "stop_reason": stop, "question_text": msg, "supplied_context": context,
         "turn_1_answer_text": st["prev_answer"] if context else None, "tool_calls": tool_calls,
         "genie_sql": genie_sql, "genie_statement_id": genie_statement_id, "answer_text": prose,

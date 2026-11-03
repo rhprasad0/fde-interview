@@ -36,6 +36,7 @@ JUDGE_PROMPT = A.REPO / "challenge/eval/judge-prompt.md"
 LIMIT_PROMPT = A.REPO / "challenge/eval/judge-limit-prompt.md"
 ASSUMPTION_PROMPT = A.REPO / "challenge/eval/judge-assumption-prompt.md"
 JUDGE_MODEL = "gpt-6-luna"  # a different vendor from the Claude agent; also the agent's fallback (judge_same_family)
+JUDGE_EFFORT = "xhigh"  # Ryan, 2026-11-03; recorded on every row as judge_effort
 EXPERIMENTS = A.REPO / "challenge/eval/experiments.jsonl"  # every row written, for hill-climbing analysis
 EXPERIMENT_ID = None
 STUB = False
@@ -257,7 +258,8 @@ class Judge(OutputEvaluator):
     """A gpt-6-luna rubric. The judge sees the question, the answer text, and the row's reference fields, not the row."""
 
     def __init__(self, fn, applies):
-        model = None if STUB else OpenAIResponsesModel(client_args={"api_key": A.ENV["OPENAI_API_KEY"]}, model_id=JUDGE_MODEL)
+        model = None if STUB else OpenAIResponsesModel(client_args={"api_key": A.ENV["OPENAI_API_KEY"]}, model_id=JUDGE_MODEL,
+                                                     params={"reasoning": {"effort": JUDGE_EFFORT}})
         self.prompt, self.reference = JUDGES[fn]
         super().__init__(rubric=self.prompt.read_text() if self.prompt.exists() else "", model=model, name=fn.__name__)
         self.applies = applies
@@ -290,9 +292,9 @@ def _evaluators():
 # ---- rows ----
 
 TOOL_KEYS = ("name", "params", "result_rows", "imputed_rows", "synthetic_rows", "duration_ms", "result_values")
-COLS = ["set_version", "id", "run_index", "session_id", "run_at", "agent_git_sha", "prompt_hash", "model_id", "provider_served",
+COLS = ["set_version", "id", "run_index", "session_id", "run_at", "agent_git_sha", "prompt_hash", "model_id", "effort", "provider_served",
         "question_text", "turn_1_answer_text", "answer_text", "answer_value", "cited_tools", "tool_calls", "genie_sql",
-        "genie_statement_id", "label", "tool_call_count", "judge_same_family", "latency_ms", "cost_usd", "input_tokens",
+        "genie_statement_id", "label", "tool_call_count", "judge_same_family", "judge_effort", "latency_ms", "cost_usd", "input_tokens",
         "output_tokens", "error",
         *[f.__name__ for f, _ in SCORERS], "pass", "failure_category"]
 
@@ -311,6 +313,7 @@ def build_row(q, run_index, lines):
     row["tool_call_count"] = len(row["tool_calls"])
     judged = q["expected_behavior"] == "narrative" or q["class"] in ("refusal", "data_limit", "context_supplied")
     row["judge_same_family"] = (row.get("provider_served") not in (None, "anthropic")) if judged else None
+    row["judge_effort"] = JUDGE_EFFORT if judged else None
     return row
 
 
@@ -444,7 +447,7 @@ def run(set_version, runs=5, ids=None):
         qs = {"STUB": {"id": "STUB", "set_version": set_version, "verbatim": "stub dry run", "class": "refusal",
                        "expected_behavior": "refusal", "tier": "refusal", "must_offer": "stub"}}
         runs = 1
-    print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, experiment {EXPERIMENT_ID}")
+    print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, effort {A.EFFORT}, judge {JUDGE_EFFORT}, experiment {EXPERIMENT_ID}")
 
     def one(job):  # one fresh agent per (question, run); nothing cached across runs
         q, r = job
@@ -504,7 +507,10 @@ if __name__ == "__main__":
     ap.add_argument("--workers", type=int, default=WORKERS)
     ap.add_argument("--set-version", default=A.SET_VERSION)
     ap.add_argument("--ids", help="run: comma-separated question ids, e.g. the held-out A01..A08")
+    ap.add_argument("--effort", choices=["low", "medium", "high", "xhigh", "max"], help="run: agent effort; default is the agent's")
     a = ap.parse_args()
+    if a.effort:
+        A.EFFORT = a.effort
     STUB, WORKERS = a.stub, a.workers
     if a.cmd == "truth":
         truth(a.check)
