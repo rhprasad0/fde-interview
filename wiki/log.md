@@ -414,3 +414,6 @@ calculations as fixed-SQL tools and `one_off_query(sql)` as the fenced explorato
 reproduced on every row but the two imputation-dependent ones (re-pinned). Smoke 18/20, zero errors,
 median latency 10 s. Spec 06; two DECISIONS entries; superseded banners on the Databricks pages;
 synthesis amended.
+
+## [2026-11-03] query | Final Databricks spend and leftover-resource check
+Account billable-usage export gives the final total: $517 list over Oct 31 to Nov 2, $418 of it UC function compute, against $400 of credits. The spend page's evening-of figures ($197 seen, $300 predicted) were lagged and are marked superseded; index updated. Account sweep: workspace, service principal, budget and metastore still exist but nothing inside bills while idle; AWS account holds nothing Databricks created.

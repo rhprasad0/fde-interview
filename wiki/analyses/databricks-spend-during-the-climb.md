@@ -13,23 +13,27 @@ run and is two thirds of them.
 
 ![Databricks email, 2026-11-02 20:09 local: all credits used, the card on file will be charged](images/2026-11-02-databricks-credits-exhausted.png)
 
-## What the billing table shows
+## What the billing export shows (final, 2026-11-03)
 
-`system.billing.usage` joined to `system.billing.list_prices`, list price, workspace total through
-2026-11-02 22:00 UTC (the table lags about three hours):
+The account-level billable usage export, list price, whole life of the workspace (Oct 31 to
+Nov 2 23:59 UTC), pulled on 2026-11-03 after the workspace had gone idle:
 
 | SKU | DBU | USD | What it is |
 |---|---|---|---|
-| All-purpose serverless compute | 214 | $160.53 | UC function calls via the MCP functions server, run as the `workforce-agent` service principal, tagged `interactive_source = DATABRICKS_CONNECT` |
-| Serverless real-time inference | 259 | $18.15 | Genie's own charge (`product_features.genie.offering_type = PAYGO`), billed because the caller is a service principal |
-| Serverless SQL warehouse | 24 | $17.05 | Genie's queries, 1,113 of them, on the 2X-Small warehouse |
-| Jobs, storage | 4 | $1.05 | ingest |
+| All-purpose serverless compute | 557 | $418 | UC function calls via the MCP functions server, run as the `workforce-agent` service principal, tagged `interactive_source = DATABRICKS_CONNECT` |
+| Serverless real-time inference | 1,082 | $76 | Genie's own charge (`product_features.genie.offering_type = PAYGO`), billed because the caller is a service principal |
+| Serverless SQL warehouse | 32 | $23 | Genie's queries on the 2X-Small warehouse |
+| Jobs serverless | 3 | $1 | ingest |
+| **Total** | | **$517** | against $400 of trial credits |
 
-By day: $7.64 (Oct 31), $12.47 (Nov 1), $176.68 (Nov 2, through 22:00 UTC). The audit log shows
-the service principal kept calling functions at the 21:00 UTC rate (65 DBU/hour, about $49/hour)
-until 00:03 UTC on Nov 3. Two more hours at that rate puts the list-price total near $300. The
-account console is authoritative for the rest; the join reconciles (214 × 0.75, 259 × 0.07,
-24 × 0.70), so the gap is lag or console accounting, not the query.
+By day: $7.66 (Oct 31), $12.46 (Nov 1), $497.30 (Nov 2). Calls continued to 00:03 UTC on Nov 3,
+and that row had not posted when the export was pulled, so a few more dollars may follow. The
+account console is authoritative for what the card was charged.
+
+**Superseded:** the first version of this page, written the evening of Nov 2 from
+`system.billing.usage`, saw $197 through 22:00 UTC ($160.53 of function compute) and predicted
+"near $300". The table lagged about three hours and the last hours of the climb ran at twice the
+rate it had seen, so every derived figure below has been recomputed from the export.
 
 ## The mechanism
 
@@ -50,18 +54,23 @@ against the hourly billing rows:
 | 18:00 | 263 | 32.0 | $0.09 |
 | 19:00 | 212 | 42.5 | $0.15 |
 | 20:00 | 529 | 60.1 | $0.09 |
-| 21:00 | 1,240 | 65.1 | $0.04 |
+| 21:00 | 1,240 | 127.4 | $0.08 |
+| 22:00 | not captured | 140.8 | |
+| 23:00 | not captured | 140.2 | |
 
-Through 22:00 UTC, the billed window: about 2,340 function calls for $160.53, $0.07 per call on
-average. Through 00:03 UTC, when the calls stopped: about 4,800 calls. Billing rows per hour
+The 21:00 row read 65.1 DBU in the lagged table; the final figure is 127.4. The audit log was not
+re-read after the teardown, so the 22:00 and 23:00 call counts are missing; at the 21:00 mix they
+would be about 1,300 calls an hour. Whole climb: about 4,800 function calls for $418, $0.09 per
+call on average, with the last three hours costing about $105 an hour. Billing rows per hour
 exceeded calls per hour in the early hours, so idle session time was billed on top of the queries.
-The per-call price falls as calls pack more densely into sessions.
 
-Genie for comparison, same billed window: about 560 `query_space` calls cost $17 of warehouse time
-plus $18 of Genie charge, $0.06 per question. Per call the two paths are close. The difference is
-the pricing model and the volume. The warehouse's $17 is 24 DBU over three days whatever the query
-count, and would barely have grown had the function calls gone through it too; serverless general
-compute bills per session, so four times the calls is four times the money.
+Genie for comparison, whole climb: $23 of warehouse time plus $76 of Genie charge. Through 22:00
+UTC, where the audit count exists, about 560 `query_space` calls cost $17 plus $18, $0.06 per
+question. Per call the two paths are close. The difference is the pricing model and the volume. The
+warehouse's $23 is 32 DBU over three days whatever the query count, and would barely have grown
+had the function calls gone through it too; serverless general compute bills per session, so four
+times the calls is four times the money. The Genie charge itself is not flat: it tracked the call
+rate and reached about 290 DBU an hour at the end, but at $0.07 a DBU it stayed a small share.
 
 ## One question is most of the bill
 
@@ -80,7 +89,7 @@ harness incident lost a pair of experiments):
 The function takes one quarter and one component, so the agent answers C11 by calling it once per
 component per quarter. The [eval journal](../../challenge/eval/journal.md) saw the same fan-out from
 the other side in iteration 4: "about 45 concurrent calls to the functions server" causing C11's
-errors. C11 alone is roughly $90 of the compute.
+errors. C11 alone is roughly $280 of the $418 of function compute.
 
 ## Why nobody saw it coming
 
@@ -97,8 +106,8 @@ certainly. The email above arrived about an hour after the last call.
 ## What it changes
 
 With the credits gone, every further run is charged to the card on file, against the
-[under-$50 budget](build-cost-estimate.md). One iteration pair (200 runs) at today's call mix is
-about $16 of function compute alone. Levers, in order of effect:
+[under-$50 budget](build-cost-estimate.md). One iteration pair (200 runs) at the climb's call mix is
+about $49 of function compute alone, the whole build budget. Levers, in order of effect:
 
 1. **Give `plan_variance` a multi-quarter, all-components form** so C11 is one call, not 30, and
    C02 one call, not 10. This removes about 90% of the function volume at no cost to the agent.
@@ -113,13 +122,22 @@ about $16 of function compute alone. Levers, in order of effect:
 4. **Put a budget alert on the account** before the next run; the
    [cost estimate](build-cost-estimate.md) covers how.
 
-Genie's $18 charge exists because the agent calls Genie as a service principal; the cost estimate
+Genie's $76 charge exists because the agent calls Genie as a service principal; the cost estimate
 noted human users are free through 2027-01-31. It is small and not worth changing the auth model
 for.
 
 ## How to reproduce the numbers
 
-All from the workspace's `workforce` SQL warehouse through the Statement Execution API:
+The final table came from the account-level export, which needs no warehouse and is the only route
+left after the teardown (account-scoped CLI profile; DBUs per SKU per hour, priced at the list
+rates the join below had already reconciled: $0.75, $0.07, $0.70, $0.37):
+
+```
+databricks account billable-usage download 2026-10 2026-11 -p <account profile>
+```
+
+The earlier figures came from the workspace's `workforce` SQL warehouse through the Statement
+Execution API, while it existed:
 
 ```sql
 -- dollars by SKU
