@@ -691,7 +691,10 @@ depends on which.
 | A08 | 0/10 | spec (10) | The agent read "grade mix over time" as the workforce's grade mix across snapshots (headcount by grade, September 2025 to August 2026) and answered it well; the row's truth assumed postings by grade, the 2026-11-01 reading. Both are defensible readings of the tester's words. |
 
 So: about 49 of 57 failures are the row expecting one reading of a question that admits two, 5 are
-the agent (three runaway answers, two causal overclaims), and 2 or 3 are the judge.
+the agent (three runaway answers, two causal overclaims), and 2 or 3 are the judge. That sort is
+the builder's reading of the builder's own rows. A04 and A06 are the ones to check first: the
+prompt's rule 5 sends a "why" question to the Not available label, so if the label binds the agent
+rather than the row, those twenty runs move to the agent bucket and it becomes 25, not 5.
 
 **What that means, and what it does not.** The spec failures are not a reason to discount the gap.
 They are the gap's mechanism: the twenty dev rows were written to have one reading each, so the
@@ -714,6 +717,7 @@ beside this one, never in place of it. The corrections proposed, for Ryan's deci
 | A05 | `expected_tools: [open_postings, posting_coverage]`; widen the alternative-reading phrases | both are governed functions that return the count |
 | A08 | second reading: workforce grade mix across snapshots (headcount by grade, Sep 2025 and Aug 2026) | the tester's words admit it; the prior turn does not settle it |
 | A01, A02 | none; the runaway answers are an agent problem | an output cap or a rule against per-occupation tables for a whole component |
+| A05 | quote the date phrases: `"August 1, 2026"` parsed as `August 1`, `2026`, and a date | YAML split the flow list at the comma, so any sentence containing "2026" satisfied the first-reading check; lenient, not strict, so it caused no failure, but it is a defect |
 
 **Agent findings, independent of the spec.** (1) Three runs in eighty ran to the output-token
 limit (21k to 45k output tokens) on whole-component breakdowns, at 160 to 250 s and up to $0.05

@@ -7,8 +7,9 @@ to look responsible, and the current numbers seem a little too generous." Resear
 **Short answer.** The headline (Verified 60/60, Exploratory 117/120, Not available 20/20 on prompt
 `b44a9181`) is a development-set score, reported in the unit that makes it look biggest. Every
 one of the twenty questions was tuned against for eight or more iterations, the set was never
-frozen, the reference moved seven times after seeing failures, and no held-out, adversarial, or
-tester-verbatim row has ever been run. None of that is hidden (the journal's own caveat says
+frozen, the reference moved seven times after seeing failures, and until the afternoon of
+2026-11-03 no held-out, adversarial, or tester-verbatim row had been run (the held-out line now
+exists: 98% became 29%, below). None of that is hidden (the journal's own caveat says
 "a set this small cannot rule out overfitting"), but the dashboard leads with the pooled number
 and the caveat sits at the bottom of a 650-line journal. The fix is not more questions; it is a
 held-out line, intervals in the right unit, a frozen tag, and a judge with a calibration number,
@@ -39,8 +40,8 @@ strongest signal is "whether candidates named the limits of their own result unp
 | Spec 04 said | Today (2026-11-03) |
 |---|---|
 | Floors: 20 Genie rows, 12 Verified | 12 Exploratory, 6 Verified, 2 Not available |
-| Tester A's eight questions verbatim, with `author` separating the lines | Zero tester rows; the session log CSV is header-only |
-| Freeze as a git tag (`eval-v1`) before tuning; "this answers 'did you tune the questions after seeing failures'" | `frozen: false`, no tag; seven reference edits after seeing failures (set-change table in the journal) |
+| Tester A's eight questions verbatim, with `author` separating the lines | Added 2026-11-03 from the session trace (the log CSV is still header-only) and run as the held-out line, below |
+| Freeze as a git tag (`eval-v1`) before tuning; "this answers 'did you tune the questions after seeing failures'" | Tagged 2026-11-03, after the climb, not before it; seven reference edits after seeing failures (set-change table in the journal) |
 | Headline is pass^5 against 80% (Verified) and 70% (Exploratory) | Journal and dashboard lead with pooled pass^1 over runs; `DECISIONS.md` says pass^3; three metrics in three places |
 | Judge calibrated on the tester's labels | Two tester judgments, "too small to measure"; the judge grades five questions and no human has checked it: faithfulness on C03 and C13 (284 rows), the stated limit on C19 and C20 (278 rows), the assumption on C04 (148 rows) |
 | Task 5, "try to break it" | Never run; the seed exists in `questions.yaml` with no rows under it |
@@ -54,7 +55,7 @@ honest frame for the panel: the spec was right, the week ran out.
    eight experiments and 800 runs. The prompt changes are general rules and facts, never answers,
    and the journal says so. But Husain and Shankar's point is that information leaks through the
    selection of changes, not only through copied answers, and the one test of that (a held-out
-   score) was never run.
+   score) was not run until 2026-11-03, after the climb was declared done.
 2. **The reference moved toward the agent.** Seven edits after seeing failures: C11 Genie to
    Verified, C19 limit phrases widened, C13 list to narrative and later fact reworded, C03 two
    acceptable readings, C02 truth narrowed, C20 `limit_text` added. Each is defensible on its
@@ -169,7 +170,10 @@ the data cannot support), and 2 or 3 are the judge. The spec failures are the ga
 an excuse for it: the twenty dev rows were written to have one reading each, and the prompt learned
 to find it. The corrected number does not exist and is not estimated; proposed row corrections are
 in the journal for Ryan's decision, to be rerun as a new experiment reported beside this one, with
-the as-run rows tagged `eval-v1-heldout`.
+the as-run rows tagged `eval-v1-heldout`. The sort is the builder's reading of the builder's own
+rows. A04 and A06 are the two to check first: if the Not available label binds the agent on a
+"why" question, as the prompt's own rule says, those twenty runs move from the spec bucket to the
+agent bucket and the agent count becomes 25, not 5.
 
 ## What to be able to say
 
