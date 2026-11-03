@@ -423,3 +423,38 @@ plateau on one run each (Verified 100%, exploratory 83%); two pooled experiments
 the first real measurement. Latency fell fourfold with Genie gone, so an experiment now takes about
 four minutes. The C11 fan-out (thirty `plan_variance` calls a run) no longer costs anything per call
 and no longer needs the batches-of-twelve rule; both are candidates for the first iteration.
+
+## Postgres era, baseline: prompt `7a3ae5a9`, two five-run experiments (2026-11-03)
+
+`eval_harness.py truth --check` passed on every row first (18 s). Then `20261103T150305Z` and
+`20261103T150537Z`, run one after the other so the micro carried one experiment's load at a time.
+
+| Line | Pooled pass^1 | Experiment 1 | Experiment 2 | Genie-era iteration 4 (pooled) |
+|---|---|---|---|---|
+| Verified | **60/60 (100%)** | 30/30 | 30/30 | 60/60 |
+| Exploratory (`genie`) | **105/120 (87.5%)** | 51/60 | 54/60 | 100/120 (83%) |
+| Not available | **19/20 (95%)** | 10/10 | 9/10 | |
+
+Zero tool errors, median latency 11.9 s (p90 29.8 s), $0.43 of model calls for both.
+
+**The fifteen misses.**
+
+- **C15 5/10, all the same reading.** Every miss answers 138, calendar 2026 January to August;
+  truth is 170, the twelve months to August 2026. The answers state their reading, and two of the
+  five name 170 as the alternative, but the headline number is the one scored. The same "this
+  year" split is why C03 carries two acceptable readings (Ryan); C15 carries one. The C15 swing
+  predates Postgres (2/5 to 5/5 per experiment in the Genie era).
+- **C16 1/10, same cause.** The one miss ranks calendar 2026 (HSAA 29, HSBB 21) instead of the
+  trailing twelve months, which it gives second.
+- **C18 3/10:** the known approximation convention (8,005, 8,031, 8,732 and split buckets against
+  11,387 ±10%).
+- **C13 8/10:** the known faithfulness framing.
+- **C20 1/10:** a correct refusal with a fitting alternative, but the answer opened with the label
+  in backticks (`` `Not available` ``), so `label_match` read no label.
+
+**Where the climb goes from here.** The planned first candidate (drop the batches-of-twelve rule)
+targets C11, which is already 10/10, so it can only show latency and cost, not accuracy. "This
+year" now costs more than C13 and C18 together (six rows against nine, but C15 and C16 are one
+rule): a prompt line that makes the twelve months to the latest month the reading of "this year",
+stating the calendar-to-date figure second, is the larger lever. Whether C15 should instead carry
+C03's two readings is Ryan's call on the eval, not a prompt change.
