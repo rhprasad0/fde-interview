@@ -68,7 +68,8 @@ def test_evals_leads_with_the_headline_pair(base_url, page):
     pw.expect(page.locator("#t-pk")).to_have_text(re.compile(r"^\d+ / \d+$"))
     pw.expect(page.locator("#story-t tbody tr")).to_have_count(len(main.evals.MILESTONES))
     pw.expect(page.locator("#heat svg text", has_text=re.compile(r"^10$"))).to_have_count(1)
-    assert page.locator("#heat svg rect").count() == 8 * 10
+    d = page.request.get(base_url + "/api/evals").json()
+    assert page.locator("#heat svg rect").count() == d["headline"]["rows"]
 
 
 def test_study_renders(base_url, page):

@@ -2,7 +2,7 @@
 
 Run: RAW_DIR=<repo>/raw challenge/.venv/bin/python -m uvicorn main:app --app-dir challenge/app --port 8766
 Stateless: every /api/ask carries the transcript; the answer streams back as server-sent events. Deployed as one
-container on App Runner (Dockerfile at the repo root): uvicorn on 8080, static files served from here, configuration
+container on ECS Fargate (Dockerfile at the repo root): uvicorn on 8080, static files served from here, configuration
 from the environment only (ANTHROPIC_API_KEY, PG*, AGENT_PG*, RAW_DIR, AGENT_GIT_SHA), /health for the service check.
 """
 

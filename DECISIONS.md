@@ -162,7 +162,7 @@ Revisit:   what evidence would change this
   question: the "how sure" line. Pooled pass^1 over runs keeps the job it got on 2026-11-02,
   comparing one prompt to the next during a climb, and is never the headline. Rejected: pooled
   pass^1 as the headline (the per-run unit inflates and hides the always-fail questions); pass^3
-  (the older bar above). Cost: the journal and the dashboard (`challenge/app/evals.py`) still lead
+  (the older bar above). Cost: the journal still leads (the dashboard moved to pass^5 on 2026-11-03 evening, see Eval dashboard below); as written, the journal and the dashboard (`challenge/app/evals.py`) still lead
   with pooled pass^1 and need to move.
 - **Amended 2026-11-03 (Ryan): Tester A's eight rows are never tuned against.** No prompt, skill,
   agent, or judge change is made to fix a Tester A miss. The line is run once per candidate prompt
@@ -755,20 +755,27 @@ functions, Agent Bricks.
   a demo that opens on one pair); an `/api/study` computed from the trace (the session is history).
 - **Revisit:** when the fresh blind set runs, add its pair to the map and make it the headline.
 
-## 2026-11-03  Deploy: one container on App Runner, static files served by FastAPI
+## 2026-11-03  Deploy: one container on ECS Fargate, static files served by FastAPI
 
 - **Context:** the demo-app entry above planned Lambda behind Lambda Web Adapter with static
   files on S3. The app streams server-sent events for turns that run up to 300 s at `xhigh`, and
   the only cloud resource is the RDS instance with a security group open to one laptop address.
+  Ryan chose App Runner on the builder's recommendation on 2026-11-03; the same evening the
+  builder checked the App Runner guide: a fixed 120 s total request timeout that streaming does
+  not extend, and the service is closed to new customers (AWS points new users to ECS Express
+  Mode). The entry's own fallback condition fired before the first deploy.
 - **Chosen:** a `Dockerfile` at the repo root (so `challenge/` paths survive for `agent.py` and
-  `evals.py`), `python:3.13-slim`, uvicorn on 8080, `/health` for the service check, configuration
-  from the environment only, `.dockerignore` as a whitelist so `raw/`, `.env`, and state never
-  enter the image. App Runner runs that image; the RDS security group gets a rule for the service
-  on deploy day. Browser tests (Playwright, headless Chromium, the agent faked in-process) run
-  locally and in a new `tests` workflow; Playwright stays out of the image.
-- **Rejected:** Lambda Web Adapter plus S3 (outside the VPC it needs the database open to the
-  world, inside it needs a NAT gateway against a $50 budget; two artifacts to deploy instead of
-  one); a single EC2 host (cheapest, but no managed TLS or rollout, and nothing to show for the
-  serverless story).
-- **Revisit:** if App Runner cannot stream SSE for a 300 s turn, fall back to ECS Fargate with the
-  same image.
+  `evals.py`), `python:3.13-slim`, uvicorn on 8080, `/health` for the target-group check,
+  configuration from the environment only, `.dockerignore` as a whitelist so `raw/`, `.env`, and
+  state never enter the image. The image runs as one ECS Fargate task (Express Mode if the account
+  offers it) in the default VPC's public subnets with a public IP, so it reaches the model API
+  without a NAT gateway, and the RDS security group admits the task's security group instead of a
+  laptop address. The load balancer idle timeout is set above the longest turn. Browser tests
+  (Playwright, headless Chromium, the agent faked in-process) run locally and in a new `tests`
+  workflow; Playwright stays out of the image.
+- **Rejected:** App Runner (120 s hard limit, closed to new accounts); Lambda Web Adapter plus S3
+  (two artifacts to deploy, a 15-minute streaming ceiling that fits but a cold start on stage, and
+  the same egress-address problem for the database rule); a single EC2 host (cheapest, but no
+  managed TLS or rollout, and nothing to show for the serverless story).
+- **Revisit:** if the account cannot create an ECS service and load balancer by 2026-11-04
+  evening, the EC2 host with the same image is the one-day fallback.

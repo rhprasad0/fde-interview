@@ -1,4 +1,5 @@
-# The demo app as one container for App Runner (DECISIONS.md, Deploy).
+# The demo app as one container for ECS Fargate (DECISIONS.md, Deploy). The load balancer's idle timeout must exceed
+# the longest agent turn (about 300 s at xhigh); App Runner's fixed 120 s request limit is why it is not App Runner.
 #   docker build --build-arg AGENT_GIT_SHA=$(git rev-parse HEAD) -t lantern .
 #   docker run --rm -p 8080:8080 --env-file challenge/.env lantern      # then curl localhost:8080/health
 # Configuration is the environment only: ANTHROPIC_API_KEY, PGHOST, PGPORT, PGDATABASE, PGSSLMODE, AGENT_PGUSER,

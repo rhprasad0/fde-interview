@@ -454,4 +454,4 @@ Exception exercised knowingly; blind set validates. Dev set not rerun. `DECISION
 `/study` narrates the 2026-11-01 session and how it seeded 13 of 20 dev rows and the eight held-out rows.
 Playwright e2e (agent faked in-process) plus unit tests, 9 passing, in `.github/workflows/test.yml`.
 `Dockerfile` + whitelist `.dockerignore`, image smoke-tested; live ask against RDS through the browser
-answered Verified in 7 s. Two `DECISIONS.md` entries (dashboard headline, App Runner deploy).
+answered Verified in 7 s. Two `DECISIONS.md` entries (dashboard headline, deploy). App Runner was chosen then dropped the same evening: a fixed 120 s request timeout and closed to new customers; ECS Fargate with the same image replaces it.

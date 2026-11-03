@@ -214,7 +214,7 @@ and 71/80.
   A02.
 - Does the held-out gap exceed the baseline spread the climb used as its noise floor? If it
   does, the climb's kept iterations need a second look.
-- The dashboard's grid reads the last experiment in `experiments.jsonl`, which is now a sweep arm
+- Superseded 2026-11-03 evening: the dashboard now opens on the xhigh-at-64000 held-out pair, leads with pass^5 and pass^10 with a Wilson interval, and carries a story table of the milestones (`DECISIONS.md`, Eval dashboard). Earlier: the dashboard's grid read the last experiment in `experiments.jsonl`, which was a sweep arm
   (`max`, 43/80). It needs to mark held-out and sweep experiments, or pick its grid by tag.
 - Should A03 (draft the paragraph) and A08 (grade mix over time) be graded by the judge or by a
   list match, given the judge has no calibration yet?
