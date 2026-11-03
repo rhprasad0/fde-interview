@@ -195,7 +195,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
           <tr><td><b>Genie as a service principal is a billable product.</b> Called from the agent rather than by a person, it bills real-time inference per request. Fine at demo volume, not at eval volume.</td><td><span class="chip warn">Contributing</span></td></tr>
         </tbody>
       </table>
-      <p class="sub"><b>Corrective actions.</b> Platform torn down the same evening and the account emptied the next morning. A guard grep in the repo's instructions fails any commit that could reach the workspace again. The eval harness now records cost per row from the thing that actually bills. The $50 budget is enforced by the cheapest instance class on RDS and nothing serverless per call.</p>
+      <p class="sub"><b>Corrective actions.</b> Platform torn down the same evening and the account emptied the next morning. A guard grep in the repo's instructions fails any commit that could reach the workspace again. The harness's cost field still counts model tokens, and on Postgres that is the whole bill: nothing else is metered per call. The $50 budget is enforced by the cheapest instance class on RDS and nothing serverless per call.</p>
       <p class="src">DECISIONS.md, Platform: RDS Postgres replaces Databricks · AGENTS.md, the guard</p>
     </section>
   </div>
