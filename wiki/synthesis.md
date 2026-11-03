@@ -66,6 +66,9 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
   concept page (`concepts/forward-deployed-engineering.md`) is still missing.
 - Which frontier-lab partnership does the Firm's federal arm lean on most? The public
   announcements found so far are for OpenAI, Google, and Palantir.
+- Does the held-out line (Tester A's eight questions, run once after the climb) fall inside the
+  baseline spread the climb used as its noise floor? If not, the kept iterations overfit the
+  twenty tuned-against rows ([eval coverage for the panel](analyses/eval-coverage-for-the-panel.md)).
 
 ## First user evidence (2026-11-01)
 

@@ -420,3 +420,6 @@ Account billable-usage export gives the final total: $517 list over Oct 31 to No
 
 ## [2026-11-03] ingest | Databricks account emptied
 Budget, service principal, and workspace deleted at account level; lists verified empty; sweep profiles removed from the laptop. Recorded in spec 06 teardown step 2.
+
+## [2026-11-03] query | Eval coverage for the panel
+Exa agent run plus Husain/Shankar, Anthropic, tau-bench, Spider 2.0, BIRD, BEAVER, and three interviewer-side accounts. Filed `analyses/eval-coverage-for-the-panel.md`: the 117/120 headline is a development-set score in the per-run unit; per question it is 17/20 pass^10 (Wilson 64% to 95%); no `eval-v1` tag, no tester rows, judge uncalibrated. Ranked fixes: tag, held-out tester line, 30 judge labels, break-it rows, dashboard leads with pass^k.

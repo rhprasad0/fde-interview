@@ -45,6 +45,9 @@ most often decides the deep dive (see [playbook](../analyses/fde-build-challenge
 - The pass rule and why it is enough for this user.
 - Which failures are model failures and which are data failures, from the traces.
 - What the result does not prove (sample size, redacted fields, one month of data).
+- Which rows were tuned against and which were held out, with the gap between the two lines; the
+  per-question interval, not the per-run one. The build's own audit against this list is in
+  [eval coverage for the panel](../analyses/eval-coverage-for-the-panel.md).
 
 ## Related
 

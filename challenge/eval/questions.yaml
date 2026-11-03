@@ -9,7 +9,7 @@
 set_version: eval-v1
 opm_through: 2026-08-01
 usajobs_pulled: 2026-10-31
-frozen: false
+frozen: true  # tagged eval-v1 on 2026-11-03: the 20 rows the prompt was tuned against; held-out tester rows added after the tag
 sources:
   tester_a: former federal HR professional, current contractor in an unrelated field, not a Palantir user; session 2026-11-01
   ryan_claude: co-written by Ryan and Claude from a cited seed, approved by Ryan row by row on 2026-11-02, before any eval run
