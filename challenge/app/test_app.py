@@ -4,6 +4,7 @@ import asyncio
 import json
 
 import pytest
+from fastapi.testclient import TestClient
 
 import backend
 import evals
@@ -57,3 +58,26 @@ def test_evals_shape(tmp_path):
     assert [r["category"] for r in d["grid"][1]["runs"]] == ["list_match", None]
     assert d["trace"]["id"] == "C02" and d["trace"]["scorers"] == {"label_match": True, "list_match": False}
     assert d["trace"]["truth_value"][0]["key"] == "a"
+    assert d["milestones"] == [] and d["headline"]["ids"] == ["20261102T100000Z-aaaa"] and d["headline"]["runs"] == 2
+    assert d["headline"]["judge"] == "old" and d["headline"]["effort"] == "high" and d["headline"]["max_tokens"] == 16000
+    assert evals.wilson(17, 20) == [0.64, 0.948] and evals.wilson(0, 0) == [0.0, 0.0]
+
+    # A milestone pair: the second experiment's runs follow the first's in the grid, and pass^k spans both.
+    more = [{**r, "experiment_id": "20261102T110000Z-aaaa", "pass": True, "judge_effort": "xhigh", "effort": "xhigh",
+             "error": "max_tokens" if r["id"] == "C01" else None} for r in rows]
+    (tmp_path / "e.jsonl").write_text("\n".join(json.dumps(r) for r in rows + more) + "\n")
+    ms = [{"name": "m", "ids": ["20261102T100000Z-aaaa", "20261102T110000Z-aaaa"], "headline": True}]
+    d = evals.load(tmp_path / "e.jsonl", tmp_path / "q.yaml", tmp_path / "t.json", milestones=ms)
+    m = d["milestones"][0]
+    assert m["pass1"] == [5, 6] and m["passk_each"] == [[1, 2, 2], [2, 2, 2]] and m["passk_pair"] == [1, 2, 4]
+    assert m["wilson"] == evals.wilson(1, 2) and m["judge"] == "xhigh" and m["truncated"] == 1
+    assert d["headline"]["runs"] == 4 and [r["category"] for r in d["grid"][1]["runs"]] == ["list_match", None, None, None]
+    assert d["trace"]["id"] == "C02" and d["trace"]["run_index"] == 1 and d["latest"] == "20261102T110000Z-aaaa"
+
+
+def test_health_and_pages():
+    c = TestClient(main.app)
+    assert c.get("/health").json() == {"ok": True}
+    for path, text in (("/", "Lantern Workshop"), ("/evals", "Lantern Evals"), ("/study", "Field notes")):
+        r = c.get(path)
+        assert r.status_code == 200 and text in r.text, path

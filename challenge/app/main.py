@@ -1,8 +1,9 @@
 """The demo app: the workshop page with the live agent in its sidebar, and the eval dashboard.
 
 Run: RAW_DIR=<repo>/raw challenge/.venv/bin/python -m uvicorn main:app --app-dir challenge/app --port 8766
-Stateless: every /api/ask carries the transcript; the answer streams back as server-sent events. On Lambda the same
-file runs behind Lambda Web Adapter with a response-streaming function URL; the static files move to S3.
+Stateless: every /api/ask carries the transcript; the answer streams back as server-sent events. Deployed as one
+container on App Runner (Dockerfile at the repo root): uvicorn on 8080, static files served from here, configuration
+from the environment only (ANTHROPIC_API_KEY, PG*, AGENT_PG*, RAW_DIR, AGENT_GIT_SHA), /health for the service check.
 """
 
 import json
@@ -86,6 +87,16 @@ def index():
 @app.get("/evals")
 def evals_page():
     return FileResponse(HERE / "static/evals.html")
+
+
+@app.get("/study")
+def study_page():
+    return FileResponse(HERE / "static/study.html")
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}
 
 
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
