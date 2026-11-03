@@ -593,7 +593,7 @@ The working prompt is iteration 2, `7a33a00b`.
 | 3 `22623574` shape rule | 59/60 | 107/120 | 19/20 | reverted: targets within noise |
 | 4 `32a2b465` retirement eligibility | 58/60 | 109/120 | 19/20 | reverted: C03 lost two |
 
-Eight experiments, 800 runs, about $1.80 of model calls, zero tool errors.
+Eight experiments, 800 runs, $1.70 of model calls (the baseline pair another $0.43), zero tool errors.
 
 **For Ryan.**
 - **The candidate.** Iterations 3 and 4 together: the retirement fact makes C18 compute truth in
