@@ -648,3 +648,77 @@ the old 8-point bar as well, with no line falling. Three single misses in 200 ru
 one run in ten, so no further prompt change on this set can be told from noise: the climb on this
 set is done. The next test of the prompt is questions it was not tuned on (Tester A's verbatim
 set, related but not identical; see the caveat above).
+
+# Held-out line: Tester A's eight questions (2026-11-03)
+
+**Why.** Twenty rows tuned against for eight iterations cannot rule out overfitting
+([eval coverage for the panel](../../wiki/analyses/eval-coverage-for-the-panel.md)). The set was
+tagged `eval-v1` (commit 0cdfa7d, `frozen: true`) before any held-out row existed. Then A01 to A08
+were added verbatim from `sessions/2026-11-01-tester-a/trace.jsonl`, in session order, with
+expected behaviour relabelled from what the data supports (A01's eligibility is computable; A07's
+grade field exists) rather than from the 2026-11-01 answers. Truth pinned before the first run.
+Related, not independent: C01 and C18 share A01, C17 shares A07, C09 and C03 share A08, and
+skill 05 was written for A03's ask. No prompt change before, during, or after.
+
+**Result.** `20261103T170036Z`, `20261103T170419Z`, prompt `b44a9181`, five runs each, no change
+to the dev rows. Compared with the same prompt's two dev experiments:
+
+| Line | Dev questions | Dev pooled pass^1 | Dev pass^10 | Held-out questions | Held-out pooled pass^1 | Held-out pass^10 |
+|---|---|---|---|---|---|---|
+| Verified | 6 | 60/60 | 6/6 | 2 | 6/20 | 0/2 |
+| Exploratory | 12 | 117/120 | 9/12 | 3 | 7/30 | 0/3 |
+| Not available | 2 | 20/20 | 2/2 | 3 | 10/30 | 1/3 |
+| All | 20 | 197/200 | 17/20 (Wilson 64% to 95%) | 8 | 23/80 | 1/8 (Wilson 2% to 47%) |
+
+pass^5 per experiment: 2/8 and 1/8. Three errors (all `max_tokens`), $0.57, median latency on
+A02 184 s.
+
+**The gap is the number.** 98% on the rows the prompt was tuned against, 29% on the rows it was
+not. That is the finding, before any of the sorting below, and it is what the panel should see.
+
+**Where the 57 failures sit, read run by run.** Three buckets, because the honest next step
+depends on which.
+
+| Row | Passes | Bucket | What happened |
+|---|---|---|---|
+| A01 | 7/10 | agent (2), judge (1) | Two runs ran to the output-token limit (21k and 34k output tokens, 8 and 15 queries) building occupation tables; one judge misread the hierarchy `must_not_claim` (the answer stated the limit correctly). The seven passes state 8,025 / 9,001 / 11,387 for two, three, five years, truth exactly. |
+| A02 | 0/10 | spec (9), agent (1) | The agent compared components on retirement-eligibility share, continuing A01; the row's readings only allowed length-of-service share. Headcount 70,843 right in every run. One run hit the token limit at 45k output tokens. |
+| A03 | 6/10 | agent (2), judge or spec (2) | 594 / 475 / -119 right in all ten. Four runs were failed on `must_not_claim` "why the quarter missed plan": "attrition is the main driver" and "two findings explain much of the gap" are overclaims the data does not support; "the quarter is not closed, so later files will add accessions" is a data fact and should not have failed. |
+| A04 | 0/10 | spec (10) | The agent answered Verified with the coverage ratio (0.0084) and said plainly it cannot say why or whether budget is the cause. The row expected the Not available label. The answer is the better one; the label convention is the question. |
+| A05 | 0/10 | spec (10) | 11 in every run. Seven runs used `posting_coverage` (whose output includes the open-postings count) where the row required `open_postings`; three named an alternative reading ("another date", "all CBP occupations") outside the row's phrase list. |
+| A06 | 0/10 | spec (10) | The agent answered Exploratory: "Many" is the posting's own wording, no count behind it, here are the three postings. The row expected Not available. Again the answer is the better one. |
+| A07 | 10/10 | pass | The 2026-11-01 false limit ("no grade field") is gone; applicant data named as the limit, grade and days-open offered as the nearest view. |
+| A08 | 0/10 | spec (10) | The agent read "grade mix over time" as the workforce's grade mix across snapshots (headcount by grade, September 2025 to August 2026) and answered it well; the row's truth assumed postings by grade, the 2026-11-01 reading. Both are defensible readings of the tester's words. |
+
+So: about 49 of 57 failures are the row expecting one reading of a question that admits two, 5 are
+the agent (three runaway answers, two causal overclaims), and 2 or 3 are the judge.
+
+**What that means, and what it does not.** The spec failures are not a reason to discount the gap.
+They are the gap's mechanism: the twenty dev rows were written to have one reading each, so the
+prompt learned to find it; the tester's questions have two or three readings each, and the eval
+written against them inherits the choice. A row that admits every defensible reading (A02 on
+eligibility share, A04 and A06 on either label, A05 on either function, A08 on either population)
+would likely pass most of these runs, and the agent failures (A01, A02 runaways; A03 overclaims)
+would remain. That corrected number does not exist yet and must not be estimated here.
+
+**Protocol for the correction, so it is not the reference moving toward the agent.** The rows and
+these results stay as run, tagged `eval-v1-heldout`. Any row correction is listed in the
+set-change table with its reason, made by Ryan, and rerun as a new experiment that is reported
+beside this one, never in place of it. The corrections proposed, for Ryan's decision:
+
+| Row | Proposed correction | Why |
+|---|---|---|
+| A02 | add a reading: rank on retirement-eligibility share now (3rd) and by 2031 | continues A01's measure; the 2026-11-01 agent's "second only to ICE" was wrong on either measure |
+| A03 | narrow `must_not_claim` to causal claims ("driver", "explains the gap"); allow right-censoring statements | the data-fact sentence is correct and required by the briefing skill |
+| A04, A06 | accept Verified or Exploratory when the answer states the limit (judge on `limit_stated` still applies) | the better answer gives the figure and the limit; the label is a convention |
+| A05 | `expected_tools: [open_postings, posting_coverage]`; widen the alternative-reading phrases | both are governed functions that return the count |
+| A08 | second reading: workforce grade mix across snapshots (headcount by grade, Sep 2025 and Aug 2026) | the tester's words admit it; the prior turn does not settle it |
+| A01, A02 | none; the runaway answers are an agent problem | an output cap or a rule against per-occupation tables for a whole component |
+
+**Agent findings, independent of the spec.** (1) Three runs in eighty ran to the output-token
+limit (21k to 45k output tokens) on whole-component breakdowns, at 160 to 250 s and up to $0.05
+a run; the dev set has no question wide enough to trigger it. (2) The OPM paragraph asserts a
+cause ("attrition is the main driver") in some runs; the dev narrative rows never drew that out.
+(3) A07's false limit is fixed. (4) Multi-turn replay works: A02, A05, A06, A08 replayed their
+prior turns in a fresh session and the last answer used them.
+

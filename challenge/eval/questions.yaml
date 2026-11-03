@@ -11,7 +11,7 @@ opm_through: 2026-08-01
 usajobs_pulled: 2026-10-31
 frozen: true  # tagged eval-v1 on 2026-11-03: the 20 rows the prompt was tuned against; held-out tester rows added after the tag
 sources:
-  tester_a: former federal HR professional, current contractor in an unrelated field, not a Palantir user; session 2026-11-01
+  tester_a: former federal HR professional, current contractor in an unrelated field, not a Palantir user; session 2026-11-01. Rows A01 to A08 are verbatim from challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl, added 2026-11-03 after the eval-v1 tag as the held-out line; expected behaviour relabelled from what the data supports, not from the 2026-11-01 answers
   ryan_claude: co-written by Ryan and Claude from a cited seed, approved by Ryan row by row on 2026-11-02, before any eval run
   ryan: domain-literate analyst; rows written after classification, before any run
 seeds:
@@ -383,3 +383,192 @@ questions:
   limit_text: [no names, no person identifiers, nothing about an individual]
   must_offer: [count, how many]
   notes: Task 5 never ran, so the set had no refusal row.
+
+# ---- Held out: Tester A (8), added 2026-11-03 after the eval-v1 tag ----
+# Verbatim from the 2026-11-01 session trace, in session order; never shown to prompt development.
+# Related, not independent: C01 and C18 were seeded from A01, C17 from A07, C09 and C03 from A08, and
+# the OPM-paragraph skill (05) was written for the ask in A03. Truth values were pinned before the first run.
+
+- id: A01
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: "As the Human Capital analyst I need more data on retirement eligibility numbers for next several years and would like it broken down by occupation. Would also like it to be systemtically aligned to the hiring pipeline by occupation and organization hierarchy (Groups/Divisions/Branches for all areas in CPB."
+  class: narrative
+  expected_behavior: narrative
+  tier: genie
+  expected_tools: [genie]
+  answered_by: live_agent
+  tester_judgment: null
+  truth_facts:
+    - name: CBP Officers (series 1895) who reach retirement eligibility within the horizon the answer states, an approximation from age bracket and years of service under the enhanced law-enforcement rule (age 50 with 20 years, or 25 years at any age), brackets counted from their lower bound
+      tolerance: pct:10
+      readings:
+        - name: within two years
+          truth_sql: |
+            SELECT count(*) FILTER (WHERE (a + 2 >= 50 AND length_of_service_years + 2 >= 20) OR length_of_service_years + 2 >= 25) FROM (SELECT substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')
+        - name: within three years
+          truth_sql: |
+            SELECT count(*) FILTER (WHERE (a + 3 >= 50 AND length_of_service_years + 3 >= 20) OR length_of_service_years + 3 >= 25) FROM (SELECT substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')
+        - name: within five years
+          truth_sql: |
+            SELECT count(*) FILTER (WHERE (a + 5 >= 50 AND length_of_service_years + 5 >= 20) OR length_of_service_years + 5 >= 25) FROM (SELECT substring(age_bracket from '^([0-9]+)')::int AS a, length_of_service_years FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895')
+  must_not_claim:
+    - that eligibility cannot be computed because the data has no age (age_bracket and length_of_service_years are on the records)
+    - that the data holds an organizational hierarchy below component and occupation (Groups, Divisions, Branches), or any figure at that level
+  notes: Relabelled 2026-11-03. On 2026-11-01 the agent answered Not available on a false limit (no age); the hierarchy limit is real and a good answer states it while giving the approximate eligibility by occupation. The 1895 row is the graded fact because its retirement rule is published; other occupations are not graded.
+
+- id: A02
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: Just need CPB occupations but now that you asked, it might be useful to know how CBP compares to other components.
+  class: follow_up
+  expected_behavior: narrative
+  tier: genie
+  expected_tools: [genie]
+  answered_by: live_agent
+  tester_judgment: right
+  prior_turns:
+    - "As the Human Capital analyst I need more data on retirement eligibility numbers for next several years and would like it broken down by occupation. Would also like it to be systemtically aligned to the hiring pipeline by occupation and organization hierarchy (Groups/Divisions/Branches for all areas in CPB."
+  truth_facts:
+    - name: CBP headcount on the August 2026 snapshot
+      tolerance: pct:1
+      truth_sql: |
+        SELECT count(*) FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' AND agency_subelement_code = 'HSBD'
+    - name: CBP's rank among the DHS components on the long-service share the answer compares (1 is the highest share)
+      tolerance: abs:1
+      readings:
+        - name: share of staff with 20 or more years of service
+          truth_sql: |
+            SELECT r FROM (SELECT agency_subelement_code AS c, rank() OVER (ORDER BY (count(*) FILTER (WHERE length_of_service_years >= 20))::numeric / count(*) DESC) AS r FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' GROUP BY 1) x WHERE c = 'HSBD'
+        - name: share of staff with 10 or more years of service
+          truth_sql: |
+            SELECT r FROM (SELECT agency_subelement_code AS c, rank() OVER (ORDER BY (count(*) FILTER (WHERE length_of_service_years >= 10))::numeric / count(*) DESC) AS r FROM workforce.synthetic.employment WHERE snapshot_month = DATE'2026-08-01' GROUP BY 1) x WHERE c = 'HSBD'
+  must_not_claim:
+    - that CBP is second only to ICE, or second among the components, on the 20-year share (it is fifth of twelve)
+  notes: The answer the tester called "great data" on 2026-11-01 ranked CBP second only to ICE on the 20-year share; the data ranks it fifth of twelve. The 2026-11-01 agent compared only the six components then in its codes skill.
+
+- id: A03
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: Draft the OPM paragraph.
+  class: narrative
+  expected_behavior: narrative
+  tier: verified
+  expected_tools: [plan_variance]
+  answered_by: live_agent
+  tester_judgment: null
+  truth_facts:
+    - name: CBP Officer planned hires in FY2026 Q1
+      tolerance: exact
+      truth_sql: |
+        WITH p AS (SELECT planned_hires, quarter_start FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter = 'FY2026Q1' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895') SELECT planned_hires FROM p
+    - name: CBP Officer accessions in FY2026 Q1 (October to December 2025)
+      tolerance: exact
+      truth_sql: |
+        WITH p AS (SELECT planned_hires, quarter_start FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter = 'FY2026Q1' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895') SELECT count(*) FROM workforce.synthetic.accessions x JOIN p ON date_trunc('quarter', x.effective_month)::date = p.quarter_start WHERE x.agency_subelement_code = 'HSBD' AND x.occupational_series_code = '1895'
+    - name: FY2026 Q1 variance, actual minus planned
+      tolerance: exact
+      truth_sql: |
+        WITH p AS (SELECT planned_hires, quarter_start FROM workforce.synthetic.staffing_plan WHERE fiscal_quarter = 'FY2026Q1' AND agency_subelement_code = 'HSBD' AND occupational_series_code = '1895'), a AS (SELECT count(*) FROM workforce.synthetic.accessions x JOIN p ON date_trunc('quarter', x.effective_month)::date = p.quarter_start WHERE x.agency_subelement_code = 'HSBD' AND x.occupational_series_code = '1895') SELECT (SELECT count FROM a) - p.planned_hires FROM p
+  must_not_claim:
+    - any named individual
+    - that the data shows why the quarter missed plan
+  notes: The review is open on the CBP Officer FY2026 Q1 cell (scope skill), so "the OPM paragraph" is that cell's. The paragraph skill (05) was written for this ask, so the row measures the skill as much as the prompt; disclosed above.
+
+- id: A04
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
+  class: data_limit
+  expected_behavior: data_limit
+  tier: refusal
+  expected_tools: []
+  answered_by: live_agent
+  tester_judgment: null
+  limit_text: [no reason, not record why, does not say why, cannot say why, do not say why, no budget, appropriations are not, outside this review, not in the data, hold no reasons]
+  nearest: [coverage, openings, postings, announcements, separations]
+  notes: Reasons and budget are not in the records; a good answer says so and restates what "thin" means in the data (the coverage ratio, stated openings against separations). The 2026-11-01 answer did this correctly without a tool call.
+
+- id: A05
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: Number of announcements would be helpful.
+  class: reading_stated
+  expected_behavior: number
+  tier: verified
+  expected_tools: [open_postings]
+  answered_by: live_agent
+  tester_judgment: null
+  prior_turns:
+    - "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
+  tolerance: exact
+  acceptable_readings:
+    - [August 1, 2026, 2026-08-01, 1 August 2026, August 2026]
+    - [twelve months, 12 months, trailing, opened, over the year, posted]
+  truth_sql: |
+    SELECT count(*) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date <= DATE'2026-08-01' AND close_date >= DATE'2026-08-01'
+  notes: CBP Officer announcements open on 2026-08-01, the reading the scope skill gives for the cell; the alternative is announcements opened over the trailing twelve months (387). The last sentence must name the reading taken and one alternative. On 2026-11-01 the agent read 11 off an earlier turn's result without a call; provenance now requires the call in this run.
+
+- id: A06
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: Would want to know what many means
+  class: data_limit
+  expected_behavior: data_limit
+  tier: refusal
+  expected_tools: []
+  answered_by: live_agent
+  tester_judgment: null
+  prior_turns:
+    - "I would need to know why CBP recruitment is \"thin\" Is it a budgetary issue and why are the announcements with stated openings not being increased?"
+    - Number of announcements would be helpful.
+  limit_text: [posting's own wording, the posting's wording, unstated, not stated, no number, does not state, does not give a number, cannot tell, only the word, holds only that word, not a count]
+  nearest: [stated openings, control number, USAJOBS, on the posting, the posting itself, read the announcement]
+  must_not_claim:
+    - a number of openings for any posting that says Many
+  notes: Many is the posting's own text in total_openings_raw; total_openings is null for those rows. A good answer says the number is unstated and points to the postings themselves (control numbers) or keeps to the stated-openings floor.
+
+- id: A07
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: "When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants."
+  class: data_limit
+  expected_behavior: data_limit
+  tier: refusal
+  expected_tools: []
+  answered_by: live_agent
+  tester_judgment: null
+  limit_text: [no applicant, applicant data, applicant records, applications, who applied, not record applicants, nothing on applicants]
+  nearest: [grade, days open, how long postings stay open, postings by grade, open longer, separations by grade]
+  must_not_claim:
+    - that the data has no grade field (grade is on the workforce, separation, accession, and posting records)
+    - any applicant count or application rate
+  notes: Applicant data is a true limit. The 2026-11-01 answer added a false one, "no grade field for staff", after zero tool calls; that fails here. An Exploratory answer that skips the limit and goes straight to days-open-by-grade fails label_match; the question asks whether applicant behaviour can be found out, and the honest answer is no, then the nearest view.
+
+- id: A08
+  author: tester_a
+  session_log: challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl
+  verbatim: "Grade mix over time would be helpful.  It is hard to prepare for a briefing for the Director without having the \"why\" behind the numbers which is what is also needed in addition to the numbers (the what).  The why is what Director will be interested in knowing after seeing the numbers and what these numbers tell me is helpful because they show that there are issues to be addressed and Director will definitely ask about recruitment numbers, hiring pluses and minuses, HR development (does it meet workforce development goals and actual training needs), performance assessments, etc. All of these areas need to be analyzed using a model that can help Director get a true picture of what is happening in the organization.  Director will ask these kinds of questions. Director will want a comparison with other larger organizations of like size to make some comparisons. Just seeing the numbers and percentages is helpful but if OPM could provide more details it would help Director of CBP and other elements to address issues like recruitment and skills mix. What can be done about not having enough OPM data to systemtically address issue?"
+  class: follow_up
+  expected_behavior: narrative
+  tier: genie
+  expected_tools: [genie]
+  answered_by: live_agent
+  tester_judgment: right
+  prior_turns:
+    - "When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants."
+  truth_facts:
+    - name: CBP Officer postings in the period the answer covers (grade mix over time)
+      tolerance: pct:5
+      readings:
+        - name: every posting in the file, opened September 2025 to October 2026
+          truth_sql: |
+            SELECT count(*) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-10-31'
+        - name: the twelve months to August 2026, matching the OPM data
+          truth_sql: |
+            SELECT count(*) FROM workforce.silver.job_postings WHERE agency_subelement_code = 'HSBD' AND occupational_series_codes ? '1895' AND open_date BETWEEN DATE'2025-09-01' AND DATE'2026-08-31'
+  must_not_claim:
+    - that stated openings include the postings that say Many
+    - that the data holds training, performance-assessment, or applicant records
+  notes: Two asks in one turn; the graded one is the grade mix, and the total posting count is the only fact robust to how an answer bands grades or periods. The tester called the 2026-11-01 answer helpful. The OPM-data question at the end is ungraded.
+

@@ -423,3 +423,7 @@ Budget, service principal, and workspace deleted at account level; lists verifie
 
 ## [2026-11-03] query | Eval coverage for the panel
 Exa agent run plus Husain/Shankar, Anthropic, tau-bench, Spider 2.0, BIRD, BEAVER, and three interviewer-side accounts. Filed `analyses/eval-coverage-for-the-panel.md`: the 117/120 headline is a development-set score in the per-run unit; per question it is 17/20 pass^10 (Wilson 64% to 95%); no `eval-v1` tag, no tester rows, judge uncalibrated. Ranked fixes: tag, held-out tester line, 30 judge labels, break-it rows, dashboard leads with pass^k.
+
+## [2026-11-03] build | eval-v1 tagged; held-out line run (Tester A, 8 rows)
+Tagged `eval-v1` (0cdfa7d) before adding A01 to A08 verbatim with pinned truth; two five-run experiments on `b44a9181`, no prompt change. Dev 197/200 against held-out 23/80 (pass^10 1/8). Run-by-run sort in the journal: about 49 of 57 failures are rows expecting one reading of a two-reading question, 5 the agent (token-limit runaways, causal overclaims), 2 or 3 the judge. Corrections proposed for Ryan, to rerun beside, not instead of, this result. As-run state tagged `eval-v1-heldout`.
+

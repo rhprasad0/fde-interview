@@ -1,6 +1,6 @@
 """Spec 05 step 4, ported to Strands Evals by spec 04 (2026-11-02); on Postgres since spec 06: the eval harness.
 
-  eval_harness.py [--stub] [--runs 5] [--workers 16]   run the questions file
+  eval_harness.py [--stub] [--runs 5] [--workers 16] [--ids A01,A02]   run the questions file, or a subset
   eval_harness.py truth [--check]   run every truth_sql, write challenge/eval/truth.json (--check: must reproduce it)
   eval_harness.py pool <exp,exp,...> [--vs <exp,exp,...>]   pooled pass^1 per line and per-row passes, for hill climbing
 
@@ -431,10 +431,12 @@ def _turns(q, sid):
     return [invoke(t, sid, q_id=q["id"]) for t in [*(q.get("prior_turns") or []), q["verbatim"]]]
 
 
-def run(set_version, runs=5):
+def run(set_version, runs=5, ids=None):
     global EXPERIMENT_ID
     EXPERIMENT_ID = f"{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{A.PROMPT_HASH[:8]}"
     y, qs = _questions()
+    if ids:  # a subset, e.g. the held-out tester rows on their own
+        qs = {k: v for k, v in qs.items() if k in ids}
     if y["set_version"] != set_version:
         raise SystemExit(f"questions file is {y['set_version']}, asked for {set_version}")
     if not qs and STUB:  # an empty file still exercises one row in the dry run
@@ -500,6 +502,7 @@ if __name__ == "__main__":
     ap.add_argument("--runs", type=int, default=5)
     ap.add_argument("--workers", type=int, default=WORKERS)
     ap.add_argument("--set-version", default=A.SET_VERSION)
+    ap.add_argument("--ids", help="run: comma-separated question ids, e.g. the held-out A01..A08")
     a = ap.parse_args()
     STUB, WORKERS = a.stub, a.workers
     if a.cmd == "truth":
@@ -507,4 +510,4 @@ if __name__ == "__main__":
     elif a.cmd == "pool":
         pool(a.trace.split(","), a.vs.split(",") if a.vs else None)
     else:
-        run(a.set_version, a.runs)
+        run(a.set_version, a.runs, a.ids.split(",") if a.ids else None)

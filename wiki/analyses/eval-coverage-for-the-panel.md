@@ -110,7 +110,7 @@ conventions. Say that in the room before anyone asks. Never say "we beat the ben
 
 Decisions and set edits are Ryan's; this is the order the sources support.
 
-1. **Tag `eval-v1` now, then run Tester A's questions as the unseen line.** One command for the
+1. **Done 2026-11-03. Tag `eval-v1` now, then run Tester A's questions as the unseen line.** One command for the
    tag. Then the eight tester questions, verbatim from the transcript, as `A01` to `A08` with
    `author: tester_a`, run once at five runs with no prompt change afterwards. Report the dev
    line and the held-out line side by side with the gap; the gap is the number that makes the
@@ -145,11 +145,38 @@ Not worth the time before 2026-11-05: raising the floors to the spec's 20 and 12
 builder-authored rows add n without adding independence), a cost-weighted multi-turn benchmark,
 or MLflow.
 
+## The held-out line, run 2026-11-03
+
+Fix 1 was done the same afternoon: `eval-v1` tagged before any held-out row existed, Tester A's
+eight questions added verbatim with truth pinned, two five-run experiments on the working prompt,
+no prompt change. Full detail and the run-by-run sort in the
+[eval journal](../../challenge/eval/journal.md), "Held-out line".
+
+| | Development set (tuned against) | Held-out (Tester A, verbatim) |
+|---|---|---|
+| Questions | 20 | 8 |
+| Pooled pass^1 over runs | 197/200 (98%) | 23/80 (29%) |
+| pass^5 per experiment | 18/20, 19/20 | 2/8, 1/8 |
+| pass^10 | 17/20, Wilson 64% to 95% | 1/8, Wilson 2% to 47% |
+
+The gap is the number the panel should see first. Sorting the 57 held-out failures run by run:
+about 49 are the row expecting one reading of a question that admits two (A02 compared on
+eligibility share rather than length-of-service share; A04 and A06 answered with the figure and
+the limit under a Verified or Exploratory label rather than Not available; A05 used a sibling
+function; A08 read "grade mix" as the workforce rather than postings), 5 are the agent (three runs
+hit the output-token limit building whole-component tables; two OPM paragraphs asserted a cause
+the data cannot support), and 2 or 3 are the judge. The spec failures are the gap's mechanism, not
+an excuse for it: the twenty dev rows were written to have one reading each, and the prompt learned
+to find it. The corrected number does not exist and is not estimated; proposed row corrections are
+in the journal for Ryan's decision, to be rerun as a new experiment reported beside this one, with
+the as-run rows tagged `eval-v1-heldout`.
+
 ## What to be able to say
 
 - "These twenty are the development set. I tuned against them for eight iterations and the
   reference moved seven times; here is the table. The held-out line is the tester's eight questions,
-  run once after the climb, and here is the gap."
+  run once after the climb: 98% became 29%. Most of that is the questions having more than one
+  reading, which is the point; the rest is three runaway answers and two overclaims."
 - "Per question, not per run: 17 of 20 pass all ten runs, interval 64 to 95%; 18 or 19 of 20
   pass all five within one experiment. Pooled over runs it is 98%; that number is in the journal
   and it is the one I would not lead with."
