@@ -375,3 +375,5 @@ figure is in-sample. The same hand that labelled these rows wrote the grader and
 of them (the wide row in C06, percent rates in C17), and no person has confirmed the labels
 (`confirmed_by` is empty). It becomes a calibration when Ryan confirms the labels and the next
 space experiment's runs are labelled blind, before the grader is run on them.
+Ryan confirmed all 22 labels on 2026-11-02 (a blanket confirmation from the summary list, recorded
+as such). The remaining gap is the in-sample one: label the next experiment's runs blind.
