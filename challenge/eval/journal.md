@@ -321,8 +321,9 @@ corrects truth or the scorer's reference.
 | After baseline one | C03 | two acceptable readings | "this year" read either way is reasonable (Ryan) |
 | Iteration 1 | C02 | truth ranks components that missed plan only | the question asks which missed |
 | Iteration 5 | C20 | `limit_text` added | the judge had no reason to check against |
-| Held-out run 1 | A01 | hierarchy `must_not_claim` reworded | the judge read a correct limit statement as a violation (Ryan, 2026-11-03) |
-| Held-out run 1 | A02 | rank fact admits retirement-eligibility share (now, five years), tolerance 2 | the agent continued A01's measure; the rank moves two places with the enhanced-series choice (Ryan, 2026-11-03) |
+| Held-out run 1 | A01 | hierarchy `must_not_claim` reworded | the judge read a correct limit statement as a violation (builder, 2026-11-03; not in the table Ryan approved, which listed A01 as "none") |
+| Held-out run 1 | A02 | rank fact admits retirement-eligibility share (now, five years) | the agent continued A01's measure (Ryan, 2026-11-03) |
+| Held-out run 1 | A02 | rank tolerance 1 to 2 | the rank moves two places with which series count as enhanced coverage (builder, 2026-11-03; not in the table Ryan approved; this is what lets rank 1 and rank 3 both pass, and the rerun's three judge misses are on this fact) |
 | Held-out run 1 | A03 | `must_not_claim` narrowed to causal claims; right-censoring statements allowed | the data fact was being failed with the overclaim (Ryan, 2026-11-03) |
 | Held-out run 1 | A04, A06 | `accept_labels`: Verified or Exploratory pass when the limit is stated | the figure plus the limit is the better answer; scorer change in `label_match` and `data_limit` (Ryan, 2026-11-03) |
 | Held-out run 1 | A05 | either `open_postings` or `posting_coverage`; date phrases quoted; alternatives widened | sibling function returns the same count; YAML split the date at the comma (Ryan, 2026-11-03) |
@@ -749,8 +750,9 @@ pass^5 per experiment 3/8 and 5/8. Two errors (`max_tokens`), $0.56.
 
 **Per row.** A04 10/10, A06 10/10, A07 10/10, A05 9/10, A08 9/10, A03 7/10, A01 5/10, A02 5/10.
 
-**The 15 failures left, read run by run.** Eleven are the agent, four are the judge; none is the
-row.
+**The 15 failures left, read run by run.** Eleven are the agent, four are the judge; none the row
+in a way that changed an outcome (one A01 run gave a four-year horizon, 9,505, which the row's
+two-, three-, and five-year readings do not admit; it had already failed on the label).
 
 | Row | Misses | What |
 |---|---|---|
@@ -759,6 +761,13 @@ row.
 | A03 | 3 | "Two findings explain the gap" with separations and tenure: the causal overclaim, failed correctly under the narrowed rule. |
 | A05 | 1 | a one-off query on a Verified row (`tool_use`), the right rule. |
 | A08 | 1 | judge: the workforce reading was stated correctly (27,650 and 26,644) and the judge also wanted the postings readings; one reading is enough by the rubric. |
+
+**Caveat on A04 and A06.** `accept_labels` passes a graded label, `data_limit` then skips its
+no-number check, and `tool_use` does not apply to the refusal tier, so the figure in those answers
+(A04's coverage ratio, A06's count of three) is ungraded. Their 10/10 means "stated the right
+limit and offered the nearest view", not "the number was right". Spec 04's rule that a perfect
+refusal cannot hide a wrong number is weakened here; A04's ratio has a deterministic truth
+(0.0084) and can become a graded fact on a later version if Ryan wants it.
 
 **Agent findings, now with the row noise gone.**
 1. **Whole-component questions run away.** A01 and A02 median 300 s and 15k to 38k output tokens
