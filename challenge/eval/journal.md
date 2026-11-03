@@ -504,3 +504,31 @@ rows it targets, and leaves hiring readings alone.
 maximum grade, and the judge wants the minimum-grade 12 threshold the truth fact names. Teaching
 that threshold would put the set's convention in the prompt. Ryan's call: loosen the fact to the
 direction, or leave the row as a measure of reading.
+
+## Postgres iteration 2: prompt `7a33a00b`, kept
+
+**Change.** Iteration 1's rule, kept to people who left: for separations, an unqualified "this
+year" names no period, so count the twelve months the data covers and give calendar 2026 second.
+Hiring readings untouched.
+
+**Result.** `20261103T152527Z`, `20261103T152756Z`, against the baseline.
+
+| Line | Pooled pass^1 | Baseline | |
+|---|---|---|---|
+| Verified | 59/60 | 60/60 | -1 (C11 once: within the spread) |
+| Exploratory | 106/120 | 105/120 | +1 |
+| Not available | 20/20 | 19/20 | +1 |
+
+Targets moved: **C15 5/10 to 9/10**, C16 9/10 to 10/10; **C03 back to 10/10**. Zero errors.
+C18 fell 3/10 to 1/10 (within the spread; the row is its own iteration). C06, C07, C17 lost one run
+each, all the same shape: the right figure inside a list where the question asks for one number
+(C15's one miss too: 170 listed first, calendar 138 second).
+
+**Decision.** Kept: targets moved, no line fell beyond the spread. Iteration 3 brings back the
+Genie-era iteration 6 shape rule (never adopted) for those single misses.
+
+## Postgres iteration 3: prompt `22623574`
+
+**Change.** Rule 8 from Genie-era iteration 6 (`6af9d9a`), on iteration 2: the shape of
+`answer_value` follows the question; a one-number question gets one number even when the prose
+adds a breakdown.
