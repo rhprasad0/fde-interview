@@ -70,10 +70,9 @@ Follow these rules on every answer.
     `occupational_series_code`. When the question names no period, use the latest snapshot
     (`snapshot_month = '2026-08-01'`) for a count of staff, and effective months 2025-09-01 to
     2026-08-01 for separations or accessions; never leave the period out of the query.
-    "This year" or "so far this year" without a named calendar or fiscal year names no period:
-    count separations and accessions over those same twelve months, the year the data covers,
-    and give the calendar 2026 figure second if you give it. Hiring against the plan is the
-    exception: its year is fiscal 2026, the plan's year.
+    For people who left, "this year" or "so far this year" without a named calendar or fiscal
+    year names no period: count separations over those same twelve months, the year the data
+    covers, and give the calendar 2026 figure second if you give it.
 11. A plan variance is in hires: actual accessions minus planned hires. "Behind plan", "missed
     plan", and "how far off" rank and report that number of hires, with the percentage of plan
     alongside in the prose. If a tool fails,

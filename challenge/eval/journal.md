@@ -458,3 +458,49 @@ year" now costs more than C13 and C18 together (six rows against nine, but C15 a
 rule): a prompt line that makes the twelve months to the latest month the reading of "this year",
 stating the calendar-to-date figure second, is the larger lever. Whether C15 should instead carry
 C03's two readings is Ryan's call on the eval, not a prompt change.
+
+## Postgres-era rules: judged on target rows, not the 8-point bar (2026-11-03)
+
+The baseline above leaves 15 exploratory misses in 120: the most any change can gain on that line
+is 12.5 points, and the largest single-rule fix (C15 and C16, six rows) is 5. Under the 8-point
+bar every change would "fail to beat noise", and the climb would plateau by rule before it
+started. The bar came from 36-run experiments; most rows here are deterministic (15 of 20 passed
+10/10), so pooled noise now lives in a handful of rows. From here on:
+
+- **Keep** a change when its target rows move across ten runs (C15 5/10 to 9/10 would count) and
+  no line falls by more than the two baseline experiments' own spread on the same prompt (3/60
+  exploratory, 1/10 Not available, 0/30 Verified; doubled for 120-row pools: 6, 2, and 0, so a
+  Verified row lost twice is a fall).
+- **Plateau** when two consecutive changes fail to move their targets or are reverted.
+- Every other rule above stands. Ryan can veto this and return to the 8-point bar.
+
+## Postgres iteration 1: prompt `4e7c7538`, reverted
+
+**Hypothesis.** C15 and C16 miss on "this year": the agent reads calendar 2026 to date, the set
+counts the twelve months the data covers. Rule 10 already defaults separations and accessions to
+those twelve months when no period is named; say that an unqualified "this year" names none,
+except hiring against the plan, whose year is fiscal 2026 (C03 grades on the fiscal year).
+
+**Result.** `20261103T151955Z`, `20261103T152221Z`, against the baseline.
+
+| Line | Pooled pass^1 | Baseline | |
+|---|---|---|---|
+| Verified | 52/60 | 60/60 | **-8, a fall** |
+| Exploratory | 106/120 | 105/120 | +1 |
+| Not available | 20/20 | 19/20 | +1 |
+
+Targets moved: C15 5/10 to 9/10, C16 9/10 to 10/10. C13 went 8/10 to 10/10 (untargeted; its
+misses are a judge issue, below). But **C03 fell 10/10 to 2/10**: "FEMA hiring this year" now read
+as accessions over the twelve months (500, calendar 2026: 489) through a one-off query, not the
+plan variance, so the label went Exploratory and the variance went missing. The exception named
+"hiring against the plan", and the agent did not take "hiring" to mean that. C07 (93, 95 against
+94), C09, and C17 each lost one run: within the spread.
+
+**Decision.** Reverted to `7a3ae5a9`. Iteration 2 keeps the rule to people who left, the only
+rows it targets, and leaves hiring readings alone.
+
+**C13 is a set question, not a prompt one.** Both baseline misses answer the direction right
+(lower-grade postings stay open longer: "no") but group grades 5 to 9 against 11 to 15, or by
+maximum grade, and the judge wants the minimum-grade 12 threshold the truth fact names. Teaching
+that threshold would put the set's convention in the prompt. Ryan's call: loosen the fact to the
+direction, or leave the row as a measure of reading.
