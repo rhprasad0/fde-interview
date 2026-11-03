@@ -267,7 +267,7 @@ The climb stopped at the plateau rule: iterations 5 and 6 both failed to clear t
 
 | Prompt | Verified | Genie | Not available | Rows passing every run |
 |---|---|---|---|---|
-| Baseline `4f3bf1e2` (four experiments) | 47/84 (56%) | 91/168 (54%) | 28/28 | 3/20 to 9/20 |
+| Baseline `4f3bf1e2` (four experiments) | 47/84 (56%) | 91/168 (54%) | 28/28 | 8/20 to 10/20 |
 | Iteration 1 `4c87b672` | 39/60 (65%) | 73/120 (61%) | 20/20 | 9/20, 9/20 |
 | Iteration 2 `f947333c` | 46/60 (77%) | 93/120 (78%) | 20/20 | 12/20, 15/20 |
 | Iteration 3 `6c5b037a` | 50/60 (83%) | 104/120 (87%) | 19/20 | 16/20, 14/20 |
@@ -276,7 +276,8 @@ The climb stopped at the plateau rule: iterations 5 and 6 both failed to clear t
 | Iteration 6 `8c1cc317` (candidate) | 58/60 | 109/120 (91%) | 20/20 | 17/20, 16/20 |
 
 Iteration 4's 120 Genie statements are all in `system.query.history` (`verify-genie`, 60 of 60
-for each experiment). The climb cost about $2.70 across 1,200 agent runs.
+for each experiment). The climb's agent calls cost $2.68 across 1,200 runs, before the judge's
+OpenAI calls and warehouse time.
 
 **What moved the agent, in order of effect.**
 1. Knowledge of the data, not reasoning: all twelve components, the fields the records hold, and
