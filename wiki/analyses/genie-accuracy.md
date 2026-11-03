@@ -69,6 +69,13 @@ follows them.
   UI for human analysts. Either outcome is a defensible demo story: measured and kept, or
   measured and kept away from the agent.
 
+## Update, 2026-11-02
+
+Measured through the agent: Genie-tier pooled pass^1 rose from 54% to 83% to 91% over the hill
+climb (`challenge/eval/journal.md`), all from changes to how the agent asks. The space itself was
+never tuned: it has no column values visible, no SQL expressions, no example SQL, and no
+benchmarks. See [Genie accuracy levers](genie-accuracy-levers.md).
+
 ## Not checked
 
 The Databricks posts behind the 84.5% and 90% figures (search summaries only); whether Genie

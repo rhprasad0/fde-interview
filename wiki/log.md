@@ -385,3 +385,8 @@ pass^1 (`challenge/eval/journal.md`). Kept iteration 4 (`b06cf68a`): Verified 56
 
 ## [2026-11-02] build | Demo app: FastAPI, SSE agent sidebar, snapshot charts, eval dashboard
 `challenge/app/` on branch `worktree-demo-app`: `main.py` (pages, `/api/ask` streamed, `/api/cell`, `/api/evals`), `backend.py` (the agent seam; callback injected into `build_agent`, `run_turn` unchanged), `evals.py`, `refresh.py` and the committed `data/cell.json` snapshot, the two concept pages rewired to fetch. Live check: a two-turn conversation (plan variance, then the shutdown as analyst context) streamed with one trailing done frame each and wrote trace lines; `/api/evals` tallies match `eval_harness.py pool` for the latest experiment. Decision logged in DECISIONS.md. Not committed yet.
+
+## [2026-11-02] query | Genie accuracy levers
+Research through Exa filed as `wiki/analyses/genie-accuracy-levers.md`: the live Genie space has no
+column configuration, SQL expressions, example SQL, or benchmarks; the Beta eval-run API makes
+benchmarks scriptable. `genie-accuracy.md` gains an update section.
