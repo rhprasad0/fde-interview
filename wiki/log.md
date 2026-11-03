@@ -430,3 +430,7 @@ Tagged `eval-v1` (0cdfa7d) before adding A01 to A08 verbatim with pinned truth; 
 ## [2026-11-03] build | Held-out rows corrected (Ryan) and rerun beside the first run
 Six row corrections and two scorer changes (any-of tool lists, accepted labels), all in the set-change table; dev rows and prompt untouched. Rerun 65/80 (pass^10 3/8, Wilson 14% to 69%) beside 23/80 as written and 197/200 dev. The 15 misses: 11 agent (runaways on whole-component questions, lost or wrong label lines, causal overclaim in the OPM paragraph, one exploratory query on a Verified row), 4 judge (rank tolerance ignored, readings rubric misread). Journal "Held-out rerun".
 
+
+## [2026-11-03] decision | Headline pass^5, pass^10 Wilson kept; Tester A never tuned against
+Ryan's calls on the five items the held-out rerun raised, two logged in `DECISIONS.md`; A01 reword
+and A02 tolerance kept; A04 figure grading still under review (two routes, 7/10 or 9/10).

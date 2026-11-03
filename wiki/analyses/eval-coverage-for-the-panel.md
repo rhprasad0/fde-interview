@@ -42,7 +42,7 @@ strongest signal is "whether candidates named the limits of their own result unp
 | Floors: 20 Genie rows, 12 Verified | 12 Exploratory, 6 Verified, 2 Not available |
 | Tester A's eight questions verbatim, with `author` separating the lines | Added 2026-11-03 from the session trace (the log CSV is still header-only) and run as the held-out line, below |
 | Freeze as a git tag (`eval-v1`) before tuning; "this answers 'did you tune the questions after seeing failures'" | Tagged 2026-11-03, after the climb, not before it; seven reference edits after seeing failures (set-change table in the journal) |
-| Headline is pass^5 against 80% (Verified) and 70% (Exploratory) | Journal and dashboard lead with pooled pass^1 over runs; `DECISIONS.md` says pass^3; three metrics in three places |
+| Headline is pass^5 against 80% (Verified) and 70% (Exploratory) | Decided 2026-11-03 (`DECISIONS.md`): pass^5 per experiment is the headline, pass^10 with its Wilson interval the "how sure" line, pooled pass^1 the climb comparison only. The journal and dashboard still lead with pooled pass^1 |
 | Judge calibrated on the tester's labels | Two tester judgments, "too small to measure"; the judge grades five questions and no human has checked it: faithfulness on C03 and C13 (284 rows), the stated limit on C19 and C20 (278 rows), the assumption on C04 (148 rows) |
 | Task 5, "try to break it" | Never run; the seed exists in `questions.yaml` with no rows under it |
 
@@ -137,10 +137,10 @@ Decisions and set edits are Ryan's; this is the order the sources support.
    pooled pass^1 as the secondary number; show the set-change table and the no-tag fact as
    provenance, not as an admission. The 15-minute arc already spends its time on the misses
    ([executive demos](executive-agent-demo-wow.md)); the held-out misses are the better misses.
-5. **Pick one headline metric and one bar.** pass^3 (DECISIONS), pass^5 (spec 04), pooled pass^1
-   (journal, dashboard): choose one for the room, say the others exist and why they differ.
-   pass^5 at the spec's bars is the honest one, and the Exploratory line will likely sit near its
-   70% bar rather than above it, which is a better story than 98%.
+5. **Pick one headline metric and one bar.** Done 2026-11-03: pass^5 per experiment at the spec's
+   bars, with pass^10 and its Wilson interval as the "how sure" line and pooled pass^1 kept for
+   climb comparisons only (`DECISIONS.md`). The Exploratory line will likely sit near its 70% bar
+   rather than above it, which is a better story than 98%. The dashboard has not moved yet.
 
 Not worth the time before 2026-11-05: raising the floors to the spec's 20 and 12 (more
 builder-authored rows add n without adding independence), a cost-weighted multi-turn benchmark,
@@ -156,9 +156,9 @@ no prompt change. Full detail and the run-by-run sort in the
 | | Development set (tuned against) | Held-out, rows as first written | Held-out, rows corrected (Ryan, same day) |
 |---|---|---|---|
 | Questions | 20 | 8 | 8 |
-| Pooled pass^1 over runs | 197/200 (98%) | 23/80 (29%) | 65/80 (81%) |
-| pass^5 per experiment | 18/20, 19/20 | 2/8, 1/8 | 3/8, 5/8 |
-| pass^10 | 17/20, Wilson 64% to 95% | 1/8, Wilson 2% to 47% | 3/8, Wilson 14% to 69% |
+| pass^5 per experiment (headline) | 18/20, 19/20 | 2/8, 1/8 | 3/8, 5/8 |
+| pass^10, Wilson 95% | 17/20, 64% to 95% | 1/8, 2% to 47% | 3/8, 14% to 69% |
+| Pooled pass^1 over runs (climb comparison only) | 197/200 (98%) | 23/80 (29%) | 65/80 (81%) |
 
 All three columns go on the page. The middle one is the lesson, the right one is the number. Sorting the 57 as-written failures run by run:
 about 49 are the row expecting one reading of a question that admits two (A02 compared on
@@ -182,8 +182,8 @@ agent bucket and the agent count becomes 25, not 5.
 
 - "These twenty are the development set. I tuned against them for eight iterations and the
   reference moved seven times; here is the table. The held-out line is the tester's eight questions,
-  run once after the climb: 98% became 29% as written and 81% once the rows admitted every
-  defensible reading. The first drop is the questions having more than one reading, which is the
+  run once after the climb: 18 and 19 of 20 became 2 and 1 of 8 as written, then 3 and 5 of 8 once
+  the rows admitted every defensible reading (pooled over runs, 98% to 29% to 81%). The first drop is the questions having more than one reading, which is the
   point; what is left is runaway answers on wide questions, lost labels, and a causal overclaim."
 - "Per question, not per run: 17 of 20 pass all ten runs, interval 64 to 95%; 18 or 19 of 20
   pass all five within one experiment. Pooled over runs it is 98%; that number is in the journal
@@ -195,6 +195,10 @@ agent bucket and the agent count becomes 25, not 5.
 
 ## Open questions
 
+- Tester A is not tuned against (`DECISIONS.md`, 2026-11-03), so the fixes its misses point at
+  wait for a fresh blind set of six to eight questions. Who writes it, and by when, given
+  2026-11-05? Until then the judge's rank tolerance stays as it is, since that miss was found on
+  A02.
 - Does the held-out gap exceed the baseline spread the climb used as its noise floor? If it
   does, the climb's kept iterations need a second look.
 - Should A03 (draft the paragraph) and A08 (grade mix over time) be graded by the judge or by a

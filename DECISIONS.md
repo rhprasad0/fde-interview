@@ -156,6 +156,26 @@ Revisit:   what evidence would change this
   governed in Unity Catalog" in the platform story. Revisit: if spec 06 keeps the AI/BI
   dashboard, bulk-load the JSONL with one `COPY INTO` rather than per-row inserts.
 
+- **Amended 2026-11-03 (Ryan): the headline is pass^5 per experiment; pass^10 with its Wilson
+  interval stays.** The room hears pass^5 per experiment against the spec's bars (80% Verified,
+  70% Exploratory). pass^10, pooled over two experiments, carries the Wilson 95% interval per
+  question: the "how sure" line. Pooled pass^1 over runs keeps the job it got on 2026-11-02,
+  comparing one prompt to the next during a climb, and is never the headline. Rejected: pooled
+  pass^1 as the headline (the per-run unit inflates and hides the always-fail questions); pass^3
+  (the older bar above). Cost: the journal and the dashboard (`challenge/app/evals.py`) still lead
+  with pooled pass^1 and need to move.
+- **Amended 2026-11-03 (Ryan): Tester A's eight rows are never tuned against.** No prompt, skill,
+  agent, or judge change is made to fix a Tester A miss. The line is run once per candidate prompt
+  as the check and its gap to the development set is reported as found. Row corrections that
+  admit a defensible reading of the tester's words stay allowed and logged in the set-change
+  table (done 2026-11-03; A01's reword and A02's rank tolerance of 2 were kept by Ryan after the
+  rerun). Time and cost per answer are not a constraint on the agent, so a five-minute
+  whole-component answer is acceptable as such; only its misses count. Rejected: tuning on
+  Tester A and still calling it held out (what the panel would catch); category-only fixes (the
+  categories were learned from these rows). Revisit: when a fresh blind set of six to eight
+  questions exists, Tester A becomes a second development set and the new set is the check; the
+  fixes the Tester A misses point at (runaway whole-component answers, the lost label line, the
+  OPM paragraph's causal claim, the judge's rank tolerance) wait for that set.
 ## 2026-10-30  Agent layer: Strands Agents SDK on Amazon Bedrock AgentCore Runtime
 
 - **Context:** with the agent layered above Databricks, it needs a home that is real
