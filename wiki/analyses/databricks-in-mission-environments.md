@@ -1,5 +1,6 @@
 # How Databricks is deployed in mission environments, and what it means for the MCP path
 
+> Historical 2026-11-02: the build no longer runs on Databricks (spec 06). The boundary analysis still describes what the Firm's clients run; the demo's data layer is now Postgres.
 **Question (Ryan, 2026-10-30):** Before deciding how the agent reaches Databricks, how is
 Databricks actually set up in federal mission environments? Managed MCP sounds like functionality
 the government may not have yet.

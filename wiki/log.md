@@ -404,3 +404,13 @@ Billing and audit system tables: the climb's ~5,000 UC function calls through th
 functions server billed as all-purpose serverless compute ($160+), Genie $35 for 1,113 questions;
 C11 fans out ~30 `plan_variance` calls per run and is two thirds of it. Filed with the credits-
 exhausted email as the wiki's first image; cost-estimate page marked superseded on that row.
+
+## [2026-11-02] build | Databricks torn down, data layer moved to RDS Postgres
+Ryan's decision after the spend report. Genie space, jobs, notebooks, and every Terraform object
+destroyed; profile and env keys removed; account shell kept. New db.t4g.micro in us-west-2 (Terraform
+in challenge/infra), built in DuckDB from the files on disk and shipped (challenge/sql,
+scripts/load_postgres.py); eight views and eight functions behind a read-only agent role; the agent's
+calculations as fixed-SQL tools and `one_off_query(sql)` as the fenced exploratory tool. Truth
+reproduced on every row but the two imputation-dependent ones (re-pinned). Smoke 18/20, zero errors,
+median latency 10 s. Spec 06; two DECISIONS entries; superseded banners on the Databricks pages;
+synthesis amended.

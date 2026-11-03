@@ -17,6 +17,13 @@ The evolving thesis for the build challenge and the FDE interview. Updated on ev
    Databricks and demonstrates vendor portability with one config value
    ([analysis](analyses/build-challenge-problem-selection.md),
    [mission environments](analyses/databricks-in-mission-environments.md)).
+   *Amended 2026-11-02:* the bet was made and then unmade on cost. The trial's $400 of credits
+   went in one afternoon of eval runs because function calls over the managed MCP server bill
+   as serverless compute per call ([where the credits went](analyses/databricks-spend-during-the-climb.md)).
+   Databricks was torn down and the data layer rebuilt on one RDS Postgres instance; the
+   governed-tools-plus-bounded-exploration design survived the move unchanged, which is the
+   portability point in a sharper form. What was built on Databricks and what it measured is the
+   record in specs 01 to 05 and the eval journal.
 3. **Federal workforce planning is the right problem.** OPM's 2026 open workforce API gives
    record-level monthly data with no auth, GAO has already analyzed the same files, and the 2025
    workforce shock makes the impact story current. The Firm has a (Palantir) posting in exactly this

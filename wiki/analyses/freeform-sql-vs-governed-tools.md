@@ -8,6 +8,13 @@ Palantir converge on the same shape: fixed, governed query logic for every numbe
 a bounded natural-language path for exploration, and no open-ended SQL tool. That is the design
 in [spec 03](../../challenge/specs/03-semantic-layer.md); nothing changes, three things sharpen.
 
+**Decision taken 2026-11-02.** With Databricks and Genie torn down (spec 06), the exploratory path became the
+bounded shape this page describes: `one_off_query(sql)` runs one SELECT as a Postgres role that can read only
+the eight semantic views, read-only, with a 60 s timeout and a 500-row cap, and the SQL is shown verbatim under
+the Exploratory label. The eight governed calculations stay fixed tools, and a Verified row fails if the
+exploratory tool ran. The fence moved from Unity Catalog grants to Postgres grants; the earlier "no" was to
+open SQL over raw tables. See `DECISIONS.md` (2026-11-02, exploratory tool).
+
 ## What production teams did
 
 | Team | Pattern | Stated reason |

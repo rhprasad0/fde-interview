@@ -33,8 +33,12 @@ file, commit message, branch name, or PR/issue text. Call it **the Firm**.
   - `entities/`: people, orgs, products, systems.
   - `concepts/`: ideas, patterns, techniques.
   - `analyses/`: query answers worth keeping (comparisons, trade-offs, decisions).
-- `challenge/`: the build itself (agent, Databricks assets, eval). Same hooks and CI apply;
-  no credentials, workspace URLs, or account ids.
+- `challenge/`: the build itself (agent, Postgres semantic layer, eval). Same hooks and CI apply;
+  no credentials, hosts, or account ids. Databricks was torn down 2026-11-02 after its trial
+  credits were spent (spec 06): no code, credential, or profile may reach it again. The guard:
+  `grep -rniE 'dbc-|DATABRICKS_|databricks\.com|/api/2\.0/' --exclude-dir={.venv,.git,raw,specs} challenge`
+  must print nothing (the specs and comments naming Databricks as history are fine; hosts, env
+  keys, and API paths in code are not).
 - `DECISIONS.md`: Ryan's build decision log, one entry per decision with the alternative
   rejected and the condition that would reopen it. Append when a decision is made; link to
   the wiki page that holds the reasoning.

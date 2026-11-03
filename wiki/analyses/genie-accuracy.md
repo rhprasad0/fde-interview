@@ -1,5 +1,6 @@
 # How often is Genie wrong, and is the agent's use of it defensible?
 
+> Historical 2026-11-02: Genie went with the Databricks teardown. The exploratory path is now a fenced SQL tool over the semantic views (`DECISIONS.md`, 2026-11-02); the measurements here are the Genie-era baseline the new tool is compared against.
 **Question (Ryan, 2026-10-31):** is the agent's use of Genie defensible? Do we know how often it is
 wrong or fabricates facts?
 

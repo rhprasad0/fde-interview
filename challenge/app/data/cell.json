@@ -1,5 +1,5 @@
 {
- "refreshed_at": "2026-11-02T23:48:57+00:00",
+ "refreshed_at": "2026-11-03T02:47:55+00:00",
  "cell": {
   "component": "HSBD",
   "series": "1895",
@@ -135,78 +135,78 @@
  "states": [
   {
    "state": "TEXAS",
-   "headcount": 2821,
-   "imputed": 2821
+   "headcount": 2834,
+   "imputed": 2834
   },
   {
    "state": "CALIFORNIA",
-   "headcount": 2129,
-   "imputed": 2129
-  },
-  {
-   "state": "VIRGINIA",
-   "headcount": 1929,
-   "imputed": 1929
+   "headcount": 2105,
+   "imputed": 2105
   },
   {
    "state": "DISTRICT OF COLUMBIA",
-   "headcount": 1920,
-   "imputed": 1920
+   "headcount": 1956,
+   "imputed": 1956
   },
   {
    "state": "NEW YORK",
-   "headcount": 1872,
-   "imputed": 1872
+   "headcount": 1897,
+   "imputed": 1897
+  },
+  {
+   "state": "VIRGINIA",
+   "headcount": 1891,
+   "imputed": 1891
   },
   {
    "state": "MAINE",
-   "headcount": 1726,
-   "imputed": 1726
+   "headcount": 1788,
+   "imputed": 1788
   },
   {
    "state": "WASHINGTON",
-   "headcount": 1256,
-   "imputed": 1256
+   "headcount": 1273,
+   "imputed": 1273
   },
   {
    "state": "FLORIDA",
-   "headcount": 1196,
-   "imputed": 1196
+   "headcount": 1149,
+   "imputed": 1149
   },
   {
    "state": "VERMONT",
-   "headcount": 1082,
-   "imputed": 1082
-  },
-  {
-   "state": "MONTANA",
-   "headcount": 945,
-   "imputed": 945
+   "headcount": 1068,
+   "imputed": 1068
   },
   {
    "state": "ARIZONA",
-   "headcount": 850,
-   "imputed": 850
+   "headcount": 902,
+   "imputed": 902
+  },
+  {
+   "state": "MONTANA",
+   "headcount": 892,
+   "imputed": 892
   },
   {
    "state": "MINNESOTA",
-   "headcount": 802,
-   "imputed": 802
+   "headcount": 749,
+   "imputed": 749
   },
   {
    "state": "MICHIGAN",
-   "headcount": 708,
-   "imputed": 708
+   "headcount": 701,
+   "imputed": 701
   },
   {
    "state": "ALASKA",
-   "headcount": 646,
-   "imputed": 646
+   "headcount": 663,
+   "imputed": 663
   },
   {
    "state": "NORTH DAKOTA",
-   "headcount": 644,
-   "imputed": 644
+   "headcount": 613,
+   "imputed": 613
   },
   {
    "state": "GEORGIA",
@@ -215,48 +215,53 @@
   },
   {
    "state": "PUERTO RICO",
-   "headcount": 574,
-   "imputed": 574
-  },
-  {
-   "state": "LOUISIANA",
-   "headcount": 424,
-   "imputed": 424
+   "headcount": 529,
+   "imputed": 529
   },
   {
    "state": "NEW MEXICO",
-   "headcount": 387,
-   "imputed": 387
+   "headcount": 437,
+   "imputed": 437
   },
   {
-   "state": "OHIO",
-   "headcount": 353,
-   "imputed": 353
-  },
-  {
-   "state": "ILLINOIS",
-   "headcount": 335,
-   "imputed": 335
-  },
-  {
-   "state": "PENNSYLVANIA",
-   "headcount": 332,
-   "imputed": 332
+   "state": "LOUISIANA",
+   "headcount": 417,
+   "imputed": 417
   },
   {
    "state": "MARYLAND",
-   "headcount": 319,
-   "imputed": 319
+   "headcount": 333,
+   "imputed": 333
+  },
+  {
+   "state": "OHIO",
+   "headcount": 329,
+   "imputed": 329
+  },
+  {
+   "state": "PENNSYLVANIA",
+   "headcount": 325,
+   "imputed": 325
+  },
+  {
+   "state": "ILLINOIS",
+   "headcount": 310,
+   "imputed": 310
   },
   {
    "state": "NORTH CAROLINA",
-   "headcount": 313,
-   "imputed": 313
+   "headcount": 298,
+   "imputed": 298
   },
   {
    "state": "KENTUCKY",
-   "headcount": 269,
-   "imputed": 269
+   "headcount": 264,
+   "imputed": 264
+  },
+  {
+   "state": "IDAHO",
+   "headcount": 247,
+   "imputed": 247
   },
   {
    "state": "WEST VIRGINIA",
@@ -264,119 +269,114 @@
    "imputed": 237
   },
   {
-   "state": "MASSACHUSETTS",
-   "headcount": 228,
-   "imputed": 228
-  },
-  {
-   "state": "IDAHO",
-   "headcount": 220,
-   "imputed": 220
+   "state": "NEW JERSEY",
+   "headcount": 223,
+   "imputed": 223
   },
   {
    "state": "TENNESSEE",
+   "headcount": 223,
+   "imputed": 223
+  },
+  {
+   "state": "MASSACHUSETTS",
    "headcount": 212,
    "imputed": 212
   },
   {
-   "state": "NEW JERSEY",
-   "headcount": 208,
-   "imputed": 208
+   "state": "ALABAMA",
+   "headcount": 207,
+   "imputed": 207
   },
   {
    "state": "HAWAII",
-   "headcount": 204,
-   "imputed": 204
-  },
-  {
-   "state": "ALABAMA",
-   "headcount": 193,
-   "imputed": 193
+   "headcount": 198,
+   "imputed": 198
   },
   {
    "state": "MISSOURI",
+   "headcount": 190,
+   "imputed": 190
+  },
+  {
+   "state": "VIRGIN ISLANDS",
+   "headcount": 177,
+   "imputed": 177
+  },
+  {
+   "state": "CONNECTICUT",
+   "headcount": 171,
+   "imputed": 171
+  },
+  {
+   "state": "SOUTH CAROLINA",
+   "headcount": 170,
+   "imputed": 170
+  },
+  {
+   "state": "WISCONSIN",
    "headcount": 169,
    "imputed": 169
   },
   {
-   "state": "WISCONSIN",
-   "headcount": 162,
-   "imputed": 162
-  },
-  {
    "state": "COLORADO",
-   "headcount": 159,
-   "imputed": 159
-  },
-  {
-   "state": "CONNECTICUT",
-   "headcount": 151,
-   "imputed": 151
-  },
-  {
-   "state": "SOUTH CAROLINA",
-   "headcount": 146,
-   "imputed": 146
-  },
-  {
-   "state": "VIRGIN ISLANDS",
-   "headcount": 137,
-   "imputed": 137
-  },
-  {
-   "state": "MISSISSIPPI",
-   "headcount": 113,
-   "imputed": 113
+   "headcount": 131,
+   "imputed": 131
   },
   {
    "state": "NEVADA",
-   "headcount": 98,
-   "imputed": 98
+   "headcount": 110,
+   "imputed": 110
   },
   {
    "state": "UTAH",
-   "headcount": 97,
-   "imputed": 97
+   "headcount": 99,
+   "imputed": 99
   },
   {
-   "state": "OKLAHOMA",
-   "headcount": 81,
-   "imputed": 81
-  },
-  {
-   "state": "NORTHERN MARIANA ISLANDS",
-   "headcount": 71,
-   "imputed": 71
+   "state": "MISSISSIPPI",
+   "headcount": 96,
+   "imputed": 96
   },
   {
    "state": "GUAM",
-   "headcount": 67,
-   "imputed": 67
+   "headcount": 78,
+   "imputed": 78
   },
   {
-   "state": "DELAWARE",
-   "headcount": 67,
-   "imputed": 67
-  },
-  {
-   "state": "OREGON",
-   "headcount": 63,
-   "imputed": 63
+   "state": "OKLAHOMA",
+   "headcount": 72,
+   "imputed": 72
   },
   {
    "state": "INDIANA",
-   "headcount": 61,
-   "imputed": 61
+   "headcount": 70,
+   "imputed": 70
+  },
+  {
+   "state": "NORTHERN MARIANA ISLANDS",
+   "headcount": 65,
+   "imputed": 65
   },
   {
    "state": "RHODE ISLAND",
-   "headcount": 61,
-   "imputed": 61
+   "headcount": 64,
+   "imputed": 64
+  },
+  {
+   "state": "OREGON",
+   "headcount": 56,
+   "imputed": 56
+  },
+  {
+   "state": "DELAWARE",
+   "headcount": 55,
+   "imputed": 55
   },
   {
    "state": "ARKANSAS",
-   "headcount": 38,
-   "imputed": 38
+   "headcount": 32,
+   "imputed": 32
   }
  ],
  "plan": {

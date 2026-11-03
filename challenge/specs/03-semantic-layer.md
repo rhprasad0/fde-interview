@@ -1,5 +1,7 @@
 # Spec 03: synthetic schema and semantic layer
 
+> Superseded 2026-11-02 by [spec 06](06-postgres-and-teardown.md): Databricks torn down, semantic layer on Postgres. Kept as the record of what was built.
+
 **Goal.** The agent gets its only surface: a `semantic` schema of governed views (the object
 types) and table-valued SQL functions (the graded metrics) over a new `synthetic` schema that
 holds imputed copies of the three OPM tables and the labeled staffing plan. One SQL notebook run

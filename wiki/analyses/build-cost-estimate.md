@@ -1,5 +1,6 @@
 # Build cost estimate: Databricks on AWS plus AgentCore for one week
 
+> Superseded 2026-11-02: the trial credits were spent in one afternoon (see [where the credits went](databricks-spend-during-the-climb.md)) and Databricks was torn down; the data layer is one RDS Postgres db.t4g.micro at about $14 a month (`challenge/specs/06-postgres-and-teardown.md`). Kept as the estimate that was made.
 **Question (Ryan, 2026-10-30):** What does Lakebase cost, and what other Databricks costs will the
 build challenge incur against the $50 budget?
 

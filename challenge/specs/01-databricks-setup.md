@@ -1,5 +1,7 @@
 # Spec 01: Databricks on AWS, set up and ready for AgentCore
 
+> Superseded 2026-11-02 by [spec 06](06-postgres-and-teardown.md): Databricks torn down, semantic layer on Postgres. Kept as the record of what was built.
+
 **Goal.** A Databricks workspace in `us-west-2`, on direct-signup trial credits, with Unity
 Catalog laid out, a read-only service principal, the Managed MCP Servers preview on, and one
 proof: an external MCP client authenticates as the service principal and calls one Unity Catalog

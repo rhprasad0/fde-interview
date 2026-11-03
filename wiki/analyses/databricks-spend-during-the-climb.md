@@ -141,3 +141,10 @@ GROUP BY 1,2 ORDER BY 1,3 DESC;
 
 The per-question fan-out comes from `experiments.jsonl` locally: count `tool_calls` whose name
 contains `plan_variance`, grouped by `id`.
+
+## What happened next
+
+Ryan decided the same evening to rip Databricks out: every object and credential destroyed, the
+account shell kept, and the data layer rebuilt on one RDS Postgres db.t4g.micro in the same AWS
+account, loaded from the files already on disk. Spec: `challenge/specs/06-postgres-and-teardown.md`;
+decisions: `DECISIONS.md` 2026-11-02 (platform; exploratory tool).

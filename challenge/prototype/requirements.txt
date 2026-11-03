@@ -3,8 +3,8 @@
 strands-agents[openai]==1.63.0
 strands-agents-evals==1.8.0
 openai==3.42.1
-mcp==2.3.0
-httpx2==2.16.0
 httpx==0.28.1
 anthropic==0.125.0
 pyyaml==6.0.3
+duckdb==2.0.0  # spec 06: builds the semantic layer on the laptop; pinned because the imputation draw hashes DuckDB's JSON rendering
+psycopg[binary]==3.3.6

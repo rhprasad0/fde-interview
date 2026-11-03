@@ -1,7 +1,7 @@
-"""Spec 05: the prototype agent, its MCP clients, and the trace writer.
+"""Spec 06: the prototype agent, its Postgres tools, and the trace writer.
 
 build_agent(session_id) -> Agent; run_turn(agent, text, q_id=None, context=None) -> trace line dict.
-Reads challenge/.env itself; never prints or writes a host, id, secret, or token (see redact).
+Reads challenge/.env itself; never prints or writes a host, secret, or password (see redact).
 """
 
 import hashlib
@@ -12,22 +12,20 @@ import shutil
 import subprocess
 import threading
 import time
-from collections import deque
-from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 import anthropic
-import httpx
-import httpx2  # the transport mcp>=2 requires
+import psycopg
 import yaml
-from mcp.client.streamable_http import streamable_http_client
 from strands import Agent, tool
 from strands.hooks import AfterToolCallEvent, BeforeToolCallEvent
 from strands.models.anthropic import AnthropicModel
 from strands.models.model import CacheConfig
 from strands.telemetry import StrandsTelemetry
-from strands.tools.mcp import MCPClient
+from strands.tools import PythonAgentTool
+from strands.tools.executors import SequentialToolExecutor
 from strands.types.exceptions import ContextWindowOverflowException, MaxTokensReachedException, ModelThrottledException
 
 HERE = Path(__file__).resolve().parent
@@ -41,16 +39,10 @@ for _line in _envf.read_text().splitlines() if _envf.exists() else []:
     if _sep:
         ENV[_k.strip()] = _v.strip().strip("'\"")
 
-HOST = ENV["DATABRICKS_HOST"].rstrip("/")
-SPACE = ENV["DATABRICKS_GENIE_SPACE_ID"]
-SCOPE = "unity-catalog genie"  # must be a subset of the secret's scopes; "all-apis" is refused
 MODEL_ID = "claude-haiku-5-5"
 PRICE = {"inputTokens": 0.10, "outputTokens": 0.50, "cacheReadInputTokens": 0.01, "cacheWriteInputTokens": 0.125}  # $/MTok; cache read 0.1x, 5-min write 1.25x
-FN_PREFIX = "workforce__semantic__"
 
-_SECRETS = {HOST: "<workspace>", HOST.removeprefix("https://"): "<workspace>", SPACE: "<space>",
-            ENV["DATABRICKS_CLIENT_ID"]: "<client-id>", ENV["DATABRICKS_CLIENT_SECRET"]: "<secret>",
-            ENV.get("DATABRICKS_WAREHOUSE_ID", ""): "<warehouse>", ENV.get("ANTHROPIC_API_KEY", ""): "<key>"}
+_SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "ANTHROPIC_API_KEY")}
 
 
 def redact(s: str) -> str:
@@ -68,124 +60,134 @@ _git = lambda *a: subprocess.run(["git", "-C", str(REPO), *a], capture_output=Tr
 GIT_SHA = _git("rev-parse", "HEAD") or ENV.get("AGENT_GIT_SHA", "")  # a deployment package carries the sha in its env
 GIT_DIRTY = bool(_git("status", "--porcelain"))
 
-
-def _token() -> str:
-    r = httpx.post(f"{HOST}/oidc/v1/token", auth=(ENV["DATABRICKS_CLIENT_ID"], ENV["DATABRICKS_CLIENT_SECRET"]),
-                   data={"grant_type": "client_credentials", "scope": SCOPE}, timeout=30)
-    r.raise_for_status()
-    tok = r.json()["access_token"]
-    _SECRETS[tok] = "<token>"
-    return tok
-
-
-@asynccontextmanager
-async def _connect(url: str):
-    # streamable_http_client does not close a client it is handed, so the AsyncClient is entered here.
-    async with (
-        httpx2.AsyncClient(headers={"Authorization": f"Bearer {_token()}"}, timeout=60) as http,
-        streamable_http_client(url, http_client=http) as streams,
-    ):
-        yield streams
-
-
-# Genie message states that mean "keep polling"; anything else is terminal.
-_GENIE_PENDING = {"SUBMITTED", "FILTERING_CONTEXT", "FETCHING_METADATA", "ASKING_AI", "PENDING_WAREHOUSE", "EXECUTING_QUERY"}
 _MAX_ROWS = 500  # shortcut: rows past 500 are dropped and truncated=true, raise if a question needs more
 
 
-def _structured(res) -> dict:
-    text = "".join(c.get("text", "") for c in res["content"])
-    if res["status"] == "error":
-        raise RuntimeError(text[:500])
-    return res.get("structuredContent") or json.loads(text)
+def _cell(v):
+    """JSON-safe cells: psycopg gives Decimal for numeric and date objects for dates."""
+    return float(v) if isinstance(v, Decimal) else v.isoformat() if isinstance(v, date) else v
 
 
-def _cell(v: dict, type_name: str):
-    s = v.get("string_value")
-    if s is None:
-        return None
-    if type_name in ("LONG", "INT", "SHORT", "BYTE"):
-        return int(s)
-    if type_name in ("DOUBLE", "FLOAT", "DECIMAL"):
-        return float(s)
-    if type_name == "BOOLEAN":
-        return s.lower() == "true"
-    return s
+def _query(sql: str, params=(), user: str | None = None, password: str | None = None) -> dict:
+    """One statement on one autocommit connection: {columns, rows}. The default is the read-only agent role (its
+    statement_timeout, read-only transactions and search_path are set on the role); the harness passes the owner."""
+    with psycopg.connect(host=ENV["PGHOST"], port=ENV.get("PGPORT", "5432"), dbname=ENV["PGDATABASE"],
+                         user=user or ENV["AGENT_PGUSER"], password=password or ENV["AGENT_PGPASSWORD"],
+                         sslmode=ENV.get("PGSSLMODE", "require"), autocommit=True) as conn:
+        cur = conn.execute(sql, params or None)  # no params: a % in the SQL (LIKE 'RETIREMENT%') is not a placeholder
+        return {"columns": [d.name for d in cur.description], "rows": [[_cell(v) for v in r] for r in cur.fetchall()]}
 
 
-GENIE_PER_MINUTE, GENIE_WINDOW = 5, 60.0  # Conversation API free tier: best effort 5 questions/min per workspace
-_genie_lock, _genie_asks = threading.Lock(), deque()
+def _result(body: dict, tool_use_id: str | None = None) -> dict:
+    """A tool result in the shape _result_stats and run_turn read; rows past _MAX_ROWS dropped, truncated flagged."""
+    rows = body["rows"]
+    body.update(rows=rows[:_MAX_ROWS], row_count=len(rows), truncated=len(rows) > _MAX_ROWS)
+    return {**({"toolUseId": tool_use_id} if tool_use_id else {}), "status": "success",
+            "content": [{"text": redact(json.dumps(body, default=str))}]}
 
 
-def _genie_slot() -> None:
-    """Block until one more Genie question fits the per-workspace rate. Parallel eval runs share this, so a burst
-    queues here instead of coming back throttled, which the model would report as Not available."""
-    while True:
-        with _genie_lock:
-            now = time.monotonic()
-            while _genie_asks and now - _genie_asks[0] >= GENIE_WINDOW:
-                _genie_asks.popleft()
-            if len(_genie_asks) < GENIE_PER_MINUTE:
-                _genie_asks.append(now)
-                return
-            wait = GENIE_WINDOW - (now - _genie_asks[0])
-        time.sleep(wait)
+# The eight governed calculations: semantic.<name>(...) in Postgres, fixed SQL the model cannot edit. Descriptions are
+# the function and parameter COMMENTs from notebooks/03_semantic.sql, which the Databricks MCP server used to serve.
+_DATE = "Date as YYYY-MM-DD. "
+_COMP = "Component code, e.g. HSBC (TSA), HSBD (CBP), HSCB (FEMA), HSCA (CISA); NULL for all of DHS"
+_SERIES = "Four-digit occupational series, e.g. 1802 (TSA screeners), 1895 (CBP officers); NULL for all"
+FUNCTIONS = {  # name: (description, {param: description}); every param is a string or null (see _null_args)
+    "headcount": (
+        "Question family 1: how many people a component or occupation has, and in which states. One row per duty "
+        "station state, largest first. headcount_location_imputed rows have a synthetic state drawn from USAJOBS "
+        "postings (where DHS hires, not where staff sit); say so when it is a large share, and quote "
+        "imputation_quality(). source_file is the OPM snapshot file used",
+        {"as_of_month": _DATE + "Snapshot month, 2025-09-01 to 2026-08-01 (latest); any day in the month works",
+         "component": _COMP, "series": _SERIES}),
+    "separation_rate": (
+        "Question family 2: attrition over the trailing twelve months (effective months as_of_month - 11 to "
+        "as_of_month), with and without the 2025 deferred resignation program (DRP) wave. rate = separations / "
+        "mean(headcount_start, headcount_end); headcount_start is the snapshot at as_of_month - 11. Separations "
+        "counted by effective_month across all monthly files (files_used); about 0.8% are detectable restatements. "
+        "Right-censored: late reports keep arriving, so recent counts will grow",
+        {"as_of_month": _DATE + "Last month of the trailing twelve; only 2026-08-01 has a start snapshot (earlier "
+                                "months return NULL rates)",
+         "component": _COMP, "series": _SERIES}),
+    "attrition_ranking": (
+        "Question family 3: which component x series cells are losing people fastest. Same columns and rules as "
+        "separation_rate, one row per cell, ranked by rate (highest first). Compare rate with rate_excl_drp: the "
+        "2025 DRP wave dominates some cells. Right-censored: recent counts will grow",
+        {"as_of_month": _DATE + "Last month of the trailing twelve; use 2026-08-01 (the only month with a start snapshot)",
+         "min_headcount": "Smallest cell to rank, by headcount at as_of_month, e.g. 100; small cells have noisy rates",
+         "top_n": "How many cells to return, e.g. 10"}),
+    "length_of_service_profile": (
+        "Question family 4: how tenure-heavy a cell is, and whether a retirement cliff is forming. Headcount by "
+        "years of federal service in buckets <1, 1-3, 3-5, 5-10, 10-20, 20+ (lower bound inclusive), with each "
+        "bucket share of the cell. Published OPM values, not imputed. source_file is the snapshot used",
+        {"as_of_month": _DATE + "Snapshot month, 2025-09-01 to 2026-08-01 (latest)", "component": _COMP, "series": _SERIES}),
+    "open_postings": (
+        "Question family 5: what USAJOBS postings are advertised against a cell on a date. Open means open_date <= "
+        "as_of_date AND close_date >= as_of_date; for a past date that is an upper bound, since postings filled or "
+        "cancelled before their close date are invisible. total_openings is NULL when the posting says Many or Few "
+        "(total_openings_raw has the text). Closing soonest first",
+        {"as_of_date": _DATE + "Date the postings were open; postings cover 2025-09-01 to 2026-10-31",
+         "component": _COMP, "series": _SERIES + ". Matches any series a posting lists"}),
+    "posting_coverage": (
+        "Question family 6: is advertised hiring aimed at where people are leaving. separations_ttm counts effective "
+        "months (month of as_of_date) - 11 to that month across all OPM files (files_used); OPM data ends 2026-08, "
+        "so later dates see fewer months. open_postings is an upper bound (open_date <= date AND close_date >= "
+        "date). openings_known sums stated openings; postings_many_or_few say Many or Few and are not in the sum. "
+        "coverage_ratio = openings_known / separations_ttm. Right-censored",
+        {"as_of_date": _DATE + "Date to count open postings; separations are the twelve effective months ending in its month",
+         "component": _COMP, "series": _SERIES}),
+    "plan_variance": (
+        "Question family 7: how a quarter of hiring landed against the staffing plan, and why. The plan is SYNTHETIC "
+        "(is_synthetic, generation_rule say how it was made); say so. actual_accessions counts accessions effective "
+        "in the quarter in the planned cells, across all OPM files (files_used). variance = actual - planned; "
+        "variance_pct = variance / planned. TSA 1802 and CBP 1895 FY2026 Q1 to Q3 are stress cells. Right-censored: "
+        "later files add accessions",
+        {"fiscal_quarter": "Fiscal quarter as FY2026Q1 (Oct to Dec 2025) through FY2027Q4; accessions exist through "
+                           "FY2026Q4 (July and August only)",
+         "component": "Component code, e.g. HSBD (CBP); NULL for every planned cell", "series": _SERIES}),
+    "imputation_quality": (
+        "Question family 8: how much to trust a location answer that rests on imputed rows. Masking test: FEMA and "
+        "CISA August 2026 rows with published location were re-imputed as if redacted; state_match_share is how "
+        "often the drawn state equals the true one, state_overlap how similar the two state distributions are (1 = "
+        "identical). It flatters the method for TSA and CBP, whose staff spread over hundreds of airports and ports. "
+        "Quote it with any imputed-location answer",
+        {}),
+}
 
 
-def _genie(question: str) -> dict:
-    """Query-then-poll on the Genie space; a fresh MCP session per call (ids are Genie-side, not session-side)."""
-    # Wait for a rate slot before the session opens and the poll clock starts: waiting inside the 120 s budget left
-    # queued questions no time to poll (5 calls ended ASKING_AI in the 2026-11-02 smoke).
-    # shortcut: the wait still counts in the tool's duration and the turn's latency; subtract it to compare worker counts
-    _genie_slot()
-    with MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/genie/{SPACE}")) as c:
-        names = [t.tool_name for t in c.list_tools_sync()]
-        ask = next(n for n in names if n.startswith("query_space_"))
-        poll = next(n for n in names if n.startswith("poll_response_"))
-        wait = timedelta(seconds=120)
-        deadline = time.monotonic() + 120
-        r = _structured(c.call_tool_sync("ask", ask, {"query": question}, read_timeout_seconds=wait))
-        while r["status"] in _GENIE_PENDING and time.monotonic() < deadline:
-            time.sleep(2)
-            ids = {"conversation_id": r["conversationId"], "message_id": r["messageId"]}
-            r = _structured(c.call_tool_sync("poll", poll, ids, read_timeout_seconds=wait))
-    content = r.get("content") or {}
-    if r["status"] != "COMPLETED":
-        raise RuntimeError(f"one-off query ended {r['status']}: {content.get('textAttachments')}")
-    qa = (content.get("queryAttachments") or [{}])[0]
-    sr = qa.get("statement_response") or {}
-    manifest = sr.get("manifest") or {}
-    cols = (manifest.get("schema") or {}).get("columns") or []
-    data = (sr.get("result") or {}).get("data_array") or []
-    total = manifest.get("total_row_count", len(data))
-    return {
-        "sql": qa.get("query"), "statement_id": sr.get("statement_id"), "message_id": r.get("messageId"),
-        "columns": [c["name"] for c in cols],
-        "rows": [[_cell(v, c["type_name"]) for v, c in zip(row["values"], cols)] for row in data[:_MAX_ROWS]],
-        "row_count": total, "truncated": bool(manifest.get("truncated")) or total > min(len(data), _MAX_ROWS),
-        "text": content.get("textAttachments") or [],
-    }
+def _function_tool(name: str) -> PythonAgentTool:
+    desc, params = FUNCTIONS[name]
+    sql = f"SELECT * FROM semantic.{name}({', '.join(f'{p} => %s' for p in params)})"  # named notation: the SQL's order
+
+    def run(tool_use, **_):
+        try:
+            return _result(_query(sql, [tool_use["input"].get(p) for p in params]), tool_use["toolUseId"])
+        except Exception as e:  # noqa: BLE001  (the model answers from another calculation or says it is unavailable)
+            return {"toolUseId": tool_use["toolUseId"], "status": "error", "content": [{"text": redact(f"{type(e).__name__}: {e}")}]}
+
+    schema = {"type": "object", "required": list(params),
+              "properties": {p: {"type": ["string", "null"], "description": d} for p, d in params.items()}}
+    return PythonAgentTool(name, {"name": name, "description": desc, "inputSchema": {"json": schema}}, run)
 
 
 @tool
-def one_off_query(question: str) -> dict:
-    """A one-off query for a question the review's standard calculations do not cover.
-
-    Pass the whole question in plain English with component and series codes, dates, and filters;
-    each call is standalone. Returns the generated SQL, statement_id, columns, rows (numbers typed),
-    row_count, truncated, and any text reply. Slow: 20 to 60 seconds.
+def one_off_query(sql: str) -> dict:
+    """A one-off query for a question the review's standard calculations do not cover: one read-only SELECT you
+    write, Postgres dialect, against the views in schema semantic (the data fields skill lists them). Filter on the
+    period and the population in full. Returns the SQL as sent, columns, rows (at most 500), row_count, truncated.
 
     Args:
-        question: The full question, self-contained.
+        sql: One SELECT statement, no trailing semicolon.
     """
     try:
-        return {"status": "success", "content": [{"text": redact(json.dumps(_genie(question)))}]}
-    except Exception as e:  # noqa: BLE001  (the model answers from a function or says it is unavailable)
+        # The wrap enforces one statement and the row cap; the read-only role and its timeout are the real fence.
+        body = _query(f"SELECT * FROM ({sql.strip().rstrip(';')}) q LIMIT {_MAX_ROWS + 1}")
+        return _result({"sql": sql, "statement_id": hashlib.sha256(sql.encode()).hexdigest()[:16], **body})
+    except Exception as e:  # noqa: BLE001  (the model answers from a calculation or says it is unavailable)
         return {"status": "error", "content": [{"text": redact(f"one-off query failed: {type(e).__name__}: {e}")}]}
 
 
 class _RedactedFile:
-    """Span sink: the inner Genie client's spans carry the space id in tool names."""
+    """Span sink: tool results and errors can carry the host or a password."""
 
     def __init__(self, path: Path):
         self.f = open(path, "a")  # noqa: SIM115  (lives for the process)
@@ -213,9 +215,9 @@ def build_agent(session_id: str, run_index: int = 0, messages: list | None = Non
     model = AnthropicModel(client_args={"api_key": ENV["ANTHROPIC_API_KEY"]}, model_id=MODEL_ID, max_tokens=16000,
                            cache_config=CacheConfig(strategy="anthropic"),
                            params={"output_config": {"effort": "high"}})  # Haiku 5.5 defaults to medium
-    functions = MCPClient(lambda: _connect(f"{HOST}/api/2.0/mcp/functions/workforce/semantic"))
-    agent = Agent(model=model, tools=[functions, one_off_query], system_prompt=SYSTEM, callback_handler=callback_handler,
-                  messages=messages)
+    # Sequential: one connection per live agent (16 eval workers = 16), within a db.t4g.micro's limit.
+    agent = Agent(model=model, tools=[*map(_function_tool, FUNCTIONS), one_off_query], tool_executor=SequentialToolExecutor(),
+                  system_prompt=SYSTEM, callback_handler=callback_handler, messages=messages)
     durations = {}
     agent.add_hook(lambda e: durations.__setitem__(e.tool_use["toolUseId"], e.duration), AfterToolCallEvent)
     agent.add_hook(_null_args, BeforeToolCallEvent)
@@ -225,9 +227,9 @@ def build_agent(session_id: str, run_index: int = 0, messages: list | None = Non
 
 
 def _null_args(event) -> None:
-    """The functions' MCP schema types every argument as a string, so the model writes "null" for "all of DHS";
+    """The calculations' schema types every argument as a string, so the model writes "null" for "all of DHS";
     the string matches nothing and returns zero rows. Send a real null, which the functions read as "all"."""
-    if event.tool_use["name"].startswith(FN_PREFIX):
+    if event.tool_use["name"] in FUNCTIONS:
         args = event.tool_use.get("input") or {}
         for k, v in args.items():
             if isinstance(v, str) and v.strip().lower() in ("null", "none", ""):
@@ -235,7 +237,7 @@ def _null_args(event) -> None:
 
 
 def _norm(name: str) -> str:
-    name = name.removeprefix(FN_PREFIX)
+    # "genie" is the trace label of the exploratory tool, kept from the Genie era so history and dashboards compare.
     return "genie" if name in ("one_off_query", "one-off query") else name
 
 

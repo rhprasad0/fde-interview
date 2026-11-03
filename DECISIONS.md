@@ -638,3 +638,51 @@ functions, Agent Bricks.
   A's questions join the set as unseen rows, since twenty tuned-against questions cannot rule out
   overfitting.
 
+
+## 2026-11-02  Platform: RDS Postgres replaces Databricks
+
+- **Context:** the Databricks trial's $400 of credits were gone after one afternoon of hill
+  climbing. Every Unity Catalog function call through the managed MCP functions server ran on
+  serverless general compute at $0.75/DBU, about $0.07 a call, and the climb made about 4,800
+  calls; C11 alone fans out thirty `plan_variance` calls a run. The card on file was now being
+  charged, against a $50 budget, with the climb due to continue. Wiki:
+  `wiki/analyses/databricks-spend-during-the-climb.md`.
+- **Chosen:** tear Databricks down (Genie space, jobs, notebooks, `terraform destroy` of the
+  catalog, warehouse, service principal and grants; the profile and every `DATABRICKS_*` key
+  removed from the laptop; the account shell kept) and move the data layer to one RDS Postgres
+  instance (db.t4g.micro, us-west-2, about $14 a month, Terraform in `challenge/infra/`). The
+  build runs in DuckDB on the laptop from the files already on disk (`challenge/sql/*.duckdb.sql`,
+  `scripts/load_postgres.py`) and ships eight tables; Postgres holds the eight semantic views and
+  the eight calculations as SQL functions (`challenge/sql/03_semantic.pg.sql`) behind a read-only
+  `agent` role. The imputation draw changed from `xxhash64` to `md5` (same design, different
+  bits), so imputed rows moved and C09 and C10 truth were re-pinned. Spec:
+  `challenge/specs/06-postgres-and-teardown.md`.
+- **Rejected:** staying on Databricks with the function calls routed through the SQL warehouse
+  (cheap, but every further run would be real money on a trial already past its credits, and the
+  per-call serverless billing had already cost the budget six times over); re-pulling the source
+  data (OPM republishes versions and the September 2026 file lands 2026-11-04, which would move
+  the truth); a pure-Postgres build (three 57-column draw statements on a 1 GB box).
+- **Revisit:** if the Firm's panel wants the Databricks story, the notebooks, specs 01 to 05, the
+  wiki and the journal are the record of what was built and measured there; the workspace shell
+  can be refilled from `pull_sources.py` and the notebooks in an afternoon.
+
+## 2026-11-02  Exploratory tool: fenced SQL over the semantic views, not Genie
+
+- **Context:** Genie was the agent's exploratory path and went with Databricks. Twelve of the
+  twenty eval rows and most of Tester A's questions need an exploratory path, and the earlier
+  decision counted "the SQL tool is still refused" as a kept property, so the replacement had to be
+  decided, not slipped in.
+- **Chosen:** `one_off_query(sql)`: the model writes one Postgres SELECT against the views in
+  schema `semantic`, run as the `agent` role (USAGE on `semantic` only, SELECT on its views,
+  EXECUTE on its functions, `default_transaction_read_only`, a 60 s `statement_timeout`), wrapped
+  in a subquery with a 500-row cap, the SQL echoed with a hash as its statement id and shown
+  verbatim under the Exploratory label. The eight calculations stay fixed tools the model cannot
+  edit; every Verified number still comes from them, and a Verified row fails if the exploratory
+  tool ran. This is the split the wiki's research endorses
+  (`wiki/analyses/freeform-sql-vs-governed-tools.md`): governed metrics plus bounded exploration.
+  The earlier refusal was of open SQL over the raw tables; the fence here is the database's grants.
+- **Rejected:** a query-spec tool with a compiler (the strongest bound, a day of work before any
+  climb); a verified-query library only (drops the twelve exploratory rows, nothing to climb);
+  text-to-SQL by a second model, re-creating Genie (no benefit on an eight-view schema).
+- **Revisit:** if the exploratory line stalls below the Genie-era 83% on the same questions, the
+  query-spec tool is the next shape; if the panel pushes on governance, show the role's grants.

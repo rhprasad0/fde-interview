@@ -377,3 +377,49 @@ of them (the wide row in C06, percent rates in C17), and no person has confirmed
 space experiment's runs are labelled blind, before the grader is run on them.
 Ryan confirmed all 22 labels on 2026-11-02 (a blanket confirmation from the summary list, recorded
 as such). The remaining gap is the in-sample one: label the next experiment's runs blind.
+
+## Postgres era, iteration 0: prompt `7a3ae5a9` on RDS (2026-11-02 night)
+
+**What changed, and why.** The Databricks trial's credits ran out during the climb above: every
+function call over the managed MCP functions server billed as serverless compute, about $0.07 a
+call, and the climb made about 4,800 of them. Databricks was torn down the same evening and the
+data layer rebuilt on one RDS Postgres db.t4g.micro (spec 06). The eight calculations are now
+Postgres functions called by fixed-SQL tools; the one-off query is `one_off_query(sql)`, one SELECT
+the model writes against the semantic views as a read-only role (60 s timeout, 500-row cap, SQL
+echoed with a hash as its statement id). The trace label stays `genie`, so every table above still
+compares. The prompt changed only where it described the tool: `7a3ae5a9` against iteration 4's
+`b06cf68a`.
+
+**The draw moved.** The imputation now hashes with md5 instead of xxhash64 (same design, different
+bits). `eval_harness.py truth --check` on Postgres reproduced every row except C09 and C10, which
+are the two that rest on imputed pay and location, so the port of the functions, the truth SQL and
+the integer-division casts is confirmed by the other sixteen. C09 and C10 were re-pinned (C09:
+74,762.38 / 104,655.83 to 74,752.14 / 104,510.82; C10's top five cities keep their order, counts
+within 40). The 1,720 earlier rows for C09 and C10 were scored against the old truth; they are not
+rescored. `set_version` stays eval-v1. `imputation_quality` shares moved from 0.1174 / 0.6649 and
+0.2817 / 0.7695 to 0.1148 / 0.6631 and 0.2797 / 0.7751. TSA 1802's top imputed state is still
+Alaska (3,028). The determinism hash of August 2026 rows on Postgres is `2f120c0c…`; two DuckDB
+builds gave identical tables.
+
+**Smoke, two experiments of one run each.**
+
+| Experiment | Verified | Exploratory | Not available | Errors | Median latency | Notes |
+|---|---|---|---|---|---|---|
+| `20261103T025340Z` | 4/6 | 9/12 | 2/2 | 4 | 48 s | every error a 30 s `statement_timeout`: one cell's rows were scattered over 23k blocks |
+| `20261103T030901Z` | **6/6** | **10/12** | **2/2** | **0** | **10 s** | after indexes, `CLUSTER` on the cell index, prefetch, timeout 60 s |
+
+The first experiment's errors were physical, not the agent: DuckDB shipped rows in its own order,
+so a cell-month's 27,650 rows spanned 23,226 random reads on the micro's disk (11 s alone, past
+30 s under sixteen workers). Indexes on (month, component, series), `CLUSTER` on the cell index,
+`effective_io_concurrency = 32`, and the loader now shipping sorted bring a cell call to about a
+second alone and sixteen in parallel to four seconds; whole-DHS calls (`attrition_ranking`, all-DHS
+`headcount`) still take 9 to 20 s alone, hence 60 s. The second experiment's two misses are the
+rows the climb already knew: C13 (narrative faithfulness, direction right, the judge faulted the
+framing) and C18 (an approximation of 8,005 against truth 11,387 ±10%; the agent's own convention).
+Cost of the two experiments: $0.13 of model calls; database cost is a flat $14 a month.
+
+**Where the climb resumes (2026-11-03).** Iteration 0 on Postgres is at or above the Genie-era
+plateau on one run each (Verified 100%, exploratory 83%); two pooled experiments of five runs are
+the first real measurement. Latency fell fourfold with Genie gone, so an experiment now takes about
+four minutes. The C11 fan-out (thirty `plan_variance` calls a run) no longer costs anything per call
+and no longer needs the batches-of-twelve rule; both are candidates for the first iteration.

@@ -1,10 +1,10 @@
 {
  "C01": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 0.3158
  },
  "C02": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -49,7 +49,7 @@
   ]
  },
  "C03": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "facts": {
    "FEMA hiring variance against plan in FY2026": {
     "to date, Q1 to Q4 with accessions through August 2026": -2252,
@@ -58,15 +58,15 @@
   }
  },
  "C04": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 158.6
  },
  "C05": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 0.12
  },
  "C06": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "TOTAL",
@@ -79,11 +79,11 @@
   ]
  },
  "C07": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 94
  },
  "C08": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -136,75 +136,75 @@
   ]
  },
  "C09": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "1802",
-    "value": 74762.38
+    "value": 74752.14
    },
    {
     "key": "1895",
-    "value": 104655.83
+    "value": 104510.82
    }
   ]
  },
  "C10": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "WASHINGTON",
-    "value": 1920,
+    "value": 1956,
     "rank": 1
    },
    {
     "key": "STERLING",
-    "value": 751,
+    "value": 790,
     "rank": 2
    },
    {
     "key": "ASHBURN",
-    "value": 678,
+    "value": 645,
     "rank": 3
    },
    {
     "key": "EL PASO",
-    "value": 561,
+    "value": 540,
     "rank": 4
    },
    {
     "key": "DETROIT",
-    "value": 440,
+    "value": 436,
     "rank": 5
    },
    {
-    "key": "NEW ORLEANS",
-    "value": 375,
+    "key": "HOUSTON",
+    "value": 392,
     "rank": 6
    },
    {
-    "key": "HOUSTON",
-    "value": 368,
+    "key": "NEW ORLEANS",
+    "value": 384,
     "rank": 7
    },
    {
     "key": "BLAINE",
-    "value": 362,
+    "value": 377,
     "rank": 8
    },
    {
-    "key": "MIAMI",
-    "value": 338,
+    "key": "DERBY LINE",
+    "value": 346,
     "rank": 9
    },
    {
-    "key": "DERBY LINE",
-    "value": 321,
+    "key": "MIAMI",
+    "value": 345,
     "rank": 10
    }
   ]
  },
  "C11": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "HSCB",
@@ -257,17 +257,17 @@
   ]
  },
  "C12": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 889
  },
  "C13": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "facts": {
    "Do CBP Officer postings at minimum grade 12 or above stay open longer, on average, than those at grade 11 or below (yes or no)": "no"
   }
  },
  "C14": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "2025-09",
@@ -320,11 +320,11 @@
   ]
  },
  "C15": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 170
  },
  "C16": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "HSAA",
@@ -354,7 +354,7 @@
   ]
  },
  "C17": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": [
    {
     "key": "5",
@@ -391,7 +391,7 @@
   ]
  },
  "C18": {
-  "truth_computed_at": "2026-11-02T21:44:48+00:00",
+  "truth_computed_at": "2026-11-03T02:51:15+00:00",
   "truth_value": 11387
  }
 }

@@ -1,5 +1,7 @@
 # Spec 02: one-time load of OPM and USAJOBS into bronze and silver
 
+> Superseded 2026-11-02 by [spec 06](06-postgres-and-teardown.md): Databricks torn down, semantic layer on Postgres. Kept as the record of what was built.
+
 **Goal.** Twelve months of OPM Federal Workforce Data and the DHS slice of USAJOBS land once in
 the `landing` volume from a laptop, and a SQL notebook run once as a job turns them into bronze
 tables (whole government, as received) and silver tables (DHS only, typed). After this spec the

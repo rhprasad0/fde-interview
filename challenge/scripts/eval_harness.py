@@ -1,33 +1,25 @@
-"""Spec 05 step 4, ported to Strands Evals by spec 04 (2026-11-02): the eval harness, local and direct-MCP.
+"""Spec 05 step 4, ported to Strands Evals by spec 04 (2026-11-02); on Postgres since spec 06: the eval harness.
 
-  eval_harness.py [--stub] [--runs 5] [--workers 16] [--delta [--dry-run]]   run the questions file
-  eval_harness.py load-session <trace.jsonl> [--delta [--dry-run]]           tester session as run_index = 0 rows
-  eval_harness.py verify-genie [experiment_id]   later pass: Genie statement ids against system.query.history
+  eval_harness.py [--stub] [--runs 5] [--workers 16]   run the questions file
   eval_harness.py truth [--check]   run every truth_sql, write challenge/eval/truth.json (--check: must reproduce it)
   eval_harness.py pool <exp,exp,...> [--vs <exp,exp,...>]   pooled pass^1 per line and per-row passes, for hill climbing
 
-Every row is appended to challenge/eval/experiments.jsonl, the record of results. --delta also writes
-workforce.eval.runs and eval.judge as Ryan's user through the Statement Execution API (deferred 2026-11-02:
-the tables need 04_eval.sql), and uploads a session trace; --dry-run prints those statements instead.
-Each question is a Strands Evals Case, each scorer an Evaluator; one Experiment is one run. pass^3 and
-failure_category are computed here, in scorer-table order, because Strands gathers evaluators concurrently.
+Every row is appended to challenge/eval/experiments.jsonl, the record of results. Truth SQL runs as the database
+owner over the synthetic and silver tables, never the agent's semantic layer. Each question is a Strands Evals Case,
+each scorer an Evaluator; one Experiment is one run. pass^3 and failure_category are computed here, in scorer-table
+order, because Strands gathers evaluators concurrently.
 """
 
 import argparse
 import asyncio
-import hashlib
 import json
-import random
 import re
-import subprocess
 import sys
-import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
-import httpx
 import yaml
 from strands.models.openai_responses import OpenAIResponsesModel  # Luna refuses function tools on chat completions
 from strands_evals import Case, Experiment
@@ -46,9 +38,8 @@ ASSUMPTION_PROMPT = A.REPO / "challenge/eval/judge-assumption-prompt.md"
 JUDGE_MODEL = "gpt-6-luna"  # a different vendor from the Claude agent; also the agent's fallback (judge_same_family)
 EXPERIMENTS = A.REPO / "challenge/eval/experiments.jsonl"  # every row written, for hill-climbing analysis
 EXPERIMENT_ID = None
-GENIE_VERIFIED = A.REPO / "challenge/eval/genie-verified.jsonl"  # one line per verify-genie pass
-STUB, DRY, DELTA = False, False, False
-WORKERS = 16  # agent runs and scoring in parallel; Genie questions are rate-limited in agent.py
+STUB = False
+WORKERS = 16  # agent runs and scoring in parallel; each live agent holds at most one database connection
 _agents = {}
 
 
@@ -145,8 +136,9 @@ def labels_present(q, row):
 
 
 def tool_use(q, row):
+    """The expected calculations ran, and no exploratory query ran on a Verified row."""
     names = {c["name"] for c in row["tool_calls"]}
-    return set(q.get("expected_tools") or []) <= names and not any("sql" in n for n in names)
+    return set(q.get("expected_tools") or []) <= names and "genie" not in names
 
 
 def provenance(q, row):
@@ -155,8 +147,7 @@ def provenance(q, row):
 
 
 def genie_sql_stored(q, row):
-    """The SQL and its id were captured. That the statement really ran is checked later by verify-genie, because
-    system.query.history lags about 30 minutes (2026-11-02: 0 of 21 found at scoring time, 26 of 26 an hour on)."""
+    """The SQL and its id were captured; the id is a hash of the statement text, so the row names the exact query."""
     return bool(row["genie_sql"] and row["genie_statement_id"])
 
 
@@ -298,11 +289,6 @@ def _evaluators():
 # ---- rows ----
 
 TOOL_KEYS = ("name", "params", "result_rows", "imputed_rows", "synthetic_rows", "duration_ms", "result_values")
-STRUCT = ("ARRAY<STRUCT<name STRING, params STRING, result_rows BIGINT, imputed_rows BIGINT, synthetic_rows BIGINT, "
-          "duration_ms BIGINT, result_values STRING>>")
-TYPES = {"run_index": "INT", "run_at": "TIMESTAMP", "latency_ms": "BIGINT", "cost_usd": "DOUBLE", "input_tokens": "BIGINT",
-         "output_tokens": "BIGINT", "tool_call_count": "BIGINT", "judge_same_family": "BOOLEAN", "pass": "BOOLEAN",
-         **{f.__name__: "BOOLEAN" for f, _ in SCORERS}}
 COLS = ["set_version", "id", "run_index", "session_id", "run_at", "agent_git_sha", "prompt_hash", "model_id", "provider_served",
         "question_text", "turn_1_answer_text", "answer_text", "answer_value", "cited_tools", "tool_calls", "genie_sql",
         "genie_statement_id", "label", "tool_call_count", "judge_same_family", "latency_ms", "cost_usd", "input_tokens",
@@ -370,62 +356,16 @@ def summary(rows, qs):
         print(f"{tier}: pass^1 {sum(runs)}/{len(runs)}  pass^{k} {sum(all(ps) for ps in per_q.values())}/{len(per_q)} questions")
 
 
-def _sql(statement, params):
-    if DRY:
-        print(A.redact(statement))
-        print("  params:", A.redact(json.dumps(params))[:2000])
-        return None
-    tok = json.loads(subprocess.run(["databricks", "auth", "token", "-p", "workforce"], capture_output=True, text=True,
-                                    check=True).stdout)["access_token"]
-    h = {"Authorization": f"Bearer {tok}"}
-    r = httpx.post(f"{A.HOST}/api/2.0/sql/statements", headers=h, timeout=70, json={
-        "warehouse_id": A.ENV["DATABRICKS_WAREHOUSE_ID"], "statement": statement, "parameters": params, "wait_timeout": "50s"})
-    r.raise_for_status()
-    body = r.json()
-    while body["status"]["state"] in ("PENDING", "RUNNING"):
-        time.sleep(5)
-        body = httpx.get(f"{A.HOST}/api/2.0/sql/statements/{body['statement_id']}", headers=h, timeout=30).json()
-    if body["status"]["state"] != "SUCCEEDED":
-        raise RuntimeError(A.redact(json.dumps(body["status"])[:1000]))
-    return body
-
-
-def _param(name, v, typ="STRING"):
-    p = {"name": name, "type": typ}
-    if v is not None:
-        p["value"] = str(v).lower() if isinstance(v, bool) else str(v)
-    return p
+def _sql(statement, params=()):
+    """(columns, rows) as the database owner: truth and the demo snapshot read the synthetic and silver tables."""
+    r = A._query(statement, params, user=A.ENV["PGUSER"], password=A.ENV["PGPASSWORD"])
+    return r["columns"], r["rows"]
 
 
 def write_row(row):
-    if not (STUB or DRY):  # local copy first, so a failed insert loses nothing
+    if not STUB:
         with EXPERIMENTS.open("a") as f:
             f.write(json.dumps({"experiment_id": EXPERIMENT_ID, **row}, default=str) + "\n")
-    if not DELTA:
-        return
-    exprs, params = [], []
-    for c in COLS:
-        v = row.get(c)
-        if c == "tool_calls":
-            exprs.append(f"from_json(:{c}, '{STRUCT}')")
-            v = json.dumps([{**t, "params": json.dumps(t["params"]), "result_values": json.dumps(t.get("result_values"))} for t in v])
-        elif c == "cited_tools":
-            exprs.append(f"from_json(:{c}, 'ARRAY<STRING>')")
-            v = json.dumps(v)
-        elif c == "answer_value":
-            exprs.append(f":{c}")  # JSON text: a number or a key-value list
-            v = None if v is None else json.dumps(v)
-        else:
-            exprs.append(f":{c}")
-        params.append(_param(c, v, TYPES.get(c, "STRING")))
-    _sql(f"INSERT INTO workforce.eval.runs (`{'`, `'.join(COLS)}`) VALUES ({', '.join(exprs)})", params)
-    if "_verdict" in row:
-        prompt = A.REPO / "challenge/eval" / row.get("_judge_prompt", JUDGE_PROMPT.name)
-        jp = hashlib.sha256(prompt.read_bytes()).hexdigest()[:12] if prompt.exists() else None
-        vals = {"set_version": row["set_version"], "id": row["id"], "run_index": row["run_index"], "judge_model": JUDGE_MODEL,
-                "judge_prompt_version": jp, "verdict": row["_verdict"], "rationale": row["_rationale"]}
-        _sql(f"INSERT INTO workforce.eval.judge ({', '.join(vals)}) VALUES ({', '.join(':' + k for k in vals)})",
-             [_param(k, v, "INT" if k == "run_index" else "STRING") for k, v in vals.items()])
 
 
 def _questions():
@@ -441,10 +381,9 @@ def _questions():
     return y, qs
 
 
-def _shape(body, behavior):
+def _shape(result, behavior):
     """A truth result as a scorer value: one cell for a number, key/value(/rank) rows for a list."""
-    cols = [c["name"] for c in body["manifest"]["schema"]["columns"]]
-    data = (body.get("result") or {}).get("data_array") or []
+    cols, data = result
     num = lambda v: None if v is None else (int(v) if re.fullmatch(r"-?\d+", str(v)) else float(v))  # noqa: E731
     if behavior == "list":
         return [{"key": r[cols.index("key")], "value": num(r[cols.index("value")]),
@@ -467,7 +406,7 @@ def truth(check=False):
         for name, sql, behavior in jobs:
             if re.search(r"semantic", sql, re.I):
                 raise SystemExit(f"{q['id']}: truth SQL touches the semantic layer; truth must be independent of the agent")
-            v = _shape(_sql(sql, []), behavior)
+            v = _shape(_sql(sql), behavior)
             t = out.setdefault(q["id"], {"truth_computed_at": now})
             if name is None:
                 t["truth_value"] = v
@@ -504,23 +443,12 @@ def run(set_version, runs=5):
         runs = 1
     print(f"{len(qs)} questions x {runs} runs on {WORKERS} workers, prompt {A.PROMPT_HASH[:12]}, experiment {EXPERIMENT_ID}")
 
-    def build(sid, r):
-        """The functions MCP server can fail `initialize` (-32603) under a burst of connects. That happens inside
-        Agent(), before the question is sent, so retrying is a harness retry, not a second try at an answer."""
-        for attempt in range(4):
-            try:
-                return A.build_agent(sid, run_index=r), attempt
-            except ValueError as e:
-                if "Failed to load tool" not in str(e) or attempt == 3:
-                    raise
-                time.sleep(2 ** attempt + random.random() * 2)
-
     def one(job):  # one fresh agent per (question, run); nothing cached across runs
         q, r = job
-        sid, retries = f"{q['id']}-r{r}-{uuid.uuid4().hex[:6]}", 0
+        sid = f"{q['id']}-r{r}-{uuid.uuid4().hex[:6]}"
         try:
             if not STUB:
-                _agents[sid], retries = build(sid, r)
+                _agents[sid] = A.build_agent(sid, run_index=r)
             lines = _turns(q, sid)
         except Exception as e:  # noqa: BLE001  (a crashed turn is an error row, never a retry)
             lines = [{"tool_calls": [], "error": f"{type(e).__name__}: {A.redact(str(e))[:300]}", "session_id": sid}]
@@ -529,9 +457,9 @@ def run(set_version, runs=5):
             try:
                 if agent is not None:
                     agent.cleanup()
-            except Exception:  # noqa: BLE001  (the MCP session already closed; the answer is in hand, keep it)
+            except Exception:  # noqa: BLE001  (the answer is in hand, keep it)
                 pass
-        return q, {**build_row(q, r, lines), "startup_retries": retries}
+        return q, build_row(q, r, lines)
 
     jobs = [(q, r) for r in range(1, runs + 1) for q in qs.values()]
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -541,51 +469,6 @@ def run(set_version, runs=5):
         print(f"{row['id']} run {row['run_index']}: pass={row['pass']} failure={row['failure_category']} {row['latency_ms']}ms")
         write_row(row)
     summary(every, qs)
-
-
-def load_session(trace_path):
-    global EXPERIMENT_ID
-    _, qs = _questions()
-    path, prev, n, seen, pairs = Path(trace_path), None, 0, [], []
-    EXPERIMENT_ID = f"session-{path.parent.name}"
-    for text in path.read_text().splitlines():
-        line = json.loads(text)
-        q = qs.get(line["q_id"])
-        if q:
-            lines = [prev, line] if line.get("supplied_context") and prev else [line]
-            # Run 0 is the whole session: a later answer may cite a call an earlier turn made (A05 cites A03's).
-            earlier = {"tool_calls": [c for x in seen if x is not prev or len(lines) == 1 for c in x["tool_calls"]], "error": None}
-            pairs.append((q, build_row(q, 0, [earlier, *lines])))
-        seen.append(line)
-        prev = line
-    for row in score(pairs):
-        write_row(row)
-        n += 1
-    print(f"{n} session rows from {path.name}")
-    if not DELTA:
-        return
-    url = f"{A.HOST}/api/2.0/fs/files/Volumes/workforce/bronze/landing/eval/{path.name}?overwrite=true"
-    if DRY:
-        print("upload:", A.redact(url))
-        return
-    tok = json.loads(subprocess.run(["databricks", "auth", "token", "-p", "workforce"], capture_output=True, text=True,
-                                    check=True).stdout)["access_token"]
-    httpx.put(url, headers={"Authorization": f"Bearer {tok}"}, content=path.read_bytes(), timeout=60).raise_for_status()
-
-
-def verify_genie(experiment_id=None):
-    """Confirm each Genie statement id of one experiment (default: the latest) appears in system.query.history."""
-    rows = [json.loads(x) for x in EXPERIMENTS.read_text().splitlines()]
-    exp = experiment_id or rows[-1]["experiment_id"]
-    ids = sorted({r["genie_statement_id"] for r in rows if r["experiment_id"] == exp and r.get("genie_statement_id")})
-    res = _sql("SELECT collect_set(statement_id) FROM system.query.history WHERE array_contains(split(:ids, ','), statement_id)",
-               [{"name": "ids", "value": ",".join(ids)}])
-    found = set(json.loads(res["result"]["data_array"][0][0] or "[]")) if res else set()
-    rec = {"experiment_id": exp, "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-           "found": len(found), "total": len(ids), "missing": sorted(set(ids) - found)}
-    with GENIE_VERIFIED.open("a") as f:
-        f.write(json.dumps(rec) + "\n")
-    print(f"{exp}: {rec['found']} of {rec['total']} Genie statements in system.query.history; missing {len(rec['missing'])}")
 
 
 def pool(exps, vs=None):
@@ -609,23 +492,17 @@ def pool(exps, vs=None):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", nargs="?", choices=["run", "load-session", "verify-genie", "truth", "pool"], default="run")
+    ap.add_argument("cmd", nargs="?", choices=["run", "truth", "pool"], default="run")
     ap.add_argument("--vs", help="pool: comma-separated baseline experiment ids")
     ap.add_argument("--check", action="store_true", help="truth: verify truth.json reproduces instead of writing it")
-    ap.add_argument("trace", nargs="?", help="load-session: the trace file; verify-genie: an experiment id (default latest)")
+    ap.add_argument("trace", nargs="?", help="pool: comma-separated experiment ids")
     ap.add_argument("--stub", action="store_true")
-    ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--delta", action="store_true", help="also write eval.runs and eval.judge (needs 04_eval.sql)")
     ap.add_argument("--runs", type=int, default=5)
     ap.add_argument("--workers", type=int, default=WORKERS)
     ap.add_argument("--set-version", default=A.SET_VERSION)
     a = ap.parse_args()
-    STUB, DRY, WORKERS, DELTA = a.stub, a.dry_run, a.workers, a.delta
-    if a.cmd == "load-session":
-        load_session(a.trace)
-    elif a.cmd == "verify-genie":
-        verify_genie(a.trace)
-    elif a.cmd == "truth":
+    STUB, WORKERS = a.stub, a.workers
+    if a.cmd == "truth":
         truth(a.check)
     elif a.cmd == "pool":
         pool(a.trace.split(","), a.vs.split(",") if a.vs else None)

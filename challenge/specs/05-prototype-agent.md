@@ -1,5 +1,7 @@
 # Spec 05: the prototype agent and the session traces
 
+> Superseded 2026-11-02 by [spec 06](06-postgres-and-teardown.md): Databricks torn down, semantic layer on Postgres. Kept as the record of what was built.
+
 **Goal.** A working agent that a human can question this afternoon, built so that every turn
 leaves the trace spec 04 requires. One Strands agent on Claude Haiku 5.5 reaches the eight
 `semantic` functions and the Genie space over the Databricks MCP endpoints as the read-only

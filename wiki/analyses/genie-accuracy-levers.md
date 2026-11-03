@@ -1,5 +1,6 @@
 # Raising Genie's accuracy: the levers, and what our space is missing
 
+> Historical 2026-11-02: the Genie space was trashed in the Databricks teardown before any lever was applied; none of this was tried.
 **Question (Ryan, 2026-11-02):** after the agent hill climb, how do we improve Genie's own scores?
 
 **Answer in one line:** our Genie space has none of the configuration Databricks says drives

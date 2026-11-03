@@ -7,9 +7,7 @@ main.py does not change. The browser holds the transcript, so the model sees pri
 """
 
 import asyncio
-import random
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "prototype"))
@@ -30,17 +28,6 @@ def messages(turns: list[dict]) -> list[dict]:
     return out
 
 
-def _build(session_id, msgs, cb):
-    """The functions MCP server can fail initialize under a burst of connects (eval_harness.build); retry the build."""
-    for attempt in range(4):
-        try:
-            return A.build_agent(session_id, messages=msgs, callback_handler=cb)
-        except ValueError as e:
-            if "Failed to load tool" not in str(e) or attempt == 3:
-                raise
-            time.sleep(2 ** attempt + random.random() * 2)
-
-
 async def stream(turns: list[dict], text: str, context: str | None, session_id: str):
     msgs = messages(turns)
     loop, q, seen = asyncio.get_running_loop(), asyncio.Queue(), set()
@@ -53,7 +40,7 @@ async def stream(turns: list[dict], text: str, context: str | None, session_id: 
             seen.add(tu["toolUseId"])
             loop.call_soon_threadsafe(q.put_nowait, {"tool": A._norm(tu.get("name") or "")})
 
-    agent = await asyncio.to_thread(_build, session_id, msgs, cb)  # token POST and MCP initialize block
+    agent = await asyncio.to_thread(A.build_agent, session_id, messages=msgs, callback_handler=cb)
     agent.trace["n"] = sum(m["role"] == "user" for m in msgs)  # the default q_id counts turns, as on a long-lived agent
     if context:
         agent.trace["prev_answer"] = next((m["content"][0]["text"] for m in reversed(msgs) if m["role"] == "assistant"), None)
@@ -65,7 +52,7 @@ async def stream(turns: list[dict], text: str, context: str | None, session_id: 
             try:
                 ev = await asyncio.wait_for(q.get(), 15)
             except TimeoutError:
-                yield {"ping": True}  # a one-off query can sit 20 to 60 s in the queue; keep the connection open
+                yield {"ping": True}  # a long model turn can go quiet; keep the connection open
                 continue
             if ev is None:
                 break

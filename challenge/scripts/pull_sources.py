@@ -1,6 +1,6 @@
 """Spec 02, step 1: one-time pull of the source files to challenge/data/ (gitignored).
 
-Upload afterwards with `databricks fs cp -r` (spec 02, step 2). No key is needed: OPM FWD is
+Load afterwards with `scripts/load_postgres.py --ship` (spec 06). No key is needed: OPM FWD is
 open, the USAJOBS Historic JOA only wants a User-Agent header, and the Census Gazetteer (spec 03) is a plain file.
 
     python scripts/pull_sources.py                 # everything
