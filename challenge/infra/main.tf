@@ -3,8 +3,8 @@
 #   terraform init && terraform apply            # terraform.tfvars (gitignored) holds my_ip = "<laptop>/32"
 #   terraform output -raw pg_env >> ../.env      # PG* (owner), AGENT_PG* (read-only agent), REVIEWER_PG* (app decisions)
 #
-# The agent, loader, and eval harness connect from the laptop, so the instance is public behind one /32 and a
-# password; the OPM watcher's loader (pipeline.tf) gets in by security group. db.t4g.micro + 20 GB gp3 is about
+# The loader and eval harness connect from the laptop, so the instance is public behind one /32 and a password; the
+# app (app.tf) and the OPM watcher's loader (pipeline.tf) get in by security group. db.t4g.micro + 20 GB gp3 is about
 # $14/month; destroy when done.
 
 terraform {
@@ -35,6 +35,10 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+  filter {
+    name   = "default-for-az" # the four AWS-made subnets, not app.tf's dual-stack ones
+    values = ["true"]
+  }
 }
 
 resource "aws_db_subnet_group" "workforce" {
@@ -55,7 +59,7 @@ resource "aws_security_group" "pg" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.pipeline.id] # the OPM watcher's loader (pipeline.tf)
+    security_groups = [aws_security_group.pipeline.id, aws_security_group.app.id] # the OPM loader (pipeline.tf), the app (app.tf)
   }
 }
 

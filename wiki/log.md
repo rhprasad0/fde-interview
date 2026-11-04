@@ -478,3 +478,6 @@ Terraform now runs a daily pipeline: a Lambda lands new current OPM FWD files in
 
 ## [2026-11-04] build | Architecture page
 A new `/architecture` page, with a tab on every nav, shows one diagram in three lanes (internet, laptop, AWS): the app and agent, the four Postgres roles and what each may touch, the laptop build, the eval harness, and the OPM watcher. A table names every box. The public deploy is drawn dashed and the page says it is not built.
+
+## [2026-11-04] build | Deployed on Lambda behind a Cloudflare Worker
+The app runs on Lambda from the repo's one image (Lambda Web Adapter, streaming Function URL), in dual-stack subnets with IPv6-only egress, so there is no NAT gateway. The Anthropic key is in SSM. A streamed question, `/health`, and a decision write passed on the Function URL. The cold start is 5 s with async init. The architecture page now draws the Worker and the Lambda.

@@ -822,3 +822,29 @@ functions, Agent Bricks.
 - **Revisit:** if the build outlives the interview, add a step that rebuilds the agent's tables
   from what landed, after the eval truth is recomputed for the new window; move the `pipeline`
   password to Secrets Manager.
+
+## 2026-11-04  Deploy: Lambda behind a Cloudflare Worker, IPv6 egress instead of a NAT gateway
+
+- **Context:** the 2026-11-03 entry chose ECS Fargate behind a load balancer. Ryan asked for a
+  serverless deploy on his Cloudflare domain, without AgentCore. The app keeps no state between
+  requests (the browser sends the transcript) and pings every 15 s, so any instance can serve any
+  turn and proxies keep the stream open. The function needs both the Anthropic API (internet) and
+  RDS (inside the VPC), and the default VPC has no NAT gateway.
+- **Chosen:** the same image on Lambda (`challenge/infra/app.tf`), with the Lambda Web Adapter
+  running uvicorn unchanged behind a Function URL in `RESPONSE_STREAM` mode. A Cloudflare Worker on
+  `frontier-lab-challenge.ryanprasad.ai` (free plan) passes requests through, because a Function
+  URL takes no custom domain and routes by its own Host header. The function runs in two new
+  dual-stack subnets and leaves over IPv6 through an egress-only gateway: `api.anthropic.com` and
+  SSM's dual-stack endpoint both answer on IPv6. The Anthropic key is an SSM SecureString, read by
+  the app at startup, so it is in neither the function's environment nor Terraform state.
+  `AWS_LWA_ASYNC_INIT` took the cold start from 24 s (the 10 s init timed out and reran) to 5 s.
+  Verified 2026-11-04 on the Function URL: `/health`, a streamed question (tool frame at 2.4 s,
+  text at 6.2 s, "Verified, 475"), and one decision write as `reviewer` (row deleted).
+- **Rejected:** Fargate plus a load balancer (about $25 a month around the clock, no scale to
+  zero); a NAT gateway (about $1 a day, kept as the fallback if IPv6 egress breaks: one route and
+  one gateway); CloudFront plus ACM (same result, two hand-made DNS records and an ACM wait);
+  Lambda Web Functions (announced 2026-10, Node.js only); reserved concurrency as a spend cap (the
+  account's limit is 10, all of which must stay unreserved).
+- **Revisit:** if spend runs hot, set the Anthropic Console limit lower or put Cloudflare Access in
+  front; if the Function URL's second door matters, have the Worker add a shared header the app
+  checks; if a cold start shows on stage, provisioned concurrency of 1 for the interview hours.

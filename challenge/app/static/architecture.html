@@ -107,7 +107,6 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 .card svg .db{fill:none;stroke:var(--ink-3);stroke-width:1.2}
 .card svg .group{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 3}
 .card svg .edge{fill:none;stroke:var(--ink-3);stroke-width:1.4}
-.card svg .edge.plan{stroke-dasharray:5 4}
 .card svg .head{fill:var(--ink-3)}
 .card svg .small{font-size:11px;fill:var(--ink-3)}
 .diagram svg{min-width:760px}
@@ -133,7 +132,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
       <span>Spent <b class="num"><a href="/incident" title="$517 Databricks at list ($400 of it trial credits), $14 model tokens, about $1 RDS. Judge calls not metered.">$532</a></b> at list, about $132 cash</span>
       <span>Region <b>us-west-2</b></span>
       <span>Postgres roles <b class="num">4</b></span>
-      <span>Public URL <b>not yet</b></span>
+      <span>Public URL <b>frontier-lab-challenge.ryanprasad.ai</b></span>
     </div>
   </div>
 </header>
@@ -163,11 +162,11 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
   <section class="card" id="diagram">
     <h2>How the pieces connect</h2>
-    <p class="sub">Solid lines run today. The dashed line is the public deploy, which is not built yet. The table below names every box.</p>
+    <p class="sub">Every line runs today. The table below names every box.</p>
     <div class="scroll diagram">
     <svg viewBox="0 0 1000 570" role="img" aria-labelledby="dg-t dg-d">
       <title id="dg-t">Lantern architecture</title>
-      <desc id="dg-d">A browser reaches the workshop app on the laptop. The app's agent calls the Anthropic API and reads the semantic schema in RDS Postgres as the agent role. Review decisions go to app.decisions as the reviewer role. The eval harness on the laptop runs the same agent and checks truth against the silver and synthetic tables. A DuckDB build on the laptop pulls public files and ships those tables. In AWS, a daily fetch Lambda lands new OPM files in S3 and invokes a load Lambda in the VPC, which writes ops.opm_files as the pipeline role.</desc>
+      <desc id="dg-d">A browser reaches a Cloudflare Worker on the custom domain, which passes requests to the workshop app on Lambda. The app's agent calls the Anthropic API and reads the semantic schema in RDS Postgres as the agent role. Review decisions go to app.decisions as the reviewer role. The eval harness on the laptop runs the same agent and checks truth against the silver and synthetic tables. A DuckDB build on the laptop pulls public files and ships those tables. In AWS, a daily fetch Lambda lands new OPM files in S3 and invokes a load Lambda in the VPC, which writes ops.opm_files as the pipeline role.</desc>
       <defs>
         <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
       </defs>
@@ -176,11 +175,12 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
       <rect class="lane" x="270" y="10" width="270" height="550" rx="6"/>
       <rect class="lane" x="570" y="10" width="420" height="550" rx="6"/>
       <text class="lanet" x="26" y="32">INTERNET</text>
-      <text class="lanet" x="286" y="32">LAPTOP</text>
+      <text class="lanet" x="286" y="32">COMPUTE</text>
       <text class="lanet" x="586" y="32">AWS US-WEST-2</text>
 
       <g class="edges">
-        <path class="edge plan" d="M405,96 V136" marker-end="url(#ah)"/>
+        <path class="edge" d="M125,80 V88" marker-end="url(#ah)"/>
+        <path class="edge" d="M220,118 L286,158" marker-end="url(#ah)"/>
         <path class="edge" d="M290,180 H224" marker-end="url(#ah)"/>
         <path class="edge" d="M520,165 L606,113" marker-end="url(#ah)"/>
         <path class="edge" d="M520,200 L606,191" marker-end="url(#ah)"/>
@@ -194,22 +194,24 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
       </g>
 
       <g text-anchor="middle">
-        <rect class="box" x="290" y="50" width="230" height="46" rx="4"/>
-        <text class="lbl" x="405" y="78">Browser</text>
-        <text class="small" x="465" y="121">not deployed yet</text>
+        <rect class="box" x="30" y="40" width="190" height="40" rx="4"/>
+        <text class="lbl" x="125" y="65">Browser</text>
+        <rect class="box" x="30" y="92" width="190" height="44" rx="4"/>
+        <text class="lbl" x="125" y="111">Cloudflare Worker</text>
+        <text class="small" x="125" y="127">the custom domain</text>
 
         <rect class="box key" x="290" y="140" width="230" height="80" rx="4"/>
         <text class="lbl" x="405" y="166">Workshop app and agent</text>
-        <text x="405" y="185">FastAPI, Strands, SSE</text>
+        <text x="405" y="185">Lambda · FastAPI, Strands, SSE</text>
         <text class="small mono" x="405" y="204">claude-haiku-5-5 · xhigh</text>
 
         <rect class="box" x="290" y="260" width="230" height="60" rx="4"/>
         <text class="lbl" x="405" y="285">Eval harness</text>
-        <text x="405" y="304">the same agent, graded</text>
+        <text x="405" y="304">laptop · the same agent</text>
 
         <rect class="box" x="290" y="360" width="230" height="60" rx="4"/>
         <text class="lbl" x="405" y="385">DuckDB build</text>
-        <text x="405" y="404">pull, 25 checks, ship</text>
+        <text x="405" y="404">laptop · pull, checks, ship</text>
 
         <rect class="box" x="30" y="150" width="190" height="60" rx="4"/>
         <text class="lbl" x="125" y="176">Anthropic API</text>
@@ -272,16 +274,16 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     <table>
       <thead><tr><th>Part</th><th>Runs on</th><th>Talks to</th><th>Note</th></tr></thead>
       <tbody>
-        <tr><td>Workshop app</td><td>The laptop today</td><td>Anthropic API. RDS as agent and as reviewer.</td><td>No state on the server. The browser sends the transcript with each turn, and the answer streams back as server-sent events. A ping every 15 s keeps the stream open while the model thinks.</td></tr>
+        <tr><td>Workshop app</td><td>Lambda, from the repo's one container image</td><td>Anthropic API and SSM over IPv6. RDS as agent and as reviewer.</td><td>No state on the server. The browser sends the transcript with each turn, and the answer streams back as server-sent events. A ping every 15 s keeps the stream open while the model thinks. A cold start takes about 5 s.</td></tr>
         <tr><td>Agent</td><td>Inside the app process</td><td>Eight governed functions, one read-only query tool</td><td>claude-haiku-5-5 at xhigh effort, 64,000-token cap. A fresh agent per request.</td></tr>
-        <tr><td>RDS Postgres</td><td>AWS, db.t4g.micro, 20 GB</td><td>Nothing outbound</td><td>Reachable from one laptop address and the loader's security group. About $14 a month.</td></tr>
+        <tr><td>RDS Postgres</td><td>AWS, db.t4g.micro, 20 GB</td><td>Nothing outbound</td><td>Reachable from one laptop address and two security groups, the app's and the loader's. About $14 a month.</td></tr>
         <tr><td>semantic</td><td>RDS</td><td>Read by the agent role</td><td>Eight views and eight table functions. Read-only transactions, 60 s statement timeout, no other schema.</td></tr>
         <tr><td>app.decisions</td><td>RDS</td><td>Written by the reviewer role</td><td>One row per Accept, Edit, or Dismiss click. The agent has no grant here, so a decision is always a person's.</td></tr>
         <tr><td>silver, synthetic</td><td>RDS</td><td>Owner only</td><td>Shipped from the DuckDB build. The eval's truth SQL reads these tables and never the semantic layer.</td></tr>
         <tr><td>DuckDB build</td><td>The laptop</td><td>Public files. RDS as owner.</td><td>pull_sources.py, then load_postgres.py --ship. 25 acceptance checks pass before anything ships. The window is pinned to September 2025 through August 2026.</td></tr>
         <tr><td>Eval harness</td><td>The laptop</td><td>The same agent. RDS as owner for truth.</td><td>Every graded run goes to experiments.jsonl, which the <a href="/evals">metrics dashboard</a> reads.</td></tr>
         <tr><td>OPM watcher</td><td>Two Lambdas, daily 06:00 UTC</td><td>OPM API, S3, RDS as pipeline</td><td>The fetch Lambda runs outside the VPC to reach OPM. The load Lambda runs inside it to reach RDS. It never touches the agent's tables. About $0.10 a month.</td></tr>
-        <tr><td>Public URL</td><td>Not deployed</td><td>None</td><td>The container image is built and smoke-tested. DECISIONS.md records ECS Fargate. A Lambda Function URL is the serverless option under review.</td></tr>
+        <tr><td>Public URL</td><td>Cloudflare Worker, free plan</td><td>The Lambda Function URL</td><td>frontier-lab-challenge.ryanprasad.ai. The Worker passes each request through and streams the answer back. The function leaves the VPC over IPv6, so there is no NAT gateway.</td></tr>
       </tbody>
     </table>
     </div>
@@ -292,11 +294,12 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 <aside class="debug" aria-label="Open items">
   <div class="dhead"><b>Open items</b><small>what this design does not do yet</small></div>
   <div class="dbody">
-    <div class="dsec"><h3>Deploy</h3><p>Nothing is public. The image runs on the laptop.</p></div>
+    <div class="dsec"><h3>Spend</h3><p>The site is public. Lambda runs at most 10 turns at once, the account's limit. A spend limit on the Anthropic key is the real cap.</p></div>
+    <div class="dsec"><h3>Second door</h3><p>The Function URL answers without the Worker too. A shared header checked by the app would close it.</p></div>
     <div class="dsec"><h3>Fresh data</h3><p>The agent's tables stop at August 2026 on purpose, because the eval truth was computed on that window. New months land in S3 and wait.</p></div>
-    <div class="dsec"><h3>Secrets</h3><p>Passwords live in a gitignored .env on the laptop and as encrypted environment variables on the loader. Secrets Manager is the upgrade.</p></div>
+    <div class="dsec"><h3>Secrets</h3><p>The Anthropic key is in SSM, and the app reads it at startup. Postgres passwords are in a gitignored .env on the laptop and are encrypted environment variables on the two Lambdas. Secrets Manager is the upgrade for those.</p></div>
     <div class="dsec"><h3>TLS to Postgres</h3><p>Connections are encrypted. Clients do not verify the RDS certificate yet.</p></div>
-    <div class="dsec"><h3>Traces</h3><p>Agent traces are files in raw/ on the laptop. They are gitignored, so they stay out of the public repo.</p></div>
+    <div class="dsec"><h3>Traces</h3><p>Agent traces are files in raw/ on the laptop, gitignored. On Lambda they go to /tmp and are lost when the instance is recycled.</p></div>
   </div>
 </aside>
 </div>

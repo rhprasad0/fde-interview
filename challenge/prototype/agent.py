@@ -38,6 +38,11 @@ for _line in _envf.read_text().splitlines() if _envf.exists() else []:
     _k, _sep, _v = _line.split("#", 1)[0].partition("=")
     if _sep:
         ENV[_k.strip()] = _v.strip().strip("'\"")
+if "ANTHROPIC_API_KEY" not in ENV and "ANTHROPIC_API_KEY_SSM" in ENV:  # Lambda: the key stays out of its environment and tfstate
+    import boto3  # a Strands dependency
+    from botocore.config import Config
+    ENV["ANTHROPIC_API_KEY"] = boto3.client("ssm", config=Config(use_dualstack_endpoint=True)).get_parameter(  # IPv6 egress only
+        Name=ENV["ANTHROPIC_API_KEY_SSM"], WithDecryption=True)["Parameter"]["Value"]
 
 MODEL_ID = "claude-haiku-5-5"
 EFFORT = "xhigh"  # Ryan, 2026-11-03, chosen on the held-out sweep (DECISIONS.md); read when an agent is built, so the harness --effort can set it first
