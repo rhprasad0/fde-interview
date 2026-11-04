@@ -26,6 +26,7 @@ SCORERS = ("label_match", "numeric_match", "list_match", "labels_present", "tool
 
 _P = "20261103T{}-b44a9181"
 MILESTONES = [  # journal.md: "After the plateau", "Held-out line", "Held-out rerun", "Agent effort sweep"
+    {"name": "Baseline before the climb, prompt 7a3ae5a9", "ids": ["20261103T150305Z-7a3ae5a9", "20261103T150537Z-7a3ae5a9"]},
     {"name": "Final dev prompt, 20 tuned rows", "ids": [_P.format("155440Z"), _P.format("155658Z")]},
     {"name": "Held-out, 8 tester rows as written", "ids": [_P.format("170036Z"), _P.format("170419Z")]},
     {"name": "Held-out, 6 rows corrected", "ids": [_P.format("172209Z"), _P.format("172735Z")]},

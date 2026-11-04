@@ -79,6 +79,6 @@ def test_health_and_pages():
     c = TestClient(main.app)
     assert c.get("/health").json() == {"ok": True}
     assert c.get("/nope").status_code == 404
-    for path, text in (("/", "Lantern Workshop"), ("/evals", "Lantern Evals"), ("/study", "Field notes"), ("/mission", "Lantern Mission"), ("/incident", "Incident Report")):
+    for path, text in (("/", "Lantern Workshop"), ("/evals", "Lantern Evals"), ("/study", "Field notes"), ("/mission", "Lantern Mission"), ("/incident", "Incident Report"), ("/transcript", "Lantern Transcript")):
         r = c.get(path)
         assert r.status_code == 200 and text in r.text, path

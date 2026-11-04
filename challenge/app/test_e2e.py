@@ -72,7 +72,7 @@ def test_evals_leads_with_the_headline_pair(base_url, page):
     assert page.locator("#heat svg rect").count() == d["headline"]["rows"]
 
 
-@pytest.mark.parametrize("path,tab,h1", [("/study", "Field notes", "One tester"), ("/mission", "Mission", "Over 80 agencies"), ("/incident", "Incident report", "pick up Databricks")])
+@pytest.mark.parametrize("path,tab,h1", [("/study", "Field notes", "One tester"), ("/mission", "Mission", "Over 80 agencies"), ("/incident", "Incident report", "pick up Databricks"), ("/transcript", "Transcript", "eight turns")])
 def test_static_pages_render(base_url, page, path, tab, h1):
     page.goto(base_url + path)
     pw.expect(page.locator("h1")).to_contain_text(h1)

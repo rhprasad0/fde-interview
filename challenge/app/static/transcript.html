@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern Transcript</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: evals-suite chrome; the metrics canvas on the left, the test-case debug view in a right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pass:#2a78d6; --pass-soft:#dbe9fb;
+  --f-list:#eb6834; --f-fna:#1baf7a; --f-other:#6b717c;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --bad-bg:#fde3e1; --bad-ink:#7a1a16; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px}
+@media (max-width:1040px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:72ch}
+.headrow{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn small{font-weight:400;opacity:.85}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .mono{font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.scroll{overflow-x:auto}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:280px;z-index:20}
+.tip b{display:block}
+aside.debug{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1040px){aside.debug{position:static;max-height:none}}
+.dhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dhead b{font-size:14px}
+.dhead small{font-size:12px;color:var(--ink-3)}
+.dbody{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.dsec{display:flex;flex-direction:column;gap:6px}
+.dsec h3{margin:0;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.dsec p{margin:0}
+.q{background:var(--bg);border-radius:6px;padding:8px 12px}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink);white-space:pre-wrap}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+.agent-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.agent-head b{font-size:14px}
+.agent-head small{font-size:12px;color:var(--ink-3)}
+.agent-head .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2e8540;margin-right:6px;vertical-align:0}
+.thread{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.msg{display:flex;flex-direction:column;gap:6px}
+.msg.user{align-items:flex-end}
+.msg.user .bub{background:var(--accent);color:var(--accent-ink);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:85%}
+.msg .who{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.msg.bot .bub{background:var(--bg);border-radius:12px 12px 12px 2px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.msg.bot p{margin:0}
+.msg.bot .live{white-space:pre-wrap;margin:0}
+.msg.bot table{border-collapse:collapse;width:100%;font-size:12.5px}
+.msg.bot th,.msg.bot td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.msg.bot pre{background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)}  /* render() inlines light-theme colors */
+.msg .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.chip.warn{background:var(--banner);color:var(--banner-ink)}
+.thread{padding:0}
+.msg.bot .bub{max-width:92%}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Transcript</span><small>SESSION s-25f46138 · AS IT HAPPENED</small></div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission">Mission</a>
+      <a href="/">Workshop</a>
+      <a href="/evals">Metrics dashboard</a>
+      <a href="/study">Field notes</a>
+      <a href="/transcript" aria-current="page">Transcript</a>
+      <a href="/incident">Incident report</a>
+      <a href="#replay" class="off" title="This is the replay.">Replay</a>
+    </nav>
+    <div class="status">
+      <span>Budget <b class="num">$100.00</b></span>
+      <span>Spent <b class="num"><a href="/incident" title="$517 Databricks at list ($400 of it trial credits), $14 model tokens, about $1 RDS. Judge calls not metered.">$532</a></b> at list, about $132 cash</span>
+      <span>Turns <b>8</b></span>
+      <span>This session <b class="num">$0.027</b></span>
+    </div>
+  </div>
+</header>
+<div class="banner gutter">2026-11-01 // EIGHT TURNS, 23:35 TO 00:17 UTC // THE AGENT OF THAT DAY, PROMPT 4f3bf1e2 // NOTHING EDITED</div>
+
+<div class="shell gutter">
+<main>
+  <div class="crumb">
+    <span>Tester: <b>A</b></span><span>/</span>
+    <span>Model: <b>claude-haiku-5-5</b></span><span>/</span>
+    <span>Agent commit: <b>3a95353</b></span><span>/</span>
+    <span>Audio: <b>80 min</b>, synopsis below</span>
+  </div>
+
+  <div class="headrow">
+    <div>
+      <h1>The eight turns, as the tester typed them and the agent answered.</h1>
+      <p class="lede">Copied from the session trace. Every answer is the agent of 2026-11-01, two days before the climb, so four of the eight are refusals and two of those rest on limits the data does not have. The <a href="/study">Field notes</a> say what each turn became.</p>
+    </div>
+  </div>
+
+  <section class="card" id="chat">
+    <div class="agent-head" style="padding:0 0 12px"><b><span class="dot" aria-hidden="true"></span>Variance review assistant</b><small>Open on CBP Officers, FY2026 Q1. Tasks 1 and 3 of the session plan.</small></div>
+    <div class="thread" id="thread">
+    <div class="msg user"><span class="who">analyst · 23:35 UTC · task 1 · A01</span><div class="bub">As the Human Capital analyst I need more data on retirement eligibility numbers for next several years and would like it broken down by occupation. Would also like it to be systemtically aligned to the hiring pipeline by occupation and organization hierarchy (Groups/Divisions/Branches for all areas in CPB.</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip no">Not available</span><p style="margin:0">Retirement eligibility by occupation, projected over the next several years, and a Groups/Divisions/Branches breakdown are not in the data. The records carry years of federal service but no age or birth date, so eligibility cannot be computed, and the data has no organizational hierarchy below the component and occupation series. The staffing plan and postings align to component and occupation only, so the hiring pipeline can be matched at that level and no lower.</p><p style="margin:0">As a proxy, CBP as a whole had 43,890 of 70,843 staff (62.0%) with 10 or more years of service in the August 2026 snapshot, including 20,476 (28.9%) with 20 or more. Long service indicates retirement exposure but does not establish eligibility, and the data has no forward projection. The nearest answerable variants are the tenure profile by occupation series for CBP (for example CBP Officers, 1895, and Border Patrol agents, 1896), or the retirement-category separation counts by occupation for recent months.</p><p style="margin:0">I read &quot;all areas in CPB&quot; as all CBP occupations as of the August 2026 snapshot; if you meant CBP Officers only, or a different component, say so.</p><span class="meta">length_of_service_profile · 36 s · $0.0027</span></div></div>
+    <div class="msg user"><span class="who">analyst · 23:40 UTC · task 1 · A02</span><div class="bub">Just need CPB occupations but now that you asked, it might be useful to know how CBP compares to other components.</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip warn">Exploratory</span><p style="margin:0">CBP&#x27;s workforce as of the August 2026 snapshot was 70,843, and 28.9% had 20 or more years of federal service (62.0% had 10 or more). That puts CBP second only to ICE on the 20-year share and second only to CISA on the 10-year share. Years of service is a proxy for retirement exposure, not retirement eligibility, which depends on age and retirement coverage, and the data has no forward projection.</p><p style="margin:0"><strong>CBP occupations, August 2026 (top 10 by headcount; the other 105 series are summed below the table)</strong></p><div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Series</th><th>Occupation</th><th>Headcount</th><th>With 20+ years</th><th>20+ share</th></tr></thead><tbody><tr><td>1895</td><td>CBP Officers</td><td>27,650</td><td>8,732</td><td>31.6%</td></tr><tr><td>1896</td><td>Border Patrol agents</td><td>22,464</td><td>5,513</td><td>24.5%</td></tr><tr><td>0401</td><td>Natural resources and biological sciences</td><td>2,833</td><td>852</td><td>30.1%</td></tr><tr><td>1801</td><td>Inspection, investigation, enforcement and compliance</td><td>2,247</td><td>910</td><td>40.5%</td></tr><tr><td>0301</td><td>Miscellaneous administration and program</td><td>2,017</td><td>642</td><td>31.8%</td></tr><tr><td>1802</td><td>Compliance inspection and support (screeners)</td><td>1,958</td><td>223</td><td>11.4%</td></tr><tr><td>0343</td><td>Management and program analysis</td><td>1,446</td><td>478</td><td>33.1%</td></tr><tr><td>2210</td><td>IT management</td><td>1,235</td><td>228</td><td>18.5%</td></tr><tr><td>1889</td><td>Import compliance</td><td>1,120</td><td>405</td><td>36.2%</td></tr><tr><td>0340</td><td>Program management</td><td>951</td><td>429</td><td>45.1%</td></tr><tr><td>All other 105 series</td><td></td><td>6,922</td><td>2,064</td><td>29.8%</td></tr></tbody></table></div><p style="margin:0">I added the rows: the top 10 sum to 63,921 staff, and the remaining 105 series add 6,922, giving the 70,843 total.</p><p style="margin:0"><strong>CBP against the other components (all occupations, August 2026)</strong></p><div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Component</th><th>Headcount</th><th>20+ years</th><th>10+ years</th></tr></thead><tbody><tr><td>CBP</td><td>70,843</td><td>28.9%</td><td>62.0%</td></tr><tr><td>ICE</td><td>28,674</td><td>29.6%</td><td>57.5%</td></tr><tr><td>TSA</td><td>59,342</td><td>21.2%</td><td>46.4%</td></tr><tr><td>USCIS</td><td>20,327</td><td>21.1%</td><td>59.8%</td></tr><tr><td>CISA</td><td>2,204</td><td>22.9%</td><td>65.8%</td></tr><tr><td>FEMA</td><td>20,208</td><td>10.4%</td><td>33.9%</td></tr></tbody></table></div><p style="margin:0">I read &quot;CPB&quot; as CBP, all occupations, as of August 2026, and the comparison as years of service across the six components; if you meant CBP Officers only, that is the 1895 row, and if you want age-based eligibility, it is not in the data.</p><pre style="margin:0;padding:12px 14px;background:#ffffff;border:1px solid #dfe1e5;border-radius:4px;font-size:13px;line-height:1.45;overflow-x:auto">WITH series_counts AS (
+  SELECT
+    workforce_snapshot.occupational_series_code,
+    workforce_snapshot.occupational_series,
+    COUNT(*) AS headcount,
+    SUM(CASE WHEN workforce_snapshot.length_of_service_years &gt;= 20 THEN 1 ELSE 0 END) AS headcount_20_plus_years
+  FROM workforce.semantic.workforce_snapshot
+  WHERE workforce_snapshot.snapshot_month = DATE &#x27;2026-08-01&#x27;
+    AND workforce_snapshot.agency_subelement_code = &#x27;HSBD&#x27;
+    AND workforce_snapshot.occupational_series_code IS NOT NULL
+    AND workforce_snapshot.occupational_series IS NOT NULL
+  GROUP BY
+    workforce_snapshot.occupational_series_code,
+    workforce_snapshot.occupational_series
+)
+SELECT
+  series_counts.occupational_series_code,
+  series_counts.occupational_series,
+  series_counts.headcount,
+  series_counts.headcount_20_plus_years,
+  SUM(series_counts.headcount) OVER () AS total_headcount_all_series
+FROM series_counts
+ORDER BY series_counts.headcount DESC, series_counts.occupational_series_code, series_counts.occupational_series</pre><span class="meta">length_of_service_profile ×8, one-off query · 69 s · $0.0053</span></div></div>
+    <div class="msg user"><span class="who">analyst · 23:49 UTC · task 3 · A03</span><div class="bub">Draft the OPM paragraph.</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip ok">Verified</span><p style="margin:0">Draft for OPM:<br>CBP Officers recorded 475 accessions against 594 planned hires in FY2026 Q1 (October to December 2025), a variance of -119 (-20.0%). Two findings bear on the gap: over the twelve months to August 2026 the cell separated 954 people, a rate of 0.0351 that is the same with and without the 2025 deferred resignation wave, and 586 of those separations (61%) were retirements; and only eight announcements with stated openings were open on August 1, 2026, totaling eight openings (three more say &quot;Many&quot;), against those 954 separations, a coverage of 0.8%. The quarter is not closed, so late OPM files will add accessions and the variance will narrow, and separation counts will also grow as late reports arrive. We request that CBP open enough CBP Officer announcements with stated openings to cover the 586 retirements in the trailing twelve months, and that the agency report the updated FY2026 Q1 accession count once later files are in.</p><p style="margin:0">I read this as the open cell, CBP Officers in FY2026 Q1, with attrition over the twelve months to August 2026; if you meant another cell or a different attrition window, say so.</p><span class="meta">plan_variance, separation_rate, open_postings · 25 s · $0.0057</span></div></div>
+    <div class="msg user"><span class="who">analyst · 23:53 UTC · task 3 · A04</span><div class="bub">I would need to know why CBP recruitment is &quot;thin&quot; Is it a budgetary issue and why are the announcements with stated openings not being increased?</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip no">Not available</span><p style="margin:0">The data cannot say why CBP Officer recruitment is thin or why announcements carry the openings they do. The records hold separation categories and posting openings, not reasons, and budget and appropriations are outside this review.</p><p style="margin:0">The figures already in this review show what &quot;thin&quot; means here. On August 1, 2026, eight CBP Officer announcements with stated openings were open, totaling eight openings, against 954 separations over the twelve months to August 2026, a coverage of 0.8%. Three more announcements say &quot;Many&quot; and are not counted, so the eight is a floor. Of the 954 separations, 586 were retirements.</p><p style="margin:0">Nearest answerable variants: the coverage ratio for CBP Officers at earlier dates, to show whether advertising has thinned over the year, or the separation categories by month, to show whether retirements are rising. I read &quot;thin&quot; as stated openings against separations; if you meant the number of announcements instead, say so.</p><span class="meta">no tool called · 9 s · $0.0015</span></div></div>
+    <div class="msg user"><span class="who">analyst · 23:55 UTC · task 3 · A05</span><div class="bub">Number of announcements would be helpful.</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip ok">Verified</span><p style="margin:0">On August 1, 2026, 11 CBP Officer announcements were open (the 1895 series, including supervisory and program-manager titles). Eight state a number of openings, totaling eight, and three say &quot;Many.&quot; Five give no state and two list Virginia. Because the count is an upper bound, announcements filled or cancelled before their closing dates are not visible. I read this as announcements open on August 1, 2026; if you meant the number opened over the trailing twelve months, say so.</p><span class="meta">no tool called · 5 s · $0.0010</span></div></div>
+    <div class="msg user"><span class="who">analyst · 23:56 UTC · task 3 · A06</span><div class="bub">Would want to know what many means</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip no">Not available</span><p style="margin:0">&quot;Many&quot; is the posting&#x27;s own wording for an unstated number of openings, and the data holds only that word, so it cannot tell you whether a posting means two openings or two hundred. The three CBP Officer announcements that say &quot;Many&quot; carry control numbers 878058100 (grades 5 to 7), 878058600 (grade 9) and 875468500 (grade 13), and the openings figure is on each posting on USAJOBS. Until those are read, the eight stated openings are the only countable figure, and the 0.8% coverage is a floor.</p><span class="meta">no tool called · 5 s · $0.0009</span></div></div>
+    <div class="msg user"><span class="who">analyst · 00:01 UTC · task 3 · A07</span><div class="bub">When OPM collects their data by grade is it possible to find out which positions are applicants not applying to? Trying to find out if the higher graded positions are the hardest to fill.  Would like to know if the lower graded positions are tough to get applicants.</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip no">Not available</span><p style="margin:0">The review&#x27;s data has no applicant records, so it cannot show which positions applicants skip, and it has no grade field for staff to test whether higher grades are harder to fill. Posting counts do not measure difficulty either: an announcement can be open for weeks and still draw applicants.</p><p style="margin:0">The nearest answerable view is the grades on the 11 CBP Officer announcements open on August 1, 2026. Eight state openings and sit at grades 12 to 14 (three at 14, three at 13, two at 12). The three &quot;Many&quot; announcements sit at grades 5 to 7, 9 and 13, so the only lower-grade announcements open that day have no stated openings. I read &quot;hard to fill&quot; as openings advertised without applicant data; if you want the advertised grade mix over time, say so.</p><span class="meta">no tool called · 9 s · $0.0012</span></div></div>
+    <div class="msg user"><span class="who">analyst · 00:17 UTC · task 3 · A08</span><div class="bub">Grade mix over time would be helpful.  It is hard to prepare for a briefing for the Director without having the &quot;why&quot; behind the numbers which is what is also needed in addition to the numbers (the what).  The why is what Director will be interested in knowing after seeing the numbers and what these numbers tell me is helpful because they show that there are issues to be addressed and Director will definitely ask about recruitment numbers, hiring pluses and minuses, HR development (does it meet workforce development goals and actual training needs), performance assessments, etc. All of these areas need to be analyzed using a model that can help Director get a true picture of what is happening in the organization.  Director will ask these kinds of questions. Director will want a comparison with other larger organizations of like size to make some comparisons. Just seeing the numbers and percentages is helpful but if OPM could provide more details it would help Director of CBP and other elements to address issues like recruitment and skills mix. What can be done about not having enough OPM data to systemtically address issue?</div></div>
+    <div class="msg bot"><span class="who">assistant</span><div class="bub"><span class="chip warn">Exploratory</span><p style="margin:0">From September 2025 to October 2026, 463 CBP postings listed the CBP Officer series: 337 (73%) at grades 13 to 14, 94 (20%) at grades 5 to 12, and 32 (7%) at grade 15 and above. The 13 to 14 band was the largest in every month, from 58% in March 2026 to 86% in December 2025. Stated openings were 708 in total, but postings that say &quot;Many&quot; count as zero, so openings are understated.</p><div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Period (months)</th><th>Postings</th><th>Grades 5 to 12</th><th>Grades 13 to 14</th><th>Grade 15 and above</th><th>Stated openings</th></tr></thead><tbody><tr><td>September 2025</td><td>37</td><td>11</td><td>25</td><td>1</td><td>107</td></tr><tr><td>October to December 2025 (FY2026 Q1)</td><td>86</td><td>14</td><td>71</td><td>1</td><td>132</td></tr><tr><td>January to March 2026 (FY2026 Q2)</td><td>78</td><td>18</td><td>53</td><td>7</td><td>113</td></tr><tr><td>April to June 2026 (FY2026 Q3)</td><td>104</td><td>21</td><td>71</td><td>12</td><td>156</td></tr><tr><td>July to August 2026</td><td>79</td><td>18</td><td>54</td><td>7</td><td>101</td></tr><tr><td>September 2026</td><td>45</td><td>4</td><td>38</td><td>3</td><td>62</td></tr><tr><td>October 2026</td><td>34</td><td>8</td><td>25</td><td>1</td><td>37</td></tr></tbody></table></div><p style="margin:0">The data shows what was advertised and at which grades. It does not show why, and it cannot answer the Director&#x27;s other questions. There are no applicant records, no performance ratings, no training or competency records, and no separation reasons beyond the four categories. Comparison with agencies outside DHS is outside this review. The closest in-scope comparison is the other DHS components, which I can set against CBP on years of service. To close the gaps, the analyst could ask OPM and the agency for applicant flow by posting (applicants, referred, selected), grade on staff records so staff and posting grade mix can be compared, performance rating distributions and training completion by series and grade, and reasons recorded at separation.</p><p style="margin:0">I read &quot;grade mix over time&quot; as the grade band of CBP postings for the CBP Officer series, by month of opening; if you meant the grade mix of staff, the review&#x27;s calculations do not report staff by grade.</p><pre style="margin:0;padding:12px 14px;background:#ffffff;border:1px solid #dfe1e5;border-radius:4px;font-size:13px;line-height:1.45;overflow-x:auto">WITH `filtered` AS (
+  SELECT
+    DATE_TRUNC(&#x27;MONTH&#x27;, `open_date`) AS `open_month`,
+    CASE
+      WHEN CAST(`minimum_grade` AS INT) BETWEEN 5 AND 9 THEN &#x27;5 to 9&#x27;
+      WHEN CAST(`minimum_grade` AS INT) BETWEEN 10 AND 12 THEN &#x27;10 to 12&#x27;
+      WHEN CAST(`minimum_grade` AS INT) BETWEEN 13 AND 14 THEN &#x27;13 to 14&#x27;
+      WHEN CAST(`minimum_grade` AS INT) &gt;= 15 THEN &#x27;15 and above&#x27;
+      ELSE NULL
+    END AS `minimum_grade_band`,
+    COALESCE(`total_openings`, 0) AS `stated_openings`
+  FROM `workforce`.`semantic`.`job_posting`
+  WHERE `agency_subelement_code` = &#x27;HSBD&#x27;
+    AND `open_date` &gt;= DATE &#x27;2025-09-01&#x27;
+    AND `open_date` &lt; DATE &#x27;2026-11-01&#x27;
+    AND `open_date` IS NOT NULL
+    AND `minimum_grade` IS NOT NULL
+    AND array_contains(`occupational_series_codes`, &#x27;1895&#x27;)
+), `grouped` AS (
+  SELECT
+    `open_month`,
+    `minimum_grade_band`,
+    COUNT(*) AS `postings`,
+    SUM(`stated_openings`) AS `total_openings`
+  FROM `filtered`
+  WHERE `minimum_grade_band` IS NOT NULL
+  GROUP BY `open_month`, `minimum_grade_band`
+)
+SELECT
+  `open_month`,
+  `minimum_grade_band`,
+  `postings`,
+  `total_openings`,
+  SUM(`postings`) OVER (PARTITION BY `open_month`) AS `month_total_postings`
+FROM `grouped`
+ORDER BY
+  `open_month`,
+  CASE `minimum_grade_band`
+    WHEN &#x27;5 to 9&#x27; THEN 1
+    WHEN &#x27;10 to 12&#x27; THEN 2
+    WHEN &#x27;13 to 14&#x27; THEN 3
+    WHEN &#x27;15 and above&#x27; THEN 4
+    ELSE 5
+  END</pre><span class="meta">one-off query · 74 s · $0.0090</span></div></div>
+    </div>
+    <p class="src">challenge/eval/sessions/2026-11-01-tester-a/trace.jsonl · label, tools, seconds and cost per turn are the trace fields</p>
+  </section>
+
+  <section class="card" id="audio">
+    <h2>The audio, in order</h2>
+    <p class="sub">Eighty minutes on a webcam microphone, transcribed with speaker labels and redacted to roles. Long silences are the tester working alone in the app. Timestamps are minutes into the recording.</p>
+    <table>
+      <thead><tr><th>Time</th><th>What happened</th><th>Heard</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">00:00</td><td>Setup. The facilitator asks for think-aloud and promises to stay quiet.</td><td>"I learned from what I get wrong."</td></tr>
+        <tr><td class="mono">03:00</td><td>Task 1, the brief. Reads 475 onboarded as under goal. Calls the attrition high against a remembered norm of about 4%. The first questions are why people quit and whether there was an exit process. Jumps ahead to the recommended cells; redirected twice. Has not heard of deferred resignation.</td><td>"The hiring pipeline is working because you're still growing." Wants retirement eligibility by the end of next fiscal year and five years out. Notices the brief says exposure, not eligibility.</td></tr>
+        <tr><td class="mono">12:00</td><td>The assistant. Types the retirement question (A01). Works mostly in silence. Spoken questions on clearances and whether hiring correlates with retirement; clearance data is not in scope. Asks whether FEMA was included.</td><td>21:45, on the component comparison (A02): "This is actually great data." Needed to be told to scroll up to find the answer.</td></tr>
+        <tr><td class="mono">28:20</td><td>Task 2, three cells for the review. Spoken, by size.</td><td>CBP, USCIS, TSA.</td></tr>
+        <tr><td class="mono">30:20</td><td>Task 3, the paragraph. The facilitator suggests the AI draft (A03). The tester asks why hiring is thin instead (A04), then types alone for most of thirty minutes. Reads the applicant-data refusal (A07) and asks for grade mix over time (A08).</td><td>"I wouldn't want to just put in here what my thoughts are. I would want to know why there's such thin hiring."</td></tr>
+        <tr><td class="mono">59:14</td><td>Reads the paragraph written by hand: the numbers are the what, the director wants the why. Wants comparisons with like-sized organizations and more OPM detail. Then reads the grade-mix answer and finds it useful.</td><td>"The numbers are the what. The why is what the director will be interested in." On A08: "This would be helpful." "I like AI."</td></tr>
+        <tr><td class="mono">64:00</td><td>Task 4, the recommendations. Accepts the hiring-committee item, likes the eligibility projections, argues retirement is the bigger issue and prior years could anticipate departures. Skips the optional "add what you know."</td><td>"Am I saying accept?"</td></tr>
+        <tr><td class="mono">66:20</td><td>Debrief. Trusted least: "many," because it is not specific. Trust but verify; would want to sit and ask more. Not technical; the SQL under a Verified answer meant nothing. A director would ask where the numbers came from, where the problems are, how long a fix takes, and about skills mix.</td><td>"I didn't trust many." "I'm kind of a trust but verify person."</td></tr>
+        <tr><td class="mono">71:43</td><td>What to show a panel: look at the problem systematically; the numbers indicate, an organizational assessment confirms; is OPM collecting the right data for models like this.</td><td>"I love the way they answer the questions and they tell you what you can't get." "It helps you understand the questions that you need to ask."</td></tr>
+        <tr><td class="mono">74:00</td><td>Asked to be brutal, the tester turns it on themselves. Then the real criticism: HR directors can already drill down internally; OPM is the big picture; the useful version takes the agency's own numbers and answers whether a gap is skills mix or recruitment.</td><td>"It's my issue, not the system's." "I could plug my numbers in." Facilitator, closing: "We need more data."</td></tr>
+      </tbody>
+    </table>
+    <p class="src">wiki/sources/2026-11-01-tester-a-session-transcript.md, redacted · wiki/analyses/tester-a-session-findings.md</p>
+  </section>
+</main>
+
+<aside class="debug" aria-label="Session facts">
+  <div class="dhead"><b>Session facts</b><small>from the trace and the briefing</small></div>
+  <div class="dbody">
+    <div class="dsec"><h3>Planned</h3><p>45 minutes, five tasks, three screens. Ran 80 minutes. Task 5 did not run.</p></div>
+    <div class="dsec"><h3>Typed</h3><p>8 turns. Task 1: two. Task 3: six. Nothing typed in task 2 or 4.</p></div>
+    <div class="dsec"><h3>Labels that day</h3><p>2 Verified, 2 Exploratory, 4 Not available. Two refusals rested on limits that do not exist (A01, A07).</p></div>
+    <div class="dsec"><h3>Latency</h3><p>5 to 74 seconds a turn. The two slowest ran the one-off query.</p></div>
+    <div class="dsec"><h3>Cost</h3><p class="num">$0.027 for the eight turns.</p></div>
+    <div class="dsec"><h3>Clicks</h3><p>Three accepts in 24 seconds. No reject, no flag, no written feedback in the app.</p></div>
+    <div class="dsec"><h3>Not on this page</h3><p>The tester's name, employer, and career history. The transcript replaces them with roles; this synopsis leaves them out.</p></div>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">The chat is the trace, verbatim. The synopsis is one reading of the audio; the redacted transcript is in the wiki.</footer>
+</body>
+</html>
