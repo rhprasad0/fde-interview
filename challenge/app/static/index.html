@@ -39,6 +39,7 @@ nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
 nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
 nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
 nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+nav.tabs a.agent{background:var(--accent);color:var(--accent-ink);font-weight:600}
 .status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
 .status b{color:var(--ink-2);font-weight:600}
 .banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
@@ -126,6 +127,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
     <nav class="tabs" aria-label="Ontology">
       <a href="/mission">Mission</a>
+      <a href="#agent" class="agent" title="The agent under review, in the side panel.">Ask the agent</a>
       <a href="/" aria-current="page">Objects</a>
       <a href="/evals">Evals</a>
       <a href="/study">Field notes</a>
@@ -142,7 +144,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
   </div>
 </header>
-<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // THE STAFFING PLAN IS SYNTHETIC</div>
+<div class="banner gutter">UNCLASSIFIED // PUBLIC OPM DATA // THE STAFFING PLAN IS SYNTHETIC // THE AGENT UNDER REVIEW IS IN THE SIDE PANEL</div>
 
 <div class="shell gutter">
 <main id="objects">
@@ -217,10 +219,10 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
   </section>
 </main>
 
-<aside class="agent" aria-label="Variance review assistant">
+<aside class="agent" id="agent" aria-label="Variance review assistant">
   <div class="agent-head">
-    <b><span class="dot" aria-hidden="true"></span>Variance review assistant</b>
-    <small>Eight standard calculations, one one-off query, no opinions about budgets.</small>
+    <b><span class="dot" aria-hidden="true"></span>The agent under review</b>
+    <small>This is the demo. Live against the database. Eight standard calculations, one one-off query, no opinions about budgets.</small>
   </div>
   <div class="thread" id="thread">
     <div class="msg bot">

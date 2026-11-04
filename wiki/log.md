@@ -466,3 +466,6 @@ five findings, eleven surfaces, what survived the move). One static-page route; 
 redacted audio (no career history, no names). Dashboard story table gains the pre-climb baseline pair
 (`7a3ae5a9`, 184/200, pass^10 15/20). Every page's status line: budget $100, spent $532 at list (about $132
 cash), linking to the incident report. Copy pass over all pages against the humanizer rules; Mission tab first.
+
+## [2026-11-03] build | The live agent is one click from every page
+Every nav now carries a highlighted "Ask the agent" tab that links to the Workshop side panel (`/#agent`); the panel is headed "The agent under review" and the Workshop banner says where it is. Playwright checks the tab on every page.

@@ -60,6 +60,8 @@ def test_workshop_renders_the_cell_and_the_nav(base_url, page):
     page.goto(base_url + "/")
     pw.expect(page.locator("#thread")).to_be_visible()
     pw.expect(page.locator("nav.tabs a", has_text="Field notes")).to_have_attribute("href", "/study")
+    pw.expect(page.locator("nav.tabs a.agent")).to_have_attribute("href", "#agent")
+    pw.expect(page.locator("#agent .agent-head")).to_contain_text("The agent under review")
 
 
 def test_evals_leads_with_the_headline_pair(base_url, page):
@@ -77,6 +79,7 @@ def test_static_pages_render(base_url, page, path, tab, h1):
     page.goto(base_url + path)
     pw.expect(page.locator("h1")).to_contain_text(h1)
     pw.expect(page.locator("nav.tabs a[aria-current]")).to_have_text(tab)
+    pw.expect(page.locator("nav.tabs a.agent")).to_have_attribute("href", "/#agent")  # the live agent, one click from every page
     pw.expect(page.locator("main table tbody tr").first).to_be_visible()
 
 

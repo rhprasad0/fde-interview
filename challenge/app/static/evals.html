@@ -39,6 +39,7 @@ nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
 nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
 nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
 nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+nav.tabs a.agent{background:var(--accent);color:var(--accent-ink);font-weight:600}
 .status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
 .status b{color:var(--ink-2);font-weight:600}
 .banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
@@ -111,7 +112,7 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
     </div>
     <nav class="tabs" aria-label="Pages">
       <a href="/mission">Mission</a>
-      <a href="/">Workshop</a>
+      <a href="/#agent" class="agent" title="The Workshop page. The agent under review is in its side panel.">Ask the agent</a>
       <a href="/evals" aria-current="page">Metrics dashboard</a>
       <a href="/study">Field notes</a>
       <a href="/transcript">Transcript</a>
