@@ -460,3 +460,9 @@ answered Verified in 7 s. Two `DECISIONS.md` entries (dashboard headline, deploy
 `/mission`: why this problem (rule dates, rubric scores, DHS), the user and buyer, impact split measured vs
 hypothesis with the pilot. `/incident`: the Databricks spend as a postmortem (timeline, itemized $517 bill,
 five findings, eleven surfaces, what survived the move). One static-page route; navs on every page; 11 tests.
+
+## [2026-11-03] build | Transcript page, baseline row, $100 budget line
+`/transcript` renders the eight session turns from the trace in the chat style, with a timed synopsis of the
+redacted audio (no career history, no names). Dashboard story table gains the pre-climb baseline pair
+(`7a3ae5a9`, 184/200, pass^10 15/20). Every page's status line: budget $100, spent $532 at list (about $132
+cash), linking to the incident report. Copy pass over all pages against the humanizer rules; Mission tab first.
