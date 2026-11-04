@@ -779,3 +779,72 @@ functions, Agent Bricks.
   managed TLS or rollout, and nothing to show for the serverless story).
 - **Revisit:** if the account cannot create an ECS service and load balancer by 2026-11-04
   evening, the EC2 host with the same image is the one-day fallback.
+
+## 2026-11-04  Decision capture: the app writes review decisions under its own insert-only role
+
+- **Context:** the Workshop page's "Recommended for the review" cards had Accept, Edit, and
+  Dismiss buttons that did nothing, under copy that said the cards were drafted from the figures.
+  In fact they were written by hand. The Palantir analysis left decision capture open, with three
+  options ([AIP for the variance review](wiki/analyses/palantir-aip-for-workforce-variance-review.md)).
+- **Chosen:** option 1. A `reviewer` Postgres role (password from Terraform's `pg_env`, like the
+  agent's) holds `INSERT` on `app.decisions` and `SELECT` on its `id` and `at` columns only
+  (`challenge/sql/04_decisions.pg.sql`). `POST /api/decision` validates the card id, the verdict
+  (accept, edit, dismiss), and the text, then writes one row with the cell it was made on. The
+  agent role has no grant on schema `app`, so the agent proposes and only a human click decides,
+  as with a Palantir Action whose permission belongs to the user. The card copy now says the three
+  steps were written by hand and that the agent can only read.
+- **Rejected:** the job materializing decisions on a schedule (decisions show up late, on stage);
+  keeping capture out of scope (a panelist clicks Accept and nothing happens); having the agent
+  generate the recommendations (another LLM call that would need its own eval, two days out).
+- **Revisit:** if the recommendations become agent-generated, store the proposing trace id on the
+  row; if the app gains sign-in, store the user instead of the browser session id.
+
+## 2026-11-04  OPM watcher: a scheduled pipeline that lands files and logs them in RDS, not one that rebuilds the agent's tables
+
+- **Context:** the build needs a data pipeline feeding RDS. Today the tables reach RDS by hand
+  (`pull_sources.py`, then `load_postgres.py --ship`, then `03_semantic.pg.sql`). The `--ship` rerun
+  is untested, drops the live tables with CASCADE, and a new OPM month would shift the window the
+  eval truth was computed against. OPM's September 2026 files were due 2026-11-04 and had not posted
+  by 14:07 UTC.
+- **Chosen:** the OPM watcher (`challenge/infra/pipeline.tf`, `challenge/pipeline/`). An EventBridge
+  rule at 06:00 UTC runs `fetch.py` outside the VPC. It lands each new current OPM FWD file from
+  `opm_since` (202608) onward in an S3 bucket, then invokes `load.py` inside the VPC, which inserts a
+  row into `ops.opm_files` as role `pipeline`. That role can insert there and nothing else
+  (`challenge/sql/05_pipeline.pg.sql`). Two functions because the default VPC has no NAT gateway:
+  fetch needs the internet, load needs RDS, which admits only security groups and the laptop. A
+  failed load deletes the landed file so the next run retries. The agent's tables are untouched.
+  First run 2026-11-04: three August files in 5.8 s, a rerun landed none.
+- **Rejected:** a scheduled ECS Fargate task running the existing pull, DuckDB build, and `--ship`
+  (the real pipeline, but each run drops the live demo tables, and its schedule would have to stay
+  disabled until after the interview); a NAT gateway so one in-VPC function could do both (about
+  $32 a month); an S3 event trigger (the loader would then need S3 access from inside the VPC to
+  read OPM's publish date).
+- **Revisit:** if the build outlives the interview, add a step that rebuilds the agent's tables
+  from what landed, after the eval truth is recomputed for the new window; move the `pipeline`
+  password to Secrets Manager.
+
+## 2026-11-04  Deploy: Lambda behind a Cloudflare Worker, IPv6 egress instead of a NAT gateway
+
+- **Context:** the 2026-11-03 entry chose ECS Fargate behind a load balancer. Ryan asked for a
+  serverless deploy on his Cloudflare domain, without AgentCore. The app keeps no state between
+  requests (the browser sends the transcript) and pings every 15 s, so any instance can serve any
+  turn and proxies keep the stream open. The function needs both the Anthropic API (internet) and
+  RDS (inside the VPC), and the default VPC has no NAT gateway.
+- **Chosen:** the same image on Lambda (`challenge/infra/app.tf`), with the Lambda Web Adapter
+  running uvicorn unchanged behind a Function URL in `RESPONSE_STREAM` mode. A Cloudflare Worker on
+  `frontier-lab-challenge.ryanprasad.ai` (free plan) passes requests through, because a Function
+  URL takes no custom domain and routes by its own Host header. The function runs in two new
+  dual-stack subnets and leaves over IPv6 through an egress-only gateway: `api.anthropic.com` and
+  SSM's dual-stack endpoint both answer on IPv6. The Anthropic key is an SSM SecureString, read by
+  the app at startup, so it is in neither the function's environment nor Terraform state.
+  `AWS_LWA_ASYNC_INIT` took the cold start from 24 s (the 10 s init timed out and reran) to 5 s.
+  Verified 2026-11-04 on the Function URL: `/health`, a streamed question (tool frame at 2.4 s,
+  text at 6.2 s, "Verified, 475"), and one decision write as `reviewer` (row deleted).
+- **Rejected:** Fargate plus a load balancer (about $25 a month around the clock, no scale to
+  zero); a NAT gateway (about $1 a day, kept as the fallback if IPv6 egress breaks: one route and
+  one gateway); CloudFront plus ACM (same result, two hand-made DNS records and an ACM wait);
+  Lambda Web Functions (announced 2026-10, Node.js only); reserved concurrency as a spend cap (the
+  account's limit is 10, all of which must stay unreserved).
+- **Revisit:** if spend runs hot, set the Anthropic Console limit lower or put Cloudflare Access in
+  front; if the Function URL's second door matters, have the Worker add a shared header the app
+  checks; if a cold start shows on stage, provisioned concurrency of 1 for the interview hours.

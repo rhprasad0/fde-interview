@@ -2,13 +2,15 @@
 
 Run: RAW_DIR=<repo>/raw challenge/.venv/bin/python -m uvicorn main:app --app-dir challenge/app --port 8766
 Stateless: every /api/ask carries the transcript; the answer streams back as server-sent events. Deployed as one
-container on ECS Fargate (Dockerfile at the repo root): uvicorn on 8080, static files served from here, configuration
-from the environment only (ANTHROPIC_API_KEY, PG*, AGENT_PG*, RAW_DIR, AGENT_GIT_SHA), /health for the service check.
+container on Lambda behind a streaming Function URL (Dockerfile at the repo root, challenge/infra/app.tf): uvicorn on
+8080 under the Lambda Web Adapter, static files served from here, configuration from the environment only
+(ANTHROPIC_API_KEY or ANTHROPIC_API_KEY_SSM, PG*, AGENT_PG*, REVIEWER_PG*, RAW_DIR, AGENT_GIT_SHA), /health for readiness.
 """
 
 import json
 import sys
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -69,6 +71,24 @@ async def ask(req: Ask):
                              media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
 
+class Decision(BaseModel):
+    rec: str = Field(pattern=r"^[a-z0-9-]{1,40}$")
+    verdict: Literal["accept", "edit", "dismiss"]
+    text: str = Field(min_length=1, max_length=1000)
+    session_id: str = Field("app", pattern=r"^[A-Za-z0-9_-]{1,40}$")
+
+
+@app.post("/api/decision")
+def decision(d: Decision):
+    if not d.text.strip():
+        raise HTTPException(400, "empty recommendation")
+    try:
+        return backend.record(d.rec, d.verdict, d.text.strip(), d.session_id)
+    except Exception as e:  # noqa: BLE001  the type only: a psycopg message can carry the host
+        print(f"decision not recorded: {type(e).__name__}", file=sys.stderr)
+        raise HTTPException(503, "decision not recorded") from None
+
+
 @app.get("/api/cell")
 def cell():
     return json.loads(CELL.read_text())
@@ -94,7 +114,8 @@ def health():
     return {"ok": True}
 
 
-PAGES = {"study": "study.html", "mission": "mission.html", "incident": "incident.html", "transcript": "transcript.html"}
+PAGES = {"study": "study.html", "mission": "mission.html", "incident": "incident.html", "transcript": "transcript.html",
+         "architecture": "architecture.html"}
 
 
 @app.get("/{page}")

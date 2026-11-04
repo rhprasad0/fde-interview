@@ -38,13 +38,18 @@ for _line in _envf.read_text().splitlines() if _envf.exists() else []:
     _k, _sep, _v = _line.split("#", 1)[0].partition("=")
     if _sep:
         ENV[_k.strip()] = _v.strip().strip("'\"")
+if "ANTHROPIC_API_KEY" not in ENV and "ANTHROPIC_API_KEY_SSM" in ENV:  # Lambda: the key stays out of its environment and tfstate
+    import boto3  # a Strands dependency
+    from botocore.config import Config
+    ENV["ANTHROPIC_API_KEY"] = boto3.client("ssm", config=Config(use_dualstack_endpoint=True)).get_parameter(  # IPv6 egress only
+        Name=ENV["ANTHROPIC_API_KEY_SSM"], WithDecryption=True)["Parameter"]["Value"]
 
 MODEL_ID = "claude-haiku-5-5"
 EFFORT = "xhigh"  # Ryan, 2026-11-03, chosen on the held-out sweep (DECISIONS.md); read when an agent is built, so the harness --effort can set it first
 MAX_TOKENS = 64000  # was 16000 until 2026-11-03; thinking counts against it, and the xhigh sweep truncated 12 of 40 runs
 PRICE = {"inputTokens": 0.10, "outputTokens": 0.50, "cacheReadInputTokens": 0.01, "cacheWriteInputTokens": 0.125}  # $/MTok; cache read 0.1x, 5-min write 1.25x
 
-_SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "ANTHROPIC_API_KEY")}
+_SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "REVIEWER_PGPASSWORD", "ANTHROPIC_API_KEY")}
 
 
 def redact(s: str) -> str:

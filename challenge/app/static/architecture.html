@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* The evals-suite chrome reused: the page on the left, open items in the right rail. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --ink:#1b1d22; --ink-2:#4b5059; --ink-3:#6b717c; --line:#d6dae1; --grid:#e6e9ee;
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --pass:#2a78d6; --pass-soft:#dbe9fb;
+  --f-list:#eb6834; --f-fna:#1baf7a; --f-other:#6b717c;
+  --ok-bg:#dff3e4; --ok-ink:#14532d; --bad-bg:#fde3e1; --bad-ink:#7a1a16; --no-bg:#e9ebef; --no-ink:#3d4149;
+  --banner:#f6e7c9; --banner-ink:#4a3400;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171b; --panel:#1e2126; --ink:#eceef2; --ink-2:#b4bac4; --ink-3:#8c93a0; --line:#343942; --grid:#2b3038;
+  --accent:#3987e5; --pass:#3987e5; --pass-soft:#243246;
+  --f-list:#d95926; --f-fna:#199e70; --f-other:#8c93a0;
+  --ok-bg:#163a26; --ok-ink:#9fe2b4; --bad-bg:#43201e; --bad-ink:#ffb3ad; --no-bg:#2b3038; --no-ink:#c3c8d1;
+  --banner:#3a2f14; --banner-ink:#ffe3a3; color-scheme:dark } }
+
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-block:10px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 10px;border-radius:4px}
+nav.tabs a[aria-current]{background:var(--bg);color:var(--ink);font-weight:600}
+nav.tabs a.off{color:var(--ink-3);text-decoration:line-through}
+nav.tabs a.agent{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.status{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.status b{color:var(--ink-2);font-weight:600}
+.banner{background:var(--banner);color:var(--banner-ink);font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;text-align:center;padding-block:6px}
+.shell{max-width:1440px;margin:0 auto;padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px}
+@media (max-width:1040px){.shell{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:600}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max-width:34ch}
+.lede{margin:0;color:var(--ink-2);font-size:16px;max-width:72ch}
+.headrow{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn small{font-weight:400;opacity:.85}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--ink-3)}
+.tile strong{font-size:26px;font-weight:700}
+.tile em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:17px;font-weight:700;line-height:1.3;text-wrap:balance}
+.card .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.card .src{margin:0;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.card svg{width:100%;height:auto;display:block;overflow:visible}
+.card svg text{font-family:var(--sans);font-size:12px;fill:var(--ink-2)}
+.card svg .axis{stroke:var(--line)}
+.card svg .gridline{stroke:var(--grid)}
+.card svg .lbl{fill:var(--ink);font-weight:600}
+.card svg .mono{font-family:var(--mono);font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.scroll{overflow-x:auto}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;max-width:280px;z-index:20}
+.tip b{display:block}
+aside.debug{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;min-width:0;align-self:start;position:sticky;top:12px;max-height:calc(100vh - 24px)}
+@media (max-width:1040px){aside.debug{position:static;max-height:none}}
+.dhead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dhead b{font-size:14px}
+.dhead small{font-size:12px;color:var(--ink-3)}
+.dbody{padding:14px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;font-size:13.5px;flex:1;min-height:0}
+.dsec{display:flex;flex-direction:column;gap:6px}
+.dsec h3{margin:0;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.dsec p{margin:0}
+.q{background:var(--bg);border-radius:6px;padding:8px 12px}
+pre{margin:0;font-family:var(--mono);font-size:11.5px;line-height:1.45;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;overflow-x:auto;color:var(--ink);white-space:pre-wrap}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px}
+.chip.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-ink)}
+.chip.warn{background:var(--banner);color:var(--banner-ink)}
+.chip.no{background:var(--no-bg);color:var(--no-ink)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-block:0 24px;max-width:1440px;margin:0 auto}
+.card svg .lane{fill:var(--bg)}
+.card svg .lanet{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;fill:var(--ink-3)}
+.card svg .box{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+.card svg .box.key{stroke:var(--accent);stroke-width:1.6}
+.card svg .db{fill:none;stroke:var(--ink-3);stroke-width:1.2}
+.card svg .group{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 3}
+.card svg .edge{fill:none;stroke:var(--ink-3);stroke-width:1.4}
+.card svg .head{fill:var(--ink-3)}
+.card svg .small{font-size:11px;fill:var(--ink-3)}
+.diagram svg{min-width:760px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in gutter">
+    <div class="brand"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l1 4H7z"/><path d="M7 7h10v10a5 5 0 0 1-10 0z"/><path d="M12 10v5"/><path d="M9 21h6"/></svg><span>Lantern Architecture</span><small>AS OF 2026-11-04</small></div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="/mission">Mission</a>
+      <a href="/#agent" class="agent" title="The Workshop page. The agent under review is in its side panel.">Ask the agent</a>
+      <a href="/evals">Metrics dashboard</a>
+      <a href="/study">Field notes</a>
+      <a href="/transcript">Transcript</a>
+      <a href="/incident">Incident report</a>
+      <a href="/architecture" aria-current="page">Architecture</a>
+      <a href="https://github.com/rhprasad0/fde-interview#readme" title="The repo README: the write-up and an index of the code, evals, and decisions.">README</a>
+      <a href="#microservices" class="off" title="One container.">Microservices</a>
+    </nav>
+    <div class="status">
+      <span>Budget <b class="num">$100.00</b></span>
+      <span>Spent <b class="num"><a href="/incident" title="$517 Databricks at list ($400 of it trial credits), $14 model tokens, about $1 RDS. Judge calls not metered.">$532</a></b> at list, about $132 cash</span>
+      <span>Region <b>us-west-2</b></span>
+      <span>Postgres roles <b class="num">4</b></span>
+      <span>Public URL <b>frontier-lab-challenge.ryanprasad.ai</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="shell gutter">
+<main>
+  <div class="crumb">
+    <span>Terraform <b>challenge/infra</b></span><span>/</span>
+    <span>SQL <b>challenge/sql</b></span><span>/</span>
+    <span>Agent <b>challenge/prototype/agent.py</b></span>
+  </div>
+
+  <div class="headrow">
+    <div>
+      <h1>One Postgres in the middle, with a separate role for each thing that touches it.</h1>
+      <p class="lede">The agent reads the semantic layer. Reviewers write their decisions. A daily job logs new OPM files. Only the build on the laptop writes the tables the agent reads.</p>
+    </div>
+    <a class="btn primary" href="/#agent">Ask the agent</a>
+  </div>
+
+  <section class="tiles" aria-label="At a glance">
+    <div class="tile"><span>Postgres roles</span><strong class="num">4</strong><em>Owner, agent, reviewer, pipeline.</em></div>
+    <div class="tile"><span>Agent tools</span><strong class="num">9</strong><em>Eight governed functions and one read-only query.</em></div>
+    <div class="tile"><span>Scheduled jobs</span><strong class="num">1</strong><em>The OPM watcher, daily at 06:00 UTC.</em></div>
+    <div class="tile"><span>AWS per month</span><strong class="num">~$14</strong><em>Almost all of it the RDS instance.</em></div>
+  </section>
+
+  <section class="card" id="diagram">
+    <h2>How the pieces connect</h2>
+    <p class="sub">Every line runs today. The table below names every box.</p>
+    <div class="scroll diagram">
+    <svg viewBox="0 0 1000 570" role="img" aria-labelledby="dg-t dg-d">
+      <title id="dg-t">Lantern architecture</title>
+      <desc id="dg-d">A browser reaches a Cloudflare Worker on the custom domain, which passes requests to the workshop app on Lambda. The app's agent calls the Anthropic API and reads the semantic schema in RDS Postgres as the agent role. Review decisions go to app.decisions as the reviewer role. The eval harness on the laptop runs the same agent and checks truth against the silver and synthetic tables. A DuckDB build on the laptop pulls public files and ships those tables. In AWS, a daily fetch Lambda lands new OPM files in S3 and invokes a load Lambda in the VPC, which writes ops.opm_files as the pipeline role.</desc>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+
+      <rect class="lane" x="10" y="10" width="230" height="550" rx="6"/>
+      <rect class="lane" x="270" y="10" width="270" height="550" rx="6"/>
+      <rect class="lane" x="570" y="10" width="420" height="550" rx="6"/>
+      <text class="lanet" x="26" y="32">INTERNET</text>
+      <text class="lanet" x="286" y="32">COMPUTE</text>
+      <text class="lanet" x="586" y="32">AWS US-WEST-2</text>
+
+      <g class="edges">
+        <path class="edge" d="M125,80 V88" marker-end="url(#ah)"/>
+        <path class="edge" d="M220,118 L286,158" marker-end="url(#ah)"/>
+        <path class="edge" d="M290,180 H224" marker-end="url(#ah)"/>
+        <path class="edge" d="M520,165 L606,113" marker-end="url(#ah)"/>
+        <path class="edge" d="M520,200 L606,191" marker-end="url(#ah)"/>
+        <path class="edge" d="M520,290 L606,268" marker-end="url(#ah)"/>
+        <path class="edge" d="M520,390 L606,290" marker-end="url(#ah)"/>
+        <path class="edge" d="M220,390 H286" marker-end="url(#ah)"/>
+        <path class="edge" d="M220,495 H596" marker-end="url(#ah)"/>
+        <path class="edge" d="M710,495 H726" marker-end="url(#ah)"/>
+        <path class="edge" d="M655,520 V540 H905 V524" marker-end="url(#ah)"/>
+        <path class="edge" d="M905,470 V386" marker-end="url(#ah)"/>
+      </g>
+
+      <g text-anchor="middle">
+        <rect class="box" x="30" y="40" width="190" height="40" rx="4"/>
+        <text class="lbl" x="125" y="65">Browser</text>
+        <rect class="box" x="30" y="92" width="190" height="44" rx="4"/>
+        <text class="lbl" x="125" y="111">Cloudflare Worker</text>
+        <text class="small" x="125" y="127">the custom domain</text>
+
+        <rect class="box key" x="290" y="140" width="230" height="80" rx="4"/>
+        <text class="lbl" x="405" y="166">Workshop app and agent</text>
+        <text x="405" y="185">Lambda · FastAPI, Strands, SSE</text>
+        <text class="small mono" x="405" y="204">claude-haiku-5-5 · xhigh</text>
+
+        <rect class="box" x="290" y="260" width="230" height="60" rx="4"/>
+        <text class="lbl" x="405" y="285">Eval harness</text>
+        <text x="405" y="304">laptop · the same agent</text>
+
+        <rect class="box" x="290" y="360" width="230" height="60" rx="4"/>
+        <text class="lbl" x="405" y="385">DuckDB build</text>
+        <text x="405" y="404">laptop · pull, checks, ship</text>
+
+        <rect class="box" x="30" y="150" width="190" height="60" rx="4"/>
+        <text class="lbl" x="125" y="176">Anthropic API</text>
+        <text x="125" y="195">the model</text>
+        <text class="small" x="257" y="172">HTTPS</text>
+
+        <rect class="box" x="30" y="360" width="190" height="60" rx="4"/>
+        <text class="lbl" x="125" y="385">OPM, USAJOBS, Census</text>
+        <text x="125" y="404">public files</text>
+        <text class="small" x="253" y="382">pull</text>
+
+        <rect class="box" x="30" y="470" width="190" height="50" rx="4"/>
+        <text class="lbl" x="125" y="500">OPM FWD API</text>
+        <text class="small" x="405" y="487">new monthly files</text>
+
+        <text class="small" x="556" y="266">truth SQL</text>
+        <text class="small" x="580" y="360">ship</text>
+      </g>
+
+      <rect class="db" x="590" y="40" width="380" height="380" rx="8"/>
+      <text class="lbl" x="606" y="64">RDS Postgres 17 · db.t4g.micro</text>
+      <g text-anchor="middle">
+        <rect class="box key" x="610" y="80" width="340" height="62" rx="4"/>
+        <text class="lbl" x="780" y="105">semantic · 8 views, 8 functions</text>
+        <text x="780" y="125">role agent · read-only · 60 s timeout</text>
+
+        <rect class="box" x="610" y="160" width="340" height="62" rx="4"/>
+        <text class="lbl" x="780" y="185">app.decisions</text>
+        <text x="780" y="205">role reviewer · insert only</text>
+
+        <rect class="box" x="610" y="240" width="340" height="62" rx="4"/>
+        <text class="lbl" x="780" y="265">silver, synthetic tables</text>
+        <text x="780" y="285">owner only</text>
+
+        <rect class="box" x="610" y="320" width="340" height="62" rx="4"/>
+        <text class="lbl" x="780" y="345">ops.opm_files</text>
+        <text x="780" y="365">role pipeline · insert only</text>
+      </g>
+
+      <rect class="group" x="590" y="436" width="380" height="116" rx="6"/>
+      <text class="small" x="606" y="456">OPM watcher · daily 06:00 UTC</text>
+      <g text-anchor="middle">
+        <rect class="box" x="600" y="470" width="110" height="50" rx="4"/>
+        <text class="lbl" x="655" y="500">fetch Lambda</text>
+        <rect class="box" x="730" y="470" width="100" height="50" rx="4"/>
+        <text class="lbl" x="780" y="500">S3 landing</text>
+        <rect class="box" x="850" y="470" width="110" height="50" rx="4"/>
+        <text class="lbl" x="905" y="493">load Lambda</text>
+        <text class="small" x="905" y="510">in the VPC</text>
+        <text class="small" x="780" y="535">invoke</text>
+      </g>
+    </svg>
+    </div>
+    <p class="src">challenge/infra/main.tf, pipeline.tf · challenge/sql/00_roles, 03_semantic, 04_decisions, 05_pipeline.pg.sql</p>
+  </section>
+
+  <section class="card" id="parts">
+    <h2>Every box, where it runs, and what it may touch</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>Part</th><th>Runs on</th><th>Talks to</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Workshop app</td><td>Lambda, from the repo's one container image</td><td>Anthropic API and SSM over IPv6. RDS as agent and as reviewer.</td><td>No state on the server. The browser sends the transcript with each turn, and the answer streams back as server-sent events. A ping every 15 s keeps the stream open while the model thinks. A cold start takes about 5 s.</td></tr>
+        <tr><td>Agent</td><td>Inside the app process</td><td>Eight governed functions, one read-only query tool</td><td>claude-haiku-5-5 at xhigh effort, 64,000-token cap. A fresh agent per request.</td></tr>
+        <tr><td>RDS Postgres</td><td>AWS, db.t4g.micro, 20 GB</td><td>Nothing outbound</td><td>Reachable from one laptop address and two security groups, the app's and the loader's. About $14 a month.</td></tr>
+        <tr><td>semantic</td><td>RDS</td><td>Read by the agent role</td><td>Eight views and eight table functions. Read-only transactions, 60 s statement timeout, no other schema.</td></tr>
+        <tr><td>app.decisions</td><td>RDS</td><td>Written by the reviewer role</td><td>One row per Accept, Edit, or Dismiss click. The agent has no grant here, so a decision is always a person's.</td></tr>
+        <tr><td>silver, synthetic</td><td>RDS</td><td>Owner only</td><td>Shipped from the DuckDB build. The eval's truth SQL reads these tables and never the semantic layer.</td></tr>
+        <tr><td>DuckDB build</td><td>The laptop</td><td>Public files. RDS as owner.</td><td>pull_sources.py, then load_postgres.py --ship. 25 acceptance checks pass before anything ships. The window is pinned to September 2025 through August 2026.</td></tr>
+        <tr><td>Eval harness</td><td>The laptop</td><td>The same agent. RDS as owner for truth.</td><td>Every graded run goes to experiments.jsonl, which the <a href="/evals">metrics dashboard</a> reads.</td></tr>
+        <tr><td>OPM watcher</td><td>Two Lambdas, daily 06:00 UTC</td><td>OPM API, S3, RDS as pipeline</td><td>The fetch Lambda runs outside the VPC to reach OPM. The load Lambda runs inside it to reach RDS. It never touches the agent's tables. About $0.10 a month.</td></tr>
+        <tr><td>Public URL</td><td>Cloudflare Worker, free plan</td><td>The Lambda Function URL</td><td>frontier-lab-challenge.ryanprasad.ai. The Worker passes each request through and streams the answer back. The function leaves the VPC over IPv6, so there is no NAT gateway.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="src">DECISIONS.md · challenge/prototype/agent.py · challenge/scripts/load_postgres.py · challenge/pipeline/</p>
+  </section>
+</main>
+
+<aside class="debug" aria-label="Open items">
+  <div class="dhead"><b>Open items</b><small>what this design does not do yet</small></div>
+  <div class="dbody">
+    <div class="dsec"><h3>Spend</h3><p>The site is public. Lambda runs at most 10 turns at once, the account's limit. A spend limit on the Anthropic key is the real cap.</p></div>
+    <div class="dsec"><h3>Second door</h3><p>The Function URL answers without the Worker too. A shared header checked by the app would close it.</p></div>
+    <div class="dsec"><h3>Fresh data</h3><p>The agent's tables stop at August 2026 on purpose, because the eval truth was computed on that window. New months land in S3 and wait.</p></div>
+    <div class="dsec"><h3>Secrets</h3><p>The Anthropic key is in SSM, and the app reads it at startup. Postgres passwords are in a gitignored .env on the laptop and are encrypted environment variables on the two Lambdas. Secrets Manager is the upgrade for those.</p></div>
+    <div class="dsec"><h3>TLS to Postgres</h3><p>Connections are encrypted. Clients do not verify the RDS certificate yet.</p></div>
+    <div class="dsec"><h3>Traces</h3><p>Agent traces are files in raw/ on the laptop, gitignored. On Lambda they go to /tmp and are lost when the instance is recycled.</p></div>
+  </div>
+</aside>
+</div>
+
+<footer class="gutter">Terraform, SQL, and the agent live under challenge/ in the repo.</footer>
+</body>
+</html>

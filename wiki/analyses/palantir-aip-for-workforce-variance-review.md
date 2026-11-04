@@ -67,7 +67,7 @@ refinement, feedback, and a resulting decision"
 |---|---|---|---|
 | Ontology object types and links | Agency, position, person, posting as governed objects | The eight `semantic` views and the Genie space over Unity Catalog ([spec 03](../../challenge/specs/03-semantic-layer.md)) | Built |
 | AIP Logic function | Typed inputs, deterministic blocks plus a Use LLM block, typed output; unit tests and AIP Evals attached ([Logic getting started](https://palantir.com/docs/foundry/logic/getting-started/)) | The agent as a **briefing function**: input (component, occupation, quarter), fixed calls to the UC functions, one LLM narrative step, output a variance brief with provenance | Spec 04 |
-| Actions, proposal-based | Permissioned "verbs"; the agent stages, a human approves; the Andersen workforce app on Foundry used "Propose Reallocation" and "Commit Assignment" ([Andersen case](https://global.andersen.com/consulting/optimizing-workforce-allocation-case-study)) | Recommendations in the brief that the analyst accepts, rejects, or flags for the Strategic Hiring Committee | Collides with read-only; see below |
+| Actions, proposal-based | Permissioned "verbs"; the agent stages, a human approves; the Andersen workforce app on Foundry used "Propose Reallocation" and "Commit Assignment" ([Andersen case](https://global.andersen.com/consulting/optimizing-workforce-allocation-case-study)) | Recommendations in the brief that the analyst accepts, rejects, or flags for the Strategic Hiring Committee | Built 2026-11-04 as option 1 below (cards written by hand, not by the agent) |
 | Scenario | A fork of the Ontology made by applying Actions; example uses include "personnel scheduling" and "resource allocation" ([what-if example](https://build.palantir.com/platform/596fb429-6d17-48de-b70c-6a520fb4eab2)) | What-if on the synthetic staffing plan: "if TSA fills 200 of the 1802 postings by Q2, the variance closes to X" | Stretch |
 | Automate | Conditions monitored continuously, triggering Actions or Logic runs ([write-back example](https://build.palantir.com/platform/e28c95c8-24d7-4b39-afd3-a9ad25449894)) | The Lakeflow job: monthly ingest, refresh, scheduled briefs, threshold alerts | Decided |
 | AIP Evals | Generated test cases and evaluators on a Logic function | The pass^3 harness and dashboard ([agent evaluation](../concepts/agent-evaluation.md)) | Spec 05 |
@@ -95,7 +95,8 @@ staffing plan and position data would come from that system; the synthetic plan 
 Palantir's pattern ends in a write: proposal, human approval, Ontology edit. This build is
 read-only. The agent holds no write grant anywhere and the Lakeflow job owns every write
 ([DECISIONS.md](../../DECISIONS.md), Domain model correction). Decision capture needs something
-to write. Three options, not chosen here:
+to write. Three options; option 1 was chosen on 2026-11-04 ([DECISIONS.md](../../DECISIONS.md),
+Decision capture):
 
 1. **The app writes under its own identity.** A separate service principal with `INSERT` on one
    `decisions` table; the agent identity stays read-only. Closest to Palantir's model, where the
