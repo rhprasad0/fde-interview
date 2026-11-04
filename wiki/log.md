@@ -469,3 +469,6 @@ cash), linking to the incident report. Copy pass over all pages against the huma
 
 ## [2026-11-03] build | The live agent is one click from every page
 Every nav now carries a highlighted "Ask the agent" tab that links to the Workshop side panel (`/#agent`); the panel is headed "The agent under review" and the Workshop banner says where it is. Playwright checks the tab on every page.
+
+## [2026-11-04] build | Review cards store decisions
+The Workshop page's Accept, Edit, and Dismiss buttons now write to `app.decisions` through `POST /api/decision`, as an insert-only `reviewer` role the agent has no access to (option 1 of the [AIP analysis](analyses/palantir-aip-for-workforce-variance-review.md)). The card copy says the steps were written by hand. Unit and Playwright tests cover the endpoint and the clicks; one live write against RDS was read back and deleted.

@@ -82,3 +82,19 @@ def test_health_and_pages():
     for path, text in (("/", "Lantern Workshop"), ("/evals", "Lantern Evals"), ("/study", "Field notes"), ("/mission", "Lantern Mission"), ("/incident", "Incident Report"), ("/transcript", "Lantern Transcript")):
         r = c.get(path)
         assert r.status_code == 200 and text in r.text, path
+
+
+def test_decision_validates_and_hides_db_errors(monkeypatch):
+    c, got = TestClient(main.app), []
+    monkeypatch.setattr(backend, "record", lambda *a: got.append(a) or {"id": 7, "at": "t"})
+    ok = {"rec": "committee-agenda", "verdict": "accept", "text": " Put it on the agenda. ", "session_id": "app-x"}
+    assert c.post("/api/decision", json=ok).json() == {"id": 7, "at": "t"}
+    assert got == [("committee-agenda", "accept", "Put it on the agenda.", "app-x")]
+    for bad in ({**ok, "verdict": "approve"}, {**ok, "rec": "../x"}, {**ok, "text": "   "}, {**ok, "text": "x" * 1001}):
+        assert c.post("/api/decision", json=bad).status_code in (400, 422), bad
+
+    def boom(*a):
+        raise RuntimeError("could not connect to db.example.internal")
+    monkeypatch.setattr(backend, "record", boom)
+    r = c.post("/api/decision", json=ok)
+    assert r.status_code == 503 and "example" not in r.text

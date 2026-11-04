@@ -77,6 +77,10 @@ h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;text-wrap:balance;max
 .action{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
 .action p{margin:0;flex:1 1 360px;font-size:14px}
 .btns{display:flex;gap:6px}
+.action .outcome{flex-basis:100%;margin:0;font-size:12.5px;color:var(--ink-2)}
+.action .outcome:empty{display:none}
+.action p[contenteditable=true]{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+.action[data-state=dismiss] p:first-child{color:var(--ink-3);text-decoration:line-through}
 .btn{min-height:40px;padding:0 14px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:13px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn:disabled{opacity:.5;cursor:default}
@@ -210,11 +214,11 @@ footer{text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--in
 
   <section class="card" id="actions">
     <h2>Recommended for the review</h2>
-    <p class="sub">Drafted from the figures above. Nothing happens until a human clicks.</p>
+    <p class="sub">Three next steps, written by hand from the figures above. The agent can only read. Your click is stored in a decisions table the agent has no access to.</p>
     <div class="actions">
-      <div class="action"><p>Put CBP Officer on the Strategic Hiring Committee agenda to settle whether the Q1 shortfall is a planning assumption or a hiring problem.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
-      <div class="action"><p>Request retirement eligibility projections for the officers with 20 or more years before FY2027 targets are set.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
-      <div class="action"><p>Ask CBP how many openings "Many" means on its announcements. The agent is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div></div>
+      <div class="action" data-rec="committee-agenda"><p>Put CBP Officer on the Strategic Hiring Committee agenda to settle whether the Q1 shortfall is a planning assumption or a hiring problem.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div><p class="outcome" aria-live="polite"></p></div>
+      <div class="action" data-rec="retirement-projections"><p>Request retirement eligibility projections for the officers with 20 or more years before FY2027 targets are set.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div><p class="outcome" aria-live="polite"></p></div>
+      <div class="action" data-rec="many-openings"><p>Ask CBP how many openings "Many" means on its announcements. The agent is not allowed to guess.</p><div class="btns"><button class="btn primary" type="button">Accept</button><button class="btn" type="button">Edit</button><button class="btn" type="button">Dismiss</button></div><p class="outcome" aria-live="polite"></p></div>
     </div>
   </section>
 </main>
@@ -442,6 +446,31 @@ async function ask(text, isContext) {
 }
 form.addEventListener('submit', e => { e.preventDefault(); ask(input.value, ctxBox.checked); });
 document.querySelectorAll('.sugg button').forEach(b => b.addEventListener('click', () => ask(b.dataset.q, !!b.dataset.ctx)));
+
+// The review cards. A click stores the decision through /api/decision; Edit makes the text editable, then saves it.
+const DONE = { accept: 'Accepted', edit: 'Saved as edited', dismiss: 'Dismissed' };
+document.querySelectorAll('.action').forEach(card => {
+  const p = card.querySelector('p'), out = card.querySelector('.outcome'), bs = card.querySelectorAll('button'), [acc, edit, dis] = bs;
+  async function send(verdict) {
+    bs.forEach(b => b.disabled = true); out.textContent = 'Saving.';
+    try {
+      const r = await fetch('/api/decision', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rec: card.dataset.rec, verdict, text: p.textContent.trim(), session_id: session }) });
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      p.contentEditable = 'false'; edit.textContent = 'Edit'; card.dataset.state = verdict;
+      out.textContent = `${DONE[verdict]}. Stored as decision ${d.id}.`;
+    } catch {
+      bs.forEach(b => b.disabled = false); out.textContent = 'Not stored. The database did not answer. Try again.';
+    }
+  }
+  acc.addEventListener('click', () => send(p.isContentEditable ? 'edit' : 'accept'));
+  dis.addEventListener('click', () => send('dismiss'));
+  edit.addEventListener('click', () => {
+    if (p.isContentEditable) return send('edit');
+    p.contentEditable = 'true'; edit.textContent = 'Save'; p.focus();
+  });
+});
 </script>
 </body>
 </html>

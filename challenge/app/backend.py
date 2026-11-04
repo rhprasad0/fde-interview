@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "prototype"))
 import agent as A  # noqa: E402
 
+CELL = ("Customs and Border Protection", "CBP Officer (1895)", "FY2026 Q1")  # the review card's object
 SCOPE = "CBP Officers, FY2026 Q1"  # the cell the page is open on; attached to context turns, as the tester app does
 ROLES = ("user", "assistant")
 
@@ -62,3 +63,12 @@ async def stream(turns: list[dict], text: str, context: str | None, session_id: 
         if not fut.done():
             agent.cancel()  # the client went away; stop the model call so the worker thread frees up
         await asyncio.to_thread(agent.cleanup)
+
+
+def record(rec: str, verdict: str, text: str, session_id: str) -> dict:
+    """One human decision on a review card: {id, at}. Written as role reviewer, which can insert into app.decisions and
+    nothing else (sql/04_decisions.pg.sql); the agent role has no grant there, so it can propose but never decide."""
+    r = A._query("INSERT INTO app.decisions (rec, verdict, text, component, occupation, period, session_id)"
+                 " VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id, at", (rec, verdict, text, *CELL, session_id),
+                 user=A.ENV["REVIEWER_PGUSER"], password=A.ENV["REVIEWER_PGPASSWORD"])
+    return dict(zip(r["columns"], r["rows"][0]))

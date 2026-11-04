@@ -44,7 +44,7 @@ EFFORT = "xhigh"  # Ryan, 2026-11-03, chosen on the held-out sweep (DECISIONS.md
 MAX_TOKENS = 64000  # was 16000 until 2026-11-03; thinking counts against it, and the xhigh sweep truncated 12 of 40 runs
 PRICE = {"inputTokens": 0.10, "outputTokens": 0.50, "cacheReadInputTokens": 0.01, "cacheWriteInputTokens": 0.125}  # $/MTok; cache read 0.1x, 5-min write 1.25x
 
-_SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "ANTHROPIC_API_KEY")}
+_SECRETS = {ENV.get(k, ""): f"<{k.lower()}>" for k in ("PGHOST", "PGPASSWORD", "AGENT_PGPASSWORD", "REVIEWER_PGPASSWORD", "ANTHROPIC_API_KEY")}
 
 
 def redact(s: str) -> str:

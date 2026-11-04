@@ -3,8 +3,9 @@
 #   docker build --build-arg AGENT_GIT_SHA=$(git rev-parse HEAD) -t lantern .
 #   docker run --rm -p 8080:8080 --env-file challenge/.env lantern      # then curl localhost:8080/health
 # Configuration is the environment only: ANTHROPIC_API_KEY, PGHOST, PGPORT, PGDATABASE, PGSSLMODE, AGENT_PGUSER,
-# AGENT_PGPASSWORD. No .env, raw/, or credential is copied in (.dockerignore is a whitelist). The build context is the
-# repo root because agent.py and evals.py find challenge/eval/ by walking up from their own files.
+# AGENT_PGPASSWORD, REVIEWER_PGUSER, REVIEWER_PGPASSWORD. No .env, raw/, or credential is copied in (.dockerignore is a
+# whitelist). The build context is the repo root because agent.py and evals.py find challenge/eval/ by walking up from
+# their own files.
 FROM python:3.13-slim
 WORKDIR /srv
 COPY challenge/prototype/requirements.txt challenge/prototype/

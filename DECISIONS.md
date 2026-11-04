@@ -779,3 +779,22 @@ functions, Agent Bricks.
   managed TLS or rollout, and nothing to show for the serverless story).
 - **Revisit:** if the account cannot create an ECS service and load balancer by 2026-11-04
   evening, the EC2 host with the same image is the one-day fallback.
+
+## 2026-11-04  Decision capture: the app writes review decisions under its own insert-only role
+
+- **Context:** the Workshop page's "Recommended for the review" cards had Accept, Edit, and
+  Dismiss buttons that did nothing, under copy that said the cards were drafted from the figures.
+  In fact they were written by hand. The Palantir analysis left decision capture open, with three
+  options ([AIP for the variance review](wiki/analyses/palantir-aip-for-workforce-variance-review.md)).
+- **Chosen:** option 1. A `reviewer` Postgres role (password from Terraform's `pg_env`, like the
+  agent's) holds `INSERT` on `app.decisions` and `SELECT` on its `id` and `at` columns only
+  (`challenge/sql/04_decisions.pg.sql`). `POST /api/decision` validates the card id, the verdict
+  (accept, edit, dismiss), and the text, then writes one row with the cell it was made on. The
+  agent role has no grant on schema `app`, so the agent proposes and only a human click decides,
+  as with a Palantir Action whose permission belongs to the user. The card copy now says the three
+  steps were written by hand and that the agent can only read.
+- **Rejected:** the job materializing decisions on a schedule (decisions show up late, on stage);
+  keeping capture out of scope (a panelist clicks Accept and nothing happens); having the agent
+  generate the recommendations (another LLM call that would need its own eval, two days out).
+- **Revisit:** if the recommendations become agent-generated, store the proposing trace id on the
+  row; if the app gains sign-in, store the user instead of the browser session id.

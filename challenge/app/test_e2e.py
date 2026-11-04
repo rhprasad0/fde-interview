@@ -23,10 +23,14 @@ async def fake_stream(turns, text, context, session_id):
                     "latency_ms": 1200, "cost_usd": 0.001, "question_text": text}}
 
 
+DECISIONS = []
+
+
 @pytest.fixture(scope="module")
 def base_url():
     mp = pytest.MonkeyPatch()
     mp.setattr(backend, "stream", fake_stream)  # main.ask looks backend.stream up per request, so the patch applies in-process
+    mp.setattr(backend, "record", lambda rec, verdict, text, sid: DECISIONS.append((rec, verdict, text)) or {"id": len(DECISIONS), "at": "now"})
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
@@ -90,3 +94,16 @@ def test_ask_streams_a_labelled_answer(base_url, page):
     pw.expect(page.locator(".msg.bot .chip").last).to_have_text("Verified")
     pw.expect(page.locator(".msg.bot .bub strong").last).to_have_text("594")
     pw.expect(page.locator("#askbtn")).to_be_enabled()
+
+
+def test_review_cards_store_accept_and_edit(base_url, page):
+    page.goto(base_url + "/")
+    first, second = page.locator(".action").nth(0), page.locator(".action").nth(1)
+    first.get_by_role("button", name="Accept").click()
+    pw.expect(first.locator(".outcome")).to_have_text(re.compile(r"^Accepted\. Stored as decision \d+\.$"))
+    pw.expect(first.get_by_role("button", name="Dismiss")).to_be_disabled()
+    second.get_by_role("button", name="Edit").click()
+    second.locator("p").first.fill("Request projections for 25 or more years.")
+    second.get_by_role("button", name="Save").click()
+    pw.expect(second.locator(".outcome")).to_contain_text("Saved as edited")
+    assert DECISIONS[-2:] == [("committee-agenda", "accept", DECISIONS[-2][2]), ("retirement-projections", "edit", "Request projections for 25 or more years.")]

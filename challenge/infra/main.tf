@@ -1,7 +1,7 @@
 # Spec 06: the Postgres the semantic layer lives on, replacing the Databricks workspace torn down 2026-11-02.
 #
 #   terraform init && terraform apply            # terraform.tfvars (gitignored) holds my_ip = "<laptop>/32"
-#   terraform output -raw pg_env >> ../.env      # PG* (owner) and AGENT_PG* (read-only agent role)
+#   terraform output -raw pg_env >> ../.env      # PG* (owner), AGENT_PG* (read-only agent), REVIEWER_PG* (app decisions)
 #
 # Nothing runs inside AWS: the agent, loader, and eval harness connect from the laptop, so the instance is
 # public behind one /32 and a password. db.t4g.micro + 20 GB gp3 is about $14/month; destroy when done.
@@ -61,6 +61,11 @@ resource "random_password" "agent" {
   special = false
 }
 
+resource "random_password" "reviewer" {
+  length  = 32
+  special = false
+}
+
 resource "aws_db_instance" "workforce" {
   identifier              = "workforce"
   engine                  = "postgres"
@@ -92,5 +97,7 @@ output "pg_env" {
     PGSSLMODE=require
     AGENT_PGUSER=agent
     AGENT_PGPASSWORD=${random_password.agent.result}
+    REVIEWER_PGUSER=reviewer
+    REVIEWER_PGPASSWORD=${random_password.reviewer.result}
   EOT
 }
