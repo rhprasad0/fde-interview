@@ -472,3 +472,6 @@ Every nav now carries a highlighted "Ask the agent" tab that links to the Worksh
 
 ## [2026-11-04] build | Review cards store decisions
 The Workshop page's Accept, Edit, and Dismiss buttons now write to `app.decisions` through `POST /api/decision`, as an insert-only `reviewer` role the agent has no access to (option 1 of the [AIP analysis](analyses/palantir-aip-for-workforce-variance-review.md)). The card copy says the steps were written by hand. Unit and Playwright tests cover the endpoint and the clicks; one live write against RDS was read back and deleted.
+
+## [2026-11-04] build | OPM watcher feeds RDS
+Terraform now runs a daily pipeline: a Lambda lands new current OPM FWD files in S3 and a second Lambda inside the VPC records each one in `ops.opm_files` as an insert-only `pipeline` role. The first run landed the three August 2026 files; the second landed none. September had not posted by 14:07 UTC. The agent's tables are still loaded by hand from the pinned window.

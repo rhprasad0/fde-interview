@@ -22,3 +22,6 @@ CLAUDE.local.md
 
 # Python bytecode (a .pyc was tracked by mistake until spec 03)
 __pycache__/
+
+# The OPM watcher's Lambda zips and vendored pg8000
+/challenge/pipeline/build/

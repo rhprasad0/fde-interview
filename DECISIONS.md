@@ -798,3 +798,27 @@ functions, Agent Bricks.
   generate the recommendations (another LLM call that would need its own eval, two days out).
 - **Revisit:** if the recommendations become agent-generated, store the proposing trace id on the
   row; if the app gains sign-in, store the user instead of the browser session id.
+
+## 2026-11-04  OPM watcher: a scheduled pipeline that lands files and logs them in RDS, not one that rebuilds the agent's tables
+
+- **Context:** the build needs a data pipeline feeding RDS. Today the tables reach RDS by hand
+  (`pull_sources.py`, then `load_postgres.py --ship`, then `03_semantic.pg.sql`). The `--ship` rerun
+  is untested, drops the live tables with CASCADE, and a new OPM month would shift the window the
+  eval truth was computed against. OPM's September 2026 files were due 2026-11-04 and had not posted
+  by 14:07 UTC.
+- **Chosen:** the OPM watcher (`challenge/infra/pipeline.tf`, `challenge/pipeline/`). An EventBridge
+  rule at 06:00 UTC runs `fetch.py` outside the VPC. It lands each new current OPM FWD file from
+  `opm_since` (202608) onward in an S3 bucket, then invokes `load.py` inside the VPC, which inserts a
+  row into `ops.opm_files` as role `pipeline`. That role can insert there and nothing else
+  (`challenge/sql/05_pipeline.pg.sql`). Two functions because the default VPC has no NAT gateway:
+  fetch needs the internet, load needs RDS, which admits only security groups and the laptop. A
+  failed load deletes the landed file so the next run retries. The agent's tables are untouched.
+  First run 2026-11-04: three August files in 5.8 s, a rerun landed none.
+- **Rejected:** a scheduled ECS Fargate task running the existing pull, DuckDB build, and `--ship`
+  (the real pipeline, but each run drops the live demo tables, and its schedule would have to stay
+  disabled until after the interview); a NAT gateway so one in-VPC function could do both (about
+  $32 a month); an S3 event trigger (the loader would then need S3 access from inside the VPC to
+  read OPM's publish date).
+- **Revisit:** if the build outlives the interview, add a step that rebuilds the agent's tables
+  from what landed, after the eval truth is recomputed for the new window; move the `pipeline`
+  password to Secrets Manager.

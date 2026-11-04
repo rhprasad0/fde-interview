@@ -3,14 +3,16 @@
 #   terraform init && terraform apply            # terraform.tfvars (gitignored) holds my_ip = "<laptop>/32"
 #   terraform output -raw pg_env >> ../.env      # PG* (owner), AGENT_PG* (read-only agent), REVIEWER_PG* (app decisions)
 #
-# Nothing runs inside AWS: the agent, loader, and eval harness connect from the laptop, so the instance is
-# public behind one /32 and a password. db.t4g.micro + 20 GB gp3 is about $14/month; destroy when done.
+# The agent, loader, and eval harness connect from the laptop, so the instance is public behind one /32 and a
+# password; the OPM watcher's loader (pipeline.tf) gets in by security group. db.t4g.micro + 20 GB gp3 is about
+# $14/month; destroy when done.
 
 terraform {
   required_version = ">= 1.6"
   required_providers {
-    aws    = { source = "hashicorp/aws", version = "~> 6.0" }
-    random = { source = "hashicorp/random", version = "~> 3.6" }
+    aws     = { source = "hashicorp/aws", version = "~> 6.0" }
+    random  = { source = "hashicorp/random", version = "~> 3.6" }
+    archive = { source = "hashicorp/archive", version = "~> 2.7" }
   }
 }
 
@@ -48,6 +50,12 @@ resource "aws_security_group" "pg" {
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = [var.my_ip]
+  }
+  ingress { # inline, so a separate rule resource is not stripped on the next apply
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.pipeline.id] # the OPM watcher's loader (pipeline.tf)
   }
 }
 
@@ -99,5 +107,7 @@ output "pg_env" {
     AGENT_PGPASSWORD=${random_password.agent.result}
     REVIEWER_PGUSER=reviewer
     REVIEWER_PGPASSWORD=${random_password.reviewer.result}
+    PIPELINE_PGUSER=pipeline
+    PIPELINE_PGPASSWORD=${random_password.pipeline.result}
   EOT
 }
