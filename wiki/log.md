@@ -475,3 +475,6 @@ The Workshop page's Accept, Edit, and Dismiss buttons now write to `app.decision
 
 ## [2026-11-04] build | OPM watcher feeds RDS
 Terraform now runs a daily pipeline: a Lambda lands new current OPM FWD files in S3 and a second Lambda inside the VPC records each one in `ops.opm_files` as an insert-only `pipeline` role. The first run landed the three August 2026 files; the second landed none. September had not posted by 14:07 UTC. The agent's tables are still loaded by hand from the pinned window.
+
+## [2026-11-04] build | Architecture page
+A new `/architecture` page, with a tab on every nav, shows one diagram in three lanes (internet, laptop, AWS): the app and agent, the four Postgres roles and what each may touch, the laptop build, the eval harness, and the OPM watcher. A table names every box. The public deploy is drawn dashed and the page says it is not built.

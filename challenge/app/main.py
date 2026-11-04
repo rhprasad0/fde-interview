@@ -113,7 +113,8 @@ def health():
     return {"ok": True}
 
 
-PAGES = {"study": "study.html", "mission": "mission.html", "incident": "incident.html", "transcript": "transcript.html"}
+PAGES = {"study": "study.html", "mission": "mission.html", "incident": "incident.html", "transcript": "transcript.html",
+         "architecture": "architecture.html"}
 
 
 @app.get("/{page}")
